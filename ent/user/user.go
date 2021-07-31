@@ -13,6 +13,8 @@ const (
 	FieldAvatarURL = "avatar_url"
 	// EdgeDiscordAccounts holds the string denoting the discord_accounts edge name in mutations.
 	EdgeDiscordAccounts = "discord_accounts"
+	// EdgeGithubAccounts holds the string denoting the github_accounts edge name in mutations.
+	EdgeGithubAccounts = "github_accounts"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// DiscordAccountsTable is the table the holds the discord_accounts relation/edge.
@@ -22,6 +24,13 @@ const (
 	DiscordAccountsInverseTable = "discord_accounts"
 	// DiscordAccountsColumn is the table column denoting the discord_accounts relation/edge.
 	DiscordAccountsColumn = "user_discord_accounts"
+	// GithubAccountsTable is the table the holds the github_accounts relation/edge.
+	GithubAccountsTable = "github_accounts"
+	// GithubAccountsInverseTable is the table name for the GithubAccount entity.
+	// It exists in this package in order to avoid circular dependency with the "githubaccount" package.
+	GithubAccountsInverseTable = "github_accounts"
+	// GithubAccountsColumn is the table column denoting the github_accounts relation/edge.
+	GithubAccountsColumn = "user_github_accounts"
 )
 
 // Columns holds all SQL columns for user fields.

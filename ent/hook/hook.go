@@ -22,6 +22,45 @@ func (f DiscordAccountFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return f(ctx, mv)
 }
 
+// The GithubAccountFunc type is an adapter to allow the use of ordinary
+// function as GithubAccount mutator.
+type GithubAccountFunc func(context.Context, *ent.GithubAccountMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GithubAccountFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.GithubAccountMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GithubAccountMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The GithubOrganizationFunc type is an adapter to allow the use of ordinary
+// function as GithubOrganization mutator.
+type GithubOrganizationFunc func(context.Context, *ent.GithubOrganizationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GithubOrganizationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.GithubOrganizationMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GithubOrganizationMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The GithubOrganizationMemberFunc type is an adapter to allow the use of ordinary
+// function as GithubOrganizationMember mutator.
+type GithubOrganizationMemberFunc func(context.Context, *ent.GithubOrganizationMemberMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GithubOrganizationMemberFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.GithubOrganizationMemberMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GithubOrganizationMemberMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

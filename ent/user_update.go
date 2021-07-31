@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
@@ -68,6 +69,21 @@ func (uu *UserUpdate) AddDiscordAccounts(d ...*DiscordAccount) *UserUpdate {
 	return uu.AddDiscordAccountIDs(ids...)
 }
 
+// AddGithubAccountIDs adds the "github_accounts" edge to the GithubAccount entity by IDs.
+func (uu *UserUpdate) AddGithubAccountIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddGithubAccountIDs(ids...)
+	return uu
+}
+
+// AddGithubAccounts adds the "github_accounts" edges to the GithubAccount entity.
+func (uu *UserUpdate) AddGithubAccounts(g ...*GithubAccount) *UserUpdate {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uu.AddGithubAccountIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -92,6 +108,27 @@ func (uu *UserUpdate) RemoveDiscordAccounts(d ...*DiscordAccount) *UserUpdate {
 		ids[i] = d[i].ID
 	}
 	return uu.RemoveDiscordAccountIDs(ids...)
+}
+
+// ClearGithubAccounts clears all "github_accounts" edges to the GithubAccount entity.
+func (uu *UserUpdate) ClearGithubAccounts() *UserUpdate {
+	uu.mutation.ClearGithubAccounts()
+	return uu
+}
+
+// RemoveGithubAccountIDs removes the "github_accounts" edge to GithubAccount entities by IDs.
+func (uu *UserUpdate) RemoveGithubAccountIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveGithubAccountIDs(ids...)
+	return uu
+}
+
+// RemoveGithubAccounts removes "github_accounts" edges to GithubAccount entities.
+func (uu *UserUpdate) RemoveGithubAccounts(g ...*GithubAccount) *UserUpdate {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uu.RemoveGithubAccountIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -237,6 +274,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.GithubAccountsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubAccountsTable,
+			Columns: []string{user.GithubAccountsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: githubaccount.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedGithubAccountsIDs(); len(nodes) > 0 && !uu.mutation.GithubAccountsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubAccountsTable,
+			Columns: []string{user.GithubAccountsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: githubaccount.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.GithubAccountsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubAccountsTable,
+			Columns: []string{user.GithubAccountsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: githubaccount.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -297,6 +388,21 @@ func (uuo *UserUpdateOne) AddDiscordAccounts(d ...*DiscordAccount) *UserUpdateOn
 	return uuo.AddDiscordAccountIDs(ids...)
 }
 
+// AddGithubAccountIDs adds the "github_accounts" edge to the GithubAccount entity by IDs.
+func (uuo *UserUpdateOne) AddGithubAccountIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddGithubAccountIDs(ids...)
+	return uuo
+}
+
+// AddGithubAccounts adds the "github_accounts" edges to the GithubAccount entity.
+func (uuo *UserUpdateOne) AddGithubAccounts(g ...*GithubAccount) *UserUpdateOne {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uuo.AddGithubAccountIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -321,6 +427,27 @@ func (uuo *UserUpdateOne) RemoveDiscordAccounts(d ...*DiscordAccount) *UserUpdat
 		ids[i] = d[i].ID
 	}
 	return uuo.RemoveDiscordAccountIDs(ids...)
+}
+
+// ClearGithubAccounts clears all "github_accounts" edges to the GithubAccount entity.
+func (uuo *UserUpdateOne) ClearGithubAccounts() *UserUpdateOne {
+	uuo.mutation.ClearGithubAccounts()
+	return uuo
+}
+
+// RemoveGithubAccountIDs removes the "github_accounts" edge to GithubAccount entities by IDs.
+func (uuo *UserUpdateOne) RemoveGithubAccountIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveGithubAccountIDs(ids...)
+	return uuo
+}
+
+// RemoveGithubAccounts removes "github_accounts" edges to GithubAccount entities.
+func (uuo *UserUpdateOne) RemoveGithubAccounts(g ...*GithubAccount) *UserUpdateOne {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uuo.RemoveGithubAccountIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -482,6 +609,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeString,
 					Column: discordaccount.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.GithubAccountsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubAccountsTable,
+			Columns: []string{user.GithubAccountsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: githubaccount.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedGithubAccountsIDs(); len(nodes) > 0 && !uuo.mutation.GithubAccountsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubAccountsTable,
+			Columns: []string{user.GithubAccountsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: githubaccount.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.GithubAccountsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubAccountsTable,
+			Columns: []string{user.GithubAccountsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: githubaccount.FieldID,
 				},
 			},
 		}

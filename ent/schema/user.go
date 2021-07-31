@@ -26,5 +26,6 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("discord_accounts", DiscordAccount.Type),
+		edge.To("github_accounts", GithubAccount.Type),
 	}
 }

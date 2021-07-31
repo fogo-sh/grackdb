@@ -11,6 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/githubaccount"
+	"github.com/fogo-sh/grackdb/ent/githuborganization"
+	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -32,8 +35,11 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		discordaccount.Table: discordaccount.ValidColumn,
-		user.Table:           user.ValidColumn,
+		discordaccount.Table:           discordaccount.ValidColumn,
+		githubaccount.Table:            githubaccount.ValidColumn,
+		githuborganization.Table:       githuborganization.ValidColumn,
+		githuborganizationmember.Table: githuborganizationmember.ValidColumn,
+		user.Table:                     user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

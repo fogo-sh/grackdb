@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -53,6 +54,21 @@ func (uc *UserCreate) AddDiscordAccounts(d ...*DiscordAccount) *UserCreate {
 		ids[i] = d[i].ID
 	}
 	return uc.AddDiscordAccountIDs(ids...)
+}
+
+// AddGithubAccountIDs adds the "github_accounts" edge to the GithubAccount entity by IDs.
+func (uc *UserCreate) AddGithubAccountIDs(ids ...int) *UserCreate {
+	uc.mutation.AddGithubAccountIDs(ids...)
+	return uc
+}
+
+// AddGithubAccounts adds the "github_accounts" edges to the GithubAccount entity.
+func (uc *UserCreate) AddGithubAccounts(g ...*GithubAccount) *UserCreate {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uc.AddGithubAccountIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -163,6 +179,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeString,
 					Column: discordaccount.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.GithubAccountsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GithubAccountsTable,
+			Columns: []string{user.GithubAccountsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: githubaccount.FieldID,
 				},
 			},
 		}

@@ -29,6 +29,66 @@ var (
 			},
 		},
 	}
+	// GithubAccountsColumns holds the columns for the "github_accounts" table.
+	GithubAccountsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "username", Type: field.TypeString, Unique: true},
+		{Name: "user_github_accounts", Type: field.TypeInt, Nullable: true},
+	}
+	// GithubAccountsTable holds the schema information for the "github_accounts" table.
+	GithubAccountsTable = &schema.Table{
+		Name:       "github_accounts",
+		Columns:    GithubAccountsColumns,
+		PrimaryKey: []*schema.Column{GithubAccountsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "github_accounts_users_github_accounts",
+				Columns:    []*schema.Column{GithubAccountsColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// GithubOrganizationsColumns holds the columns for the "github_organizations" table.
+	GithubOrganizationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "display_name", Type: field.TypeString, Nullable: true},
+	}
+	// GithubOrganizationsTable holds the schema information for the "github_organizations" table.
+	GithubOrganizationsTable = &schema.Table{
+		Name:        "github_organizations",
+		Columns:     GithubOrganizationsColumns,
+		PrimaryKey:  []*schema.Column{GithubOrganizationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
+	}
+	// GithubOrganizationMembersColumns holds the columns for the "github_organization_members" table.
+	GithubOrganizationMembersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}, Default: "member"},
+		{Name: "github_account_organization_memberships", Type: field.TypeInt, Nullable: true},
+		{Name: "github_organization_members", Type: field.TypeInt, Nullable: true},
+	}
+	// GithubOrganizationMembersTable holds the schema information for the "github_organization_members" table.
+	GithubOrganizationMembersTable = &schema.Table{
+		Name:       "github_organization_members",
+		Columns:    GithubOrganizationMembersColumns,
+		PrimaryKey: []*schema.Column{GithubOrganizationMembersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "github_organization_members_github_accounts_organization_memberships",
+				Columns:    []*schema.Column{GithubOrganizationMembersColumns[2]},
+				RefColumns: []*schema.Column{GithubAccountsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "github_organization_members_github_organizations_members",
+				Columns:    []*schema.Column{GithubOrganizationMembersColumns[3]},
+				RefColumns: []*schema.Column{GithubOrganizationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -45,10 +105,16 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		DiscordAccountsTable,
+		GithubAccountsTable,
+		GithubOrganizationsTable,
+		GithubOrganizationMembersTable,
 		UsersTable,
 	}
 )
 
 func init() {
 	DiscordAccountsTable.ForeignKeys[0].RefTable = UsersTable
+	GithubAccountsTable.ForeignKeys[0].RefTable = UsersTable
+	GithubOrganizationMembersTable.ForeignKeys[0].RefTable = GithubAccountsTable
+	GithubOrganizationMembersTable.ForeignKeys[1].RefTable = GithubOrganizationsTable
 }

@@ -10,6 +10,9 @@ import (
 	"github.com/fogo-sh/grackdb/ent/migrate"
 
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/githubaccount"
+	"github.com/fogo-sh/grackdb/ent/githuborganization"
+	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -24,6 +27,12 @@ type Client struct {
 	Schema *migrate.Schema
 	// DiscordAccount is the client for interacting with the DiscordAccount builders.
 	DiscordAccount *DiscordAccountClient
+	// GithubAccount is the client for interacting with the GithubAccount builders.
+	GithubAccount *GithubAccountClient
+	// GithubOrganization is the client for interacting with the GithubOrganization builders.
+	GithubOrganization *GithubOrganizationClient
+	// GithubOrganizationMember is the client for interacting with the GithubOrganizationMember builders.
+	GithubOrganizationMember *GithubOrganizationMemberClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -40,6 +49,9 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.DiscordAccount = NewDiscordAccountClient(c.config)
+	c.GithubAccount = NewGithubAccountClient(c.config)
+	c.GithubOrganization = NewGithubOrganizationClient(c.config)
+	c.GithubOrganizationMember = NewGithubOrganizationMemberClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -72,10 +84,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:            ctx,
-		config:         cfg,
-		DiscordAccount: NewDiscordAccountClient(cfg),
-		User:           NewUserClient(cfg),
+		ctx:                      ctx,
+		config:                   cfg,
+		DiscordAccount:           NewDiscordAccountClient(cfg),
+		GithubAccount:            NewGithubAccountClient(cfg),
+		GithubOrganization:       NewGithubOrganizationClient(cfg),
+		GithubOrganizationMember: NewGithubOrganizationMemberClient(cfg),
+		User:                     NewUserClient(cfg),
 	}, nil
 }
 
@@ -93,9 +108,12 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		config:         cfg,
-		DiscordAccount: NewDiscordAccountClient(cfg),
-		User:           NewUserClient(cfg),
+		config:                   cfg,
+		DiscordAccount:           NewDiscordAccountClient(cfg),
+		GithubAccount:            NewGithubAccountClient(cfg),
+		GithubOrganization:       NewGithubOrganizationClient(cfg),
+		GithubOrganizationMember: NewGithubOrganizationMemberClient(cfg),
+		User:                     NewUserClient(cfg),
 	}, nil
 }
 
@@ -126,6 +144,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.DiscordAccount.Use(hooks...)
+	c.GithubAccount.Use(hooks...)
+	c.GithubOrganization.Use(hooks...)
+	c.GithubOrganizationMember.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -235,6 +256,356 @@ func (c *DiscordAccountClient) Hooks() []Hook {
 	return c.hooks.DiscordAccount
 }
 
+// GithubAccountClient is a client for the GithubAccount schema.
+type GithubAccountClient struct {
+	config
+}
+
+// NewGithubAccountClient returns a client for the GithubAccount from the given config.
+func NewGithubAccountClient(c config) *GithubAccountClient {
+	return &GithubAccountClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `githubaccount.Hooks(f(g(h())))`.
+func (c *GithubAccountClient) Use(hooks ...Hook) {
+	c.hooks.GithubAccount = append(c.hooks.GithubAccount, hooks...)
+}
+
+// Create returns a create builder for GithubAccount.
+func (c *GithubAccountClient) Create() *GithubAccountCreate {
+	mutation := newGithubAccountMutation(c.config, OpCreate)
+	return &GithubAccountCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GithubAccount entities.
+func (c *GithubAccountClient) CreateBulk(builders ...*GithubAccountCreate) *GithubAccountCreateBulk {
+	return &GithubAccountCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GithubAccount.
+func (c *GithubAccountClient) Update() *GithubAccountUpdate {
+	mutation := newGithubAccountMutation(c.config, OpUpdate)
+	return &GithubAccountUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GithubAccountClient) UpdateOne(ga *GithubAccount) *GithubAccountUpdateOne {
+	mutation := newGithubAccountMutation(c.config, OpUpdateOne, withGithubAccount(ga))
+	return &GithubAccountUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GithubAccountClient) UpdateOneID(id int) *GithubAccountUpdateOne {
+	mutation := newGithubAccountMutation(c.config, OpUpdateOne, withGithubAccountID(id))
+	return &GithubAccountUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GithubAccount.
+func (c *GithubAccountClient) Delete() *GithubAccountDelete {
+	mutation := newGithubAccountMutation(c.config, OpDelete)
+	return &GithubAccountDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *GithubAccountClient) DeleteOne(ga *GithubAccount) *GithubAccountDeleteOne {
+	return c.DeleteOneID(ga.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *GithubAccountClient) DeleteOneID(id int) *GithubAccountDeleteOne {
+	builder := c.Delete().Where(githubaccount.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GithubAccountDeleteOne{builder}
+}
+
+// Query returns a query builder for GithubAccount.
+func (c *GithubAccountClient) Query() *GithubAccountQuery {
+	return &GithubAccountQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a GithubAccount entity by its id.
+func (c *GithubAccountClient) Get(ctx context.Context, id int) (*GithubAccount, error) {
+	return c.Query().Where(githubaccount.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GithubAccountClient) GetX(ctx context.Context, id int) *GithubAccount {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a GithubAccount.
+func (c *GithubAccountClient) QueryOwner(ga *GithubAccount) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ga.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubaccount.Table, githubaccount.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, githubaccount.OwnerTable, githubaccount.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(ga.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOrganizationMemberships queries the organization_memberships edge of a GithubAccount.
+func (c *GithubAccountClient) QueryOrganizationMemberships(ga *GithubAccount) *GithubOrganizationMemberQuery {
+	query := &GithubOrganizationMemberQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ga.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubaccount.Table, githubaccount.FieldID, id),
+			sqlgraph.To(githuborganizationmember.Table, githuborganizationmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githubaccount.OrganizationMembershipsTable, githubaccount.OrganizationMembershipsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ga.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GithubAccountClient) Hooks() []Hook {
+	return c.hooks.GithubAccount
+}
+
+// GithubOrganizationClient is a client for the GithubOrganization schema.
+type GithubOrganizationClient struct {
+	config
+}
+
+// NewGithubOrganizationClient returns a client for the GithubOrganization from the given config.
+func NewGithubOrganizationClient(c config) *GithubOrganizationClient {
+	return &GithubOrganizationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `githuborganization.Hooks(f(g(h())))`.
+func (c *GithubOrganizationClient) Use(hooks ...Hook) {
+	c.hooks.GithubOrganization = append(c.hooks.GithubOrganization, hooks...)
+}
+
+// Create returns a create builder for GithubOrganization.
+func (c *GithubOrganizationClient) Create() *GithubOrganizationCreate {
+	mutation := newGithubOrganizationMutation(c.config, OpCreate)
+	return &GithubOrganizationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GithubOrganization entities.
+func (c *GithubOrganizationClient) CreateBulk(builders ...*GithubOrganizationCreate) *GithubOrganizationCreateBulk {
+	return &GithubOrganizationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GithubOrganization.
+func (c *GithubOrganizationClient) Update() *GithubOrganizationUpdate {
+	mutation := newGithubOrganizationMutation(c.config, OpUpdate)
+	return &GithubOrganizationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GithubOrganizationClient) UpdateOne(_go *GithubOrganization) *GithubOrganizationUpdateOne {
+	mutation := newGithubOrganizationMutation(c.config, OpUpdateOne, withGithubOrganization(_go))
+	return &GithubOrganizationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GithubOrganizationClient) UpdateOneID(id int) *GithubOrganizationUpdateOne {
+	mutation := newGithubOrganizationMutation(c.config, OpUpdateOne, withGithubOrganizationID(id))
+	return &GithubOrganizationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GithubOrganization.
+func (c *GithubOrganizationClient) Delete() *GithubOrganizationDelete {
+	mutation := newGithubOrganizationMutation(c.config, OpDelete)
+	return &GithubOrganizationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *GithubOrganizationClient) DeleteOne(_go *GithubOrganization) *GithubOrganizationDeleteOne {
+	return c.DeleteOneID(_go.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *GithubOrganizationClient) DeleteOneID(id int) *GithubOrganizationDeleteOne {
+	builder := c.Delete().Where(githuborganization.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GithubOrganizationDeleteOne{builder}
+}
+
+// Query returns a query builder for GithubOrganization.
+func (c *GithubOrganizationClient) Query() *GithubOrganizationQuery {
+	return &GithubOrganizationQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a GithubOrganization entity by its id.
+func (c *GithubOrganizationClient) Get(ctx context.Context, id int) (*GithubOrganization, error) {
+	return c.Query().Where(githuborganization.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GithubOrganizationClient) GetX(ctx context.Context, id int) *GithubOrganization {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryMembers queries the members edge of a GithubOrganization.
+func (c *GithubOrganizationClient) QueryMembers(_go *GithubOrganization) *GithubOrganizationMemberQuery {
+	query := &GithubOrganizationMemberQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := _go.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githuborganization.Table, githuborganization.FieldID, id),
+			sqlgraph.To(githuborganizationmember.Table, githuborganizationmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githuborganization.MembersTable, githuborganization.MembersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_go.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GithubOrganizationClient) Hooks() []Hook {
+	return c.hooks.GithubOrganization
+}
+
+// GithubOrganizationMemberClient is a client for the GithubOrganizationMember schema.
+type GithubOrganizationMemberClient struct {
+	config
+}
+
+// NewGithubOrganizationMemberClient returns a client for the GithubOrganizationMember from the given config.
+func NewGithubOrganizationMemberClient(c config) *GithubOrganizationMemberClient {
+	return &GithubOrganizationMemberClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `githuborganizationmember.Hooks(f(g(h())))`.
+func (c *GithubOrganizationMemberClient) Use(hooks ...Hook) {
+	c.hooks.GithubOrganizationMember = append(c.hooks.GithubOrganizationMember, hooks...)
+}
+
+// Create returns a create builder for GithubOrganizationMember.
+func (c *GithubOrganizationMemberClient) Create() *GithubOrganizationMemberCreate {
+	mutation := newGithubOrganizationMemberMutation(c.config, OpCreate)
+	return &GithubOrganizationMemberCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GithubOrganizationMember entities.
+func (c *GithubOrganizationMemberClient) CreateBulk(builders ...*GithubOrganizationMemberCreate) *GithubOrganizationMemberCreateBulk {
+	return &GithubOrganizationMemberCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GithubOrganizationMember.
+func (c *GithubOrganizationMemberClient) Update() *GithubOrganizationMemberUpdate {
+	mutation := newGithubOrganizationMemberMutation(c.config, OpUpdate)
+	return &GithubOrganizationMemberUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GithubOrganizationMemberClient) UpdateOne(gom *GithubOrganizationMember) *GithubOrganizationMemberUpdateOne {
+	mutation := newGithubOrganizationMemberMutation(c.config, OpUpdateOne, withGithubOrganizationMember(gom))
+	return &GithubOrganizationMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GithubOrganizationMemberClient) UpdateOneID(id int) *GithubOrganizationMemberUpdateOne {
+	mutation := newGithubOrganizationMemberMutation(c.config, OpUpdateOne, withGithubOrganizationMemberID(id))
+	return &GithubOrganizationMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GithubOrganizationMember.
+func (c *GithubOrganizationMemberClient) Delete() *GithubOrganizationMemberDelete {
+	mutation := newGithubOrganizationMemberMutation(c.config, OpDelete)
+	return &GithubOrganizationMemberDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *GithubOrganizationMemberClient) DeleteOne(gom *GithubOrganizationMember) *GithubOrganizationMemberDeleteOne {
+	return c.DeleteOneID(gom.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *GithubOrganizationMemberClient) DeleteOneID(id int) *GithubOrganizationMemberDeleteOne {
+	builder := c.Delete().Where(githuborganizationmember.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GithubOrganizationMemberDeleteOne{builder}
+}
+
+// Query returns a query builder for GithubOrganizationMember.
+func (c *GithubOrganizationMemberClient) Query() *GithubOrganizationMemberQuery {
+	return &GithubOrganizationMemberQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a GithubOrganizationMember entity by its id.
+func (c *GithubOrganizationMemberClient) Get(ctx context.Context, id int) (*GithubOrganizationMember, error) {
+	return c.Query().Where(githuborganizationmember.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GithubOrganizationMemberClient) GetX(ctx context.Context, id int) *GithubOrganizationMember {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOrganization queries the organization edge of a GithubOrganizationMember.
+func (c *GithubOrganizationMemberClient) QueryOrganization(gom *GithubOrganizationMember) *GithubOrganizationQuery {
+	query := &GithubOrganizationQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gom.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githuborganizationmember.Table, githuborganizationmember.FieldID, id),
+			sqlgraph.To(githuborganization.Table, githuborganization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, githuborganizationmember.OrganizationTable, githuborganizationmember.OrganizationColumn),
+		)
+		fromV = sqlgraph.Neighbors(gom.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAccount queries the account edge of a GithubOrganizationMember.
+func (c *GithubOrganizationMemberClient) QueryAccount(gom *GithubOrganizationMember) *GithubAccountQuery {
+	query := &GithubAccountQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gom.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githuborganizationmember.Table, githuborganizationmember.FieldID, id),
+			sqlgraph.To(githubaccount.Table, githubaccount.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, githuborganizationmember.AccountTable, githuborganizationmember.AccountColumn),
+		)
+		fromV = sqlgraph.Neighbors(gom.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GithubOrganizationMemberClient) Hooks() []Hook {
+	return c.hooks.GithubOrganizationMember
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -329,6 +700,22 @@ func (c *UserClient) QueryDiscordAccounts(u *User) *DiscordAccountQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(discordaccount.Table, discordaccount.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.DiscordAccountsTable, user.DiscordAccountsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGithubAccounts queries the github_accounts edge of a User.
+func (c *UserClient) QueryGithubAccounts(u *User) *GithubAccountQuery {
+	query := &GithubAccountQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(githubaccount.Table, githubaccount.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.GithubAccountsTable, user.GithubAccountsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

@@ -4,6 +4,8 @@ package ent
 
 import (
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/githubaccount"
+	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/schema"
 )
 
@@ -35,4 +37,18 @@ func init() {
 	discordaccountDescID := discordaccountFields[0].Descriptor()
 	// discordaccount.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	discordaccount.IDValidator = discordaccountDescID.Validators[0].(func(string) error)
+	githubaccountFields := schema.GithubAccount{}.Fields()
+	_ = githubaccountFields
+	// githubaccountDescUsername is the schema descriptor for username field.
+	githubaccountDescUsername := githubaccountFields[0].Descriptor()
+	// githubaccount.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	githubaccount.UsernameValidator = githubaccountDescUsername.Validators[0].(func(string) error)
+	githuborganizationFields := schema.GithubOrganization{}.Fields()
+	_ = githuborganizationFields
+	// githuborganizationDescName is the schema descriptor for name field.
+	githuborganizationDescName := githuborganizationFields[0].Descriptor()
+	// githuborganization.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	githuborganization.NameValidator = githuborganizationDescName.Validators[0].(func(string) error)
+	githuborganizationmemberFields := schema.GithubOrganizationMember{}.Fields()
+	_ = githuborganizationmemberFields
 }

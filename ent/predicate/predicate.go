@@ -9,5 +9,14 @@ import (
 // DiscordAccount is the predicate function for discordaccount builders.
 type DiscordAccount func(*sql.Selector)
 
+// GithubAccount is the predicate function for githubaccount builders.
+type GithubAccount func(*sql.Selector)
+
+// GithubOrganization is the predicate function for githuborganization builders.
+type GithubOrganization func(*sql.Selector)
+
+// GithubOrganizationMember is the predicate function for githuborganizationmember builders.
+type GithubOrganizationMember func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

@@ -8,6 +8,9 @@ import (
 	"sync"
 
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/githubaccount"
+	"github.com/fogo-sh/grackdb/ent/githuborganization"
+	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/user"
 
@@ -23,8 +26,11 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeDiscordAccount = "DiscordAccount"
-	TypeUser           = "User"
+	TypeDiscordAccount           = "DiscordAccount"
+	TypeGithubAccount            = "GithubAccount"
+	TypeGithubOrganization       = "GithubOrganization"
+	TypeGithubOrganizationMember = "GithubOrganizationMember"
+	TypeUser                     = "User"
 )
 
 // DiscordAccountMutation represents an operation that mutates the DiscordAccount nodes in the graph.
@@ -443,6 +449,1314 @@ func (m *DiscordAccountMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown DiscordAccount edge %s", name)
 }
 
+// GithubAccountMutation represents an operation that mutates the GithubAccount nodes in the graph.
+type GithubAccountMutation struct {
+	config
+	op                              Op
+	typ                             string
+	id                              *int
+	username                        *string
+	clearedFields                   map[string]struct{}
+	owner                           *int
+	clearedowner                    bool
+	organization_memberships        map[int]struct{}
+	removedorganization_memberships map[int]struct{}
+	clearedorganization_memberships bool
+	done                            bool
+	oldValue                        func(context.Context) (*GithubAccount, error)
+	predicates                      []predicate.GithubAccount
+}
+
+var _ ent.Mutation = (*GithubAccountMutation)(nil)
+
+// githubaccountOption allows management of the mutation configuration using functional options.
+type githubaccountOption func(*GithubAccountMutation)
+
+// newGithubAccountMutation creates new mutation for the GithubAccount entity.
+func newGithubAccountMutation(c config, op Op, opts ...githubaccountOption) *GithubAccountMutation {
+	m := &GithubAccountMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGithubAccount,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGithubAccountID sets the ID field of the mutation.
+func withGithubAccountID(id int) githubaccountOption {
+	return func(m *GithubAccountMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GithubAccount
+		)
+		m.oldValue = func(ctx context.Context) (*GithubAccount, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GithubAccount.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGithubAccount sets the old GithubAccount of the mutation.
+func withGithubAccount(node *GithubAccount) githubaccountOption {
+	return func(m *GithubAccountMutation) {
+		m.oldValue = func(context.Context) (*GithubAccount, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GithubAccountMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GithubAccountMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *GithubAccountMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetUsername sets the "username" field.
+func (m *GithubAccountMutation) SetUsername(s string) {
+	m.username = &s
+}
+
+// Username returns the value of the "username" field in the mutation.
+func (m *GithubAccountMutation) Username() (r string, exists bool) {
+	v := m.username
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsername returns the old "username" field's value of the GithubAccount entity.
+// If the GithubAccount object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubAccountMutation) OldUsername(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUsername is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUsername requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsername: %w", err)
+	}
+	return oldValue.Username, nil
+}
+
+// ResetUsername resets all changes to the "username" field.
+func (m *GithubAccountMutation) ResetUsername() {
+	m.username = nil
+}
+
+// SetOwnerID sets the "owner" edge to the User entity by id.
+func (m *GithubAccountMutation) SetOwnerID(id int) {
+	m.owner = &id
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (m *GithubAccountMutation) ClearOwner() {
+	m.clearedowner = true
+}
+
+// OwnerCleared reports if the "owner" edge to the User entity was cleared.
+func (m *GithubAccountMutation) OwnerCleared() bool {
+	return m.clearedowner
+}
+
+// OwnerID returns the "owner" edge ID in the mutation.
+func (m *GithubAccountMutation) OwnerID() (id int, exists bool) {
+	if m.owner != nil {
+		return *m.owner, true
+	}
+	return
+}
+
+// OwnerIDs returns the "owner" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OwnerID instead. It exists only for internal usage by the builders.
+func (m *GithubAccountMutation) OwnerIDs() (ids []int) {
+	if id := m.owner; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOwner resets all changes to the "owner" edge.
+func (m *GithubAccountMutation) ResetOwner() {
+	m.owner = nil
+	m.clearedowner = false
+}
+
+// AddOrganizationMembershipIDs adds the "organization_memberships" edge to the GithubOrganizationMember entity by ids.
+func (m *GithubAccountMutation) AddOrganizationMembershipIDs(ids ...int) {
+	if m.organization_memberships == nil {
+		m.organization_memberships = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.organization_memberships[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOrganizationMemberships clears the "organization_memberships" edge to the GithubOrganizationMember entity.
+func (m *GithubAccountMutation) ClearOrganizationMemberships() {
+	m.clearedorganization_memberships = true
+}
+
+// OrganizationMembershipsCleared reports if the "organization_memberships" edge to the GithubOrganizationMember entity was cleared.
+func (m *GithubAccountMutation) OrganizationMembershipsCleared() bool {
+	return m.clearedorganization_memberships
+}
+
+// RemoveOrganizationMembershipIDs removes the "organization_memberships" edge to the GithubOrganizationMember entity by IDs.
+func (m *GithubAccountMutation) RemoveOrganizationMembershipIDs(ids ...int) {
+	if m.removedorganization_memberships == nil {
+		m.removedorganization_memberships = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedorganization_memberships[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOrganizationMemberships returns the removed IDs of the "organization_memberships" edge to the GithubOrganizationMember entity.
+func (m *GithubAccountMutation) RemovedOrganizationMembershipsIDs() (ids []int) {
+	for id := range m.removedorganization_memberships {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OrganizationMembershipsIDs returns the "organization_memberships" edge IDs in the mutation.
+func (m *GithubAccountMutation) OrganizationMembershipsIDs() (ids []int) {
+	for id := range m.organization_memberships {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOrganizationMemberships resets all changes to the "organization_memberships" edge.
+func (m *GithubAccountMutation) ResetOrganizationMemberships() {
+	m.organization_memberships = nil
+	m.clearedorganization_memberships = false
+	m.removedorganization_memberships = nil
+}
+
+// Op returns the operation name.
+func (m *GithubAccountMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (GithubAccount).
+func (m *GithubAccountMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GithubAccountMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.username != nil {
+		fields = append(fields, githubaccount.FieldUsername)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GithubAccountMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case githubaccount.FieldUsername:
+		return m.Username()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GithubAccountMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case githubaccount.FieldUsername:
+		return m.OldUsername(ctx)
+	}
+	return nil, fmt.Errorf("unknown GithubAccount field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubAccountMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case githubaccount.FieldUsername:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsername(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GithubAccount field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GithubAccountMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GithubAccountMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubAccountMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GithubAccount numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GithubAccountMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GithubAccountMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GithubAccountMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown GithubAccount nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GithubAccountMutation) ResetField(name string) error {
+	switch name {
+	case githubaccount.FieldUsername:
+		m.ResetUsername()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubAccount field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GithubAccountMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.owner != nil {
+		edges = append(edges, githubaccount.EdgeOwner)
+	}
+	if m.organization_memberships != nil {
+		edges = append(edges, githubaccount.EdgeOrganizationMemberships)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GithubAccountMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case githubaccount.EdgeOwner:
+		if id := m.owner; id != nil {
+			return []ent.Value{*id}
+		}
+	case githubaccount.EdgeOrganizationMemberships:
+		ids := make([]ent.Value, 0, len(m.organization_memberships))
+		for id := range m.organization_memberships {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GithubAccountMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedorganization_memberships != nil {
+		edges = append(edges, githubaccount.EdgeOrganizationMemberships)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GithubAccountMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case githubaccount.EdgeOrganizationMemberships:
+		ids := make([]ent.Value, 0, len(m.removedorganization_memberships))
+		for id := range m.removedorganization_memberships {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GithubAccountMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedowner {
+		edges = append(edges, githubaccount.EdgeOwner)
+	}
+	if m.clearedorganization_memberships {
+		edges = append(edges, githubaccount.EdgeOrganizationMemberships)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GithubAccountMutation) EdgeCleared(name string) bool {
+	switch name {
+	case githubaccount.EdgeOwner:
+		return m.clearedowner
+	case githubaccount.EdgeOrganizationMemberships:
+		return m.clearedorganization_memberships
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GithubAccountMutation) ClearEdge(name string) error {
+	switch name {
+	case githubaccount.EdgeOwner:
+		m.ClearOwner()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubAccount unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GithubAccountMutation) ResetEdge(name string) error {
+	switch name {
+	case githubaccount.EdgeOwner:
+		m.ResetOwner()
+		return nil
+	case githubaccount.EdgeOrganizationMemberships:
+		m.ResetOrganizationMemberships()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubAccount edge %s", name)
+}
+
+// GithubOrganizationMutation represents an operation that mutates the GithubOrganization nodes in the graph.
+type GithubOrganizationMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	name           *string
+	display_name   *string
+	clearedFields  map[string]struct{}
+	members        map[int]struct{}
+	removedmembers map[int]struct{}
+	clearedmembers bool
+	done           bool
+	oldValue       func(context.Context) (*GithubOrganization, error)
+	predicates     []predicate.GithubOrganization
+}
+
+var _ ent.Mutation = (*GithubOrganizationMutation)(nil)
+
+// githuborganizationOption allows management of the mutation configuration using functional options.
+type githuborganizationOption func(*GithubOrganizationMutation)
+
+// newGithubOrganizationMutation creates new mutation for the GithubOrganization entity.
+func newGithubOrganizationMutation(c config, op Op, opts ...githuborganizationOption) *GithubOrganizationMutation {
+	m := &GithubOrganizationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGithubOrganization,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGithubOrganizationID sets the ID field of the mutation.
+func withGithubOrganizationID(id int) githuborganizationOption {
+	return func(m *GithubOrganizationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GithubOrganization
+		)
+		m.oldValue = func(ctx context.Context) (*GithubOrganization, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GithubOrganization.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGithubOrganization sets the old GithubOrganization of the mutation.
+func withGithubOrganization(node *GithubOrganization) githuborganizationOption {
+	return func(m *GithubOrganizationMutation) {
+		m.oldValue = func(context.Context) (*GithubOrganization, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GithubOrganizationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GithubOrganizationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *GithubOrganizationMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetName sets the "name" field.
+func (m *GithubOrganizationMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *GithubOrganizationMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the GithubOrganization entity.
+// If the GithubOrganization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubOrganizationMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *GithubOrganizationMutation) ResetName() {
+	m.name = nil
+}
+
+// SetDisplayName sets the "display_name" field.
+func (m *GithubOrganizationMutation) SetDisplayName(s string) {
+	m.display_name = &s
+}
+
+// DisplayName returns the value of the "display_name" field in the mutation.
+func (m *GithubOrganizationMutation) DisplayName() (r string, exists bool) {
+	v := m.display_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplayName returns the old "display_name" field's value of the GithubOrganization entity.
+// If the GithubOrganization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubOrganizationMutation) OldDisplayName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDisplayName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDisplayName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplayName: %w", err)
+	}
+	return oldValue.DisplayName, nil
+}
+
+// ClearDisplayName clears the value of the "display_name" field.
+func (m *GithubOrganizationMutation) ClearDisplayName() {
+	m.display_name = nil
+	m.clearedFields[githuborganization.FieldDisplayName] = struct{}{}
+}
+
+// DisplayNameCleared returns if the "display_name" field was cleared in this mutation.
+func (m *GithubOrganizationMutation) DisplayNameCleared() bool {
+	_, ok := m.clearedFields[githuborganization.FieldDisplayName]
+	return ok
+}
+
+// ResetDisplayName resets all changes to the "display_name" field.
+func (m *GithubOrganizationMutation) ResetDisplayName() {
+	m.display_name = nil
+	delete(m.clearedFields, githuborganization.FieldDisplayName)
+}
+
+// AddMemberIDs adds the "members" edge to the GithubOrganizationMember entity by ids.
+func (m *GithubOrganizationMutation) AddMemberIDs(ids ...int) {
+	if m.members == nil {
+		m.members = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.members[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMembers clears the "members" edge to the GithubOrganizationMember entity.
+func (m *GithubOrganizationMutation) ClearMembers() {
+	m.clearedmembers = true
+}
+
+// MembersCleared reports if the "members" edge to the GithubOrganizationMember entity was cleared.
+func (m *GithubOrganizationMutation) MembersCleared() bool {
+	return m.clearedmembers
+}
+
+// RemoveMemberIDs removes the "members" edge to the GithubOrganizationMember entity by IDs.
+func (m *GithubOrganizationMutation) RemoveMemberIDs(ids ...int) {
+	if m.removedmembers == nil {
+		m.removedmembers = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedmembers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMembers returns the removed IDs of the "members" edge to the GithubOrganizationMember entity.
+func (m *GithubOrganizationMutation) RemovedMembersIDs() (ids []int) {
+	for id := range m.removedmembers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MembersIDs returns the "members" edge IDs in the mutation.
+func (m *GithubOrganizationMutation) MembersIDs() (ids []int) {
+	for id := range m.members {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMembers resets all changes to the "members" edge.
+func (m *GithubOrganizationMutation) ResetMembers() {
+	m.members = nil
+	m.clearedmembers = false
+	m.removedmembers = nil
+}
+
+// Op returns the operation name.
+func (m *GithubOrganizationMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (GithubOrganization).
+func (m *GithubOrganizationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GithubOrganizationMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.name != nil {
+		fields = append(fields, githuborganization.FieldName)
+	}
+	if m.display_name != nil {
+		fields = append(fields, githuborganization.FieldDisplayName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GithubOrganizationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case githuborganization.FieldName:
+		return m.Name()
+	case githuborganization.FieldDisplayName:
+		return m.DisplayName()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GithubOrganizationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case githuborganization.FieldName:
+		return m.OldName(ctx)
+	case githuborganization.FieldDisplayName:
+		return m.OldDisplayName(ctx)
+	}
+	return nil, fmt.Errorf("unknown GithubOrganization field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubOrganizationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case githuborganization.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case githuborganization.FieldDisplayName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplayName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GithubOrganization field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GithubOrganizationMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GithubOrganizationMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubOrganizationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GithubOrganization numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GithubOrganizationMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(githuborganization.FieldDisplayName) {
+		fields = append(fields, githuborganization.FieldDisplayName)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GithubOrganizationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GithubOrganizationMutation) ClearField(name string) error {
+	switch name {
+	case githuborganization.FieldDisplayName:
+		m.ClearDisplayName()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubOrganization nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GithubOrganizationMutation) ResetField(name string) error {
+	switch name {
+	case githuborganization.FieldName:
+		m.ResetName()
+		return nil
+	case githuborganization.FieldDisplayName:
+		m.ResetDisplayName()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubOrganization field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GithubOrganizationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.members != nil {
+		edges = append(edges, githuborganization.EdgeMembers)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GithubOrganizationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case githuborganization.EdgeMembers:
+		ids := make([]ent.Value, 0, len(m.members))
+		for id := range m.members {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GithubOrganizationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedmembers != nil {
+		edges = append(edges, githuborganization.EdgeMembers)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GithubOrganizationMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case githuborganization.EdgeMembers:
+		ids := make([]ent.Value, 0, len(m.removedmembers))
+		for id := range m.removedmembers {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GithubOrganizationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedmembers {
+		edges = append(edges, githuborganization.EdgeMembers)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GithubOrganizationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case githuborganization.EdgeMembers:
+		return m.clearedmembers
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GithubOrganizationMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GithubOrganization unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GithubOrganizationMutation) ResetEdge(name string) error {
+	switch name {
+	case githuborganization.EdgeMembers:
+		m.ResetMembers()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubOrganization edge %s", name)
+}
+
+// GithubOrganizationMemberMutation represents an operation that mutates the GithubOrganizationMember nodes in the graph.
+type GithubOrganizationMemberMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *int
+	role                *githuborganizationmember.Role
+	clearedFields       map[string]struct{}
+	organization        *int
+	clearedorganization bool
+	account             *int
+	clearedaccount      bool
+	done                bool
+	oldValue            func(context.Context) (*GithubOrganizationMember, error)
+	predicates          []predicate.GithubOrganizationMember
+}
+
+var _ ent.Mutation = (*GithubOrganizationMemberMutation)(nil)
+
+// githuborganizationmemberOption allows management of the mutation configuration using functional options.
+type githuborganizationmemberOption func(*GithubOrganizationMemberMutation)
+
+// newGithubOrganizationMemberMutation creates new mutation for the GithubOrganizationMember entity.
+func newGithubOrganizationMemberMutation(c config, op Op, opts ...githuborganizationmemberOption) *GithubOrganizationMemberMutation {
+	m := &GithubOrganizationMemberMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGithubOrganizationMember,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGithubOrganizationMemberID sets the ID field of the mutation.
+func withGithubOrganizationMemberID(id int) githuborganizationmemberOption {
+	return func(m *GithubOrganizationMemberMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GithubOrganizationMember
+		)
+		m.oldValue = func(ctx context.Context) (*GithubOrganizationMember, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GithubOrganizationMember.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGithubOrganizationMember sets the old GithubOrganizationMember of the mutation.
+func withGithubOrganizationMember(node *GithubOrganizationMember) githuborganizationmemberOption {
+	return func(m *GithubOrganizationMemberMutation) {
+		m.oldValue = func(context.Context) (*GithubOrganizationMember, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GithubOrganizationMemberMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GithubOrganizationMemberMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *GithubOrganizationMemberMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetRole sets the "role" field.
+func (m *GithubOrganizationMemberMutation) SetRole(gi githuborganizationmember.Role) {
+	m.role = &gi
+}
+
+// Role returns the value of the "role" field in the mutation.
+func (m *GithubOrganizationMemberMutation) Role() (r githuborganizationmember.Role, exists bool) {
+	v := m.role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRole returns the old "role" field's value of the GithubOrganizationMember entity.
+// If the GithubOrganizationMember object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubOrganizationMemberMutation) OldRole(ctx context.Context) (v githuborganizationmember.Role, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRole: %w", err)
+	}
+	return oldValue.Role, nil
+}
+
+// ResetRole resets all changes to the "role" field.
+func (m *GithubOrganizationMemberMutation) ResetRole() {
+	m.role = nil
+}
+
+// SetOrganizationID sets the "organization" edge to the GithubOrganization entity by id.
+func (m *GithubOrganizationMemberMutation) SetOrganizationID(id int) {
+	m.organization = &id
+}
+
+// ClearOrganization clears the "organization" edge to the GithubOrganization entity.
+func (m *GithubOrganizationMemberMutation) ClearOrganization() {
+	m.clearedorganization = true
+}
+
+// OrganizationCleared reports if the "organization" edge to the GithubOrganization entity was cleared.
+func (m *GithubOrganizationMemberMutation) OrganizationCleared() bool {
+	return m.clearedorganization
+}
+
+// OrganizationID returns the "organization" edge ID in the mutation.
+func (m *GithubOrganizationMemberMutation) OrganizationID() (id int, exists bool) {
+	if m.organization != nil {
+		return *m.organization, true
+	}
+	return
+}
+
+// OrganizationIDs returns the "organization" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OrganizationID instead. It exists only for internal usage by the builders.
+func (m *GithubOrganizationMemberMutation) OrganizationIDs() (ids []int) {
+	if id := m.organization; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOrganization resets all changes to the "organization" edge.
+func (m *GithubOrganizationMemberMutation) ResetOrganization() {
+	m.organization = nil
+	m.clearedorganization = false
+}
+
+// SetAccountID sets the "account" edge to the GithubAccount entity by id.
+func (m *GithubOrganizationMemberMutation) SetAccountID(id int) {
+	m.account = &id
+}
+
+// ClearAccount clears the "account" edge to the GithubAccount entity.
+func (m *GithubOrganizationMemberMutation) ClearAccount() {
+	m.clearedaccount = true
+}
+
+// AccountCleared reports if the "account" edge to the GithubAccount entity was cleared.
+func (m *GithubOrganizationMemberMutation) AccountCleared() bool {
+	return m.clearedaccount
+}
+
+// AccountID returns the "account" edge ID in the mutation.
+func (m *GithubOrganizationMemberMutation) AccountID() (id int, exists bool) {
+	if m.account != nil {
+		return *m.account, true
+	}
+	return
+}
+
+// AccountIDs returns the "account" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AccountID instead. It exists only for internal usage by the builders.
+func (m *GithubOrganizationMemberMutation) AccountIDs() (ids []int) {
+	if id := m.account; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAccount resets all changes to the "account" edge.
+func (m *GithubOrganizationMemberMutation) ResetAccount() {
+	m.account = nil
+	m.clearedaccount = false
+}
+
+// Op returns the operation name.
+func (m *GithubOrganizationMemberMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (GithubOrganizationMember).
+func (m *GithubOrganizationMemberMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GithubOrganizationMemberMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.role != nil {
+		fields = append(fields, githuborganizationmember.FieldRole)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GithubOrganizationMemberMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case githuborganizationmember.FieldRole:
+		return m.Role()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GithubOrganizationMemberMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case githuborganizationmember.FieldRole:
+		return m.OldRole(ctx)
+	}
+	return nil, fmt.Errorf("unknown GithubOrganizationMember field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubOrganizationMemberMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case githuborganizationmember.FieldRole:
+		v, ok := value.(githuborganizationmember.Role)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRole(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GithubOrganizationMember field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GithubOrganizationMemberMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GithubOrganizationMemberMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GithubOrganizationMemberMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GithubOrganizationMember numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GithubOrganizationMemberMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GithubOrganizationMemberMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GithubOrganizationMemberMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown GithubOrganizationMember nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GithubOrganizationMemberMutation) ResetField(name string) error {
+	switch name {
+	case githuborganizationmember.FieldRole:
+		m.ResetRole()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubOrganizationMember field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GithubOrganizationMemberMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.organization != nil {
+		edges = append(edges, githuborganizationmember.EdgeOrganization)
+	}
+	if m.account != nil {
+		edges = append(edges, githuborganizationmember.EdgeAccount)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GithubOrganizationMemberMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case githuborganizationmember.EdgeOrganization:
+		if id := m.organization; id != nil {
+			return []ent.Value{*id}
+		}
+	case githuborganizationmember.EdgeAccount:
+		if id := m.account; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GithubOrganizationMemberMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GithubOrganizationMemberMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GithubOrganizationMemberMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedorganization {
+		edges = append(edges, githuborganizationmember.EdgeOrganization)
+	}
+	if m.clearedaccount {
+		edges = append(edges, githuborganizationmember.EdgeAccount)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GithubOrganizationMemberMutation) EdgeCleared(name string) bool {
+	switch name {
+	case githuborganizationmember.EdgeOrganization:
+		return m.clearedorganization
+	case githuborganizationmember.EdgeAccount:
+		return m.clearedaccount
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GithubOrganizationMemberMutation) ClearEdge(name string) error {
+	switch name {
+	case githuborganizationmember.EdgeOrganization:
+		m.ClearOrganization()
+		return nil
+	case githuborganizationmember.EdgeAccount:
+		m.ClearAccount()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubOrganizationMember unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GithubOrganizationMemberMutation) ResetEdge(name string) error {
+	switch name {
+	case githuborganizationmember.EdgeOrganization:
+		m.ResetOrganization()
+		return nil
+	case githuborganizationmember.EdgeAccount:
+		m.ResetAccount()
+		return nil
+	}
+	return fmt.Errorf("unknown GithubOrganizationMember edge %s", name)
+}
+
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
@@ -455,6 +1769,9 @@ type UserMutation struct {
 	discord_accounts        map[string]struct{}
 	removeddiscord_accounts map[string]struct{}
 	cleareddiscord_accounts bool
+	github_accounts         map[int]struct{}
+	removedgithub_accounts  map[int]struct{}
+	clearedgithub_accounts  bool
 	done                    bool
 	oldValue                func(context.Context) (*User, error)
 	predicates              []predicate.User
@@ -677,6 +1994,59 @@ func (m *UserMutation) ResetDiscordAccounts() {
 	m.removeddiscord_accounts = nil
 }
 
+// AddGithubAccountIDs adds the "github_accounts" edge to the GithubAccount entity by ids.
+func (m *UserMutation) AddGithubAccountIDs(ids ...int) {
+	if m.github_accounts == nil {
+		m.github_accounts = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.github_accounts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGithubAccounts clears the "github_accounts" edge to the GithubAccount entity.
+func (m *UserMutation) ClearGithubAccounts() {
+	m.clearedgithub_accounts = true
+}
+
+// GithubAccountsCleared reports if the "github_accounts" edge to the GithubAccount entity was cleared.
+func (m *UserMutation) GithubAccountsCleared() bool {
+	return m.clearedgithub_accounts
+}
+
+// RemoveGithubAccountIDs removes the "github_accounts" edge to the GithubAccount entity by IDs.
+func (m *UserMutation) RemoveGithubAccountIDs(ids ...int) {
+	if m.removedgithub_accounts == nil {
+		m.removedgithub_accounts = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedgithub_accounts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGithubAccounts returns the removed IDs of the "github_accounts" edge to the GithubAccount entity.
+func (m *UserMutation) RemovedGithubAccountsIDs() (ids []int) {
+	for id := range m.removedgithub_accounts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GithubAccountsIDs returns the "github_accounts" edge IDs in the mutation.
+func (m *UserMutation) GithubAccountsIDs() (ids []int) {
+	for id := range m.github_accounts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGithubAccounts resets all changes to the "github_accounts" edge.
+func (m *UserMutation) ResetGithubAccounts() {
+	m.github_accounts = nil
+	m.clearedgithub_accounts = false
+	m.removedgithub_accounts = nil
+}
+
 // Op returns the operation name.
 func (m *UserMutation) Op() Op {
 	return m.op
@@ -816,9 +2186,12 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.discord_accounts != nil {
 		edges = append(edges, user.EdgeDiscordAccounts)
+	}
+	if m.github_accounts != nil {
+		edges = append(edges, user.EdgeGithubAccounts)
 	}
 	return edges
 }
@@ -833,15 +2206,24 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeGithubAccounts:
+		ids := make([]ent.Value, 0, len(m.github_accounts))
+		for id := range m.github_accounts {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removeddiscord_accounts != nil {
 		edges = append(edges, user.EdgeDiscordAccounts)
+	}
+	if m.removedgithub_accounts != nil {
+		edges = append(edges, user.EdgeGithubAccounts)
 	}
 	return edges
 }
@@ -856,15 +2238,24 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeGithubAccounts:
+		ids := make([]ent.Value, 0, len(m.removedgithub_accounts))
+		for id := range m.removedgithub_accounts {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.cleareddiscord_accounts {
 		edges = append(edges, user.EdgeDiscordAccounts)
+	}
+	if m.clearedgithub_accounts {
+		edges = append(edges, user.EdgeGithubAccounts)
 	}
 	return edges
 }
@@ -875,6 +2266,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeDiscordAccounts:
 		return m.cleareddiscord_accounts
+	case user.EdgeGithubAccounts:
+		return m.clearedgithub_accounts
 	}
 	return false
 }
@@ -893,6 +2286,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
 	case user.EdgeDiscordAccounts:
 		m.ResetDiscordAccounts()
+		return nil
+	case user.EdgeGithubAccounts:
+		m.ResetGithubAccounts()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

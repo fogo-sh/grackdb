@@ -14,6 +14,12 @@ type Tx struct {
 	config
 	// DiscordAccount is the client for interacting with the DiscordAccount builders.
 	DiscordAccount *DiscordAccountClient
+	// GithubAccount is the client for interacting with the GithubAccount builders.
+	GithubAccount *GithubAccountClient
+	// GithubOrganization is the client for interacting with the GithubOrganization builders.
+	GithubOrganization *GithubOrganizationClient
+	// GithubOrganizationMember is the client for interacting with the GithubOrganizationMember builders.
+	GithubOrganizationMember *GithubOrganizationMemberClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -152,6 +158,9 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.DiscordAccount = NewDiscordAccountClient(tx.config)
+	tx.GithubAccount = NewGithubAccountClient(tx.config)
+	tx.GithubOrganization = NewGithubOrganizationClient(tx.config)
+	tx.GithubOrganizationMember = NewGithubOrganizationMemberClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 
