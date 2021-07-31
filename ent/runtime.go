@@ -15,6 +15,10 @@ import (
 func init() {
 	discordaccountFields := schema.DiscordAccount{}.Fields()
 	_ = discordaccountFields
+	// discordaccountDescDiscordID is the schema descriptor for discord_id field.
+	discordaccountDescDiscordID := discordaccountFields[0].Descriptor()
+	// discordaccount.DiscordIDValidator is a validator for the "discord_id" field. It is called by the builders before save.
+	discordaccount.DiscordIDValidator = discordaccountDescDiscordID.Validators[0].(func(string) error)
 	// discordaccountDescDiscriminator is the schema descriptor for discriminator field.
 	discordaccountDescDiscriminator := discordaccountFields[2].Descriptor()
 	// discordaccount.DiscriminatorValidator is a validator for the "discriminator" field. It is called by the builders before save.
@@ -33,10 +37,6 @@ func init() {
 			return nil
 		}
 	}()
-	// discordaccountDescID is the schema descriptor for id field.
-	discordaccountDescID := discordaccountFields[0].Descriptor()
-	// discordaccount.IDValidator is a validator for the "id" field. It is called by the builders before save.
-	discordaccount.IDValidator = discordaccountDescID.Validators[0].(func(string) error)
 	githubaccountFields := schema.GithubAccount{}.Fields()
 	_ = githubaccountFields
 	// githubaccountDescUsername is the schema descriptor for username field.

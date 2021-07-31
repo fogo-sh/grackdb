@@ -10,7 +10,8 @@ import (
 var (
 	// DiscordAccountsColumns holds the columns for the "discord_accounts" table.
 	DiscordAccountsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "discord_id", Type: field.TypeString, Unique: true},
 		{Name: "username", Type: field.TypeString},
 		{Name: "discriminator", Type: field.TypeString, Size: 4},
 		{Name: "user_discord_accounts", Type: field.TypeInt, Nullable: true},
@@ -23,7 +24,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "discord_accounts_users_discord_accounts",
-				Columns:    []*schema.Column{DiscordAccountsColumns[3]},
+				Columns:    []*schema.Column{DiscordAccountsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -57,15 +58,14 @@ var (
 	}
 	// GithubOrganizationsTable holds the schema information for the "github_organizations" table.
 	GithubOrganizationsTable = &schema.Table{
-		Name:        "github_organizations",
-		Columns:     GithubOrganizationsColumns,
-		PrimaryKey:  []*schema.Column{GithubOrganizationsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "github_organizations",
+		Columns:    GithubOrganizationsColumns,
+		PrimaryKey: []*schema.Column{GithubOrganizationsColumns[0]},
 	}
 	// GithubOrganizationMembersColumns holds the columns for the "github_organization_members" table.
 	GithubOrganizationMembersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}, Default: "member"},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"ADMIN", "MEMBER"}, Default: "MEMBER"},
 		{Name: "github_account_organization_memberships", Type: field.TypeInt, Nullable: true},
 		{Name: "github_organization_members", Type: field.TypeInt, Nullable: true},
 	}
@@ -97,10 +97,9 @@ var (
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
-		Name:        "users",
-		Columns:     UsersColumns,
-		PrimaryKey:  []*schema.Column{UsersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "users",
+		Columns:    UsersColumns,
+		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{

@@ -79,7 +79,10 @@ func (gac *GithubAccountCreate) Save(ctx context.Context) (*GithubAccount, error
 				return nil, err
 			}
 			gac.mutation = mutation
-			node, err = gac.sqlSave(ctx)
+			if node, err = gac.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
@@ -121,8 +124,8 @@ func (gac *GithubAccountCreate) check() error {
 func (gac *GithubAccountCreate) sqlSave(ctx context.Context) (*GithubAccount, error) {
 	_node, _spec := gac.createSpec()
 	if err := sqlgraph.CreateNode(ctx, gac.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
@@ -222,15 +225,16 @@ func (gacb *GithubAccountCreateBulk) Save(ctx context.Context) ([]*GithubAccount
 				} else {
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, gacb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				id := specs[i].ID.Value.(int64)
 				nodes[i].ID = int(id)
 				return nodes[i], nil

@@ -69,7 +69,7 @@ func (dad *DiscordAccountDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: discordaccount.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeInt,
 				Column: discordaccount.FieldID,
 			},
 		},

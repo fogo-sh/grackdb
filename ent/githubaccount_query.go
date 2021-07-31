@@ -544,10 +544,14 @@ func (gaq *GithubAccountQuery) querySpec() *sqlgraph.QuerySpec {
 func (gaq *GithubAccountQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(gaq.driver.Dialect())
 	t1 := builder.Table(githubaccount.Table)
-	selector := builder.Select(t1.Columns(githubaccount.Columns...)...).From(t1)
+	columns := gaq.fields
+	if len(columns) == 0 {
+		columns = githubaccount.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if gaq.sql != nil {
 		selector = gaq.sql
-		selector.Select(selector.Columns(githubaccount.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range gaq.predicates {
 		p(selector)
@@ -815,13 +819,24 @@ func (gagb *GithubAccountGroupBy) sqlScan(ctx context.Context, v interface{}) er
 }
 
 func (gagb *GithubAccountGroupBy) sqlQuery() *sql.Selector {
-	selector := gagb.sql
-	columns := make([]string, 0, len(gagb.fields)+len(gagb.fns))
-	columns = append(columns, gagb.fields...)
+	selector := gagb.sql.Select()
+	aggregation := make([]string, 0, len(gagb.fns))
 	for _, fn := range gagb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(gagb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(gagb.fields)+len(gagb.fns))
+		for _, f := range gagb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(gagb.fields...)...)
 }
 
 // GithubAccountSelect is the builder for selecting fields of GithubAccount entities.
@@ -1037,16 +1052,10 @@ func (gas *GithubAccountSelect) BoolX(ctx context.Context) bool {
 
 func (gas *GithubAccountSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := gas.sqlQuery().Query()
+	query, args := gas.sql.Query()
 	if err := gas.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (gas *GithubAccountSelect) sqlQuery() sql.Querier {
-	selector := gas.sql
-	selector.Select(selector.Columns(gas.fields...)...)
-	return selector
 }

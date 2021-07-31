@@ -110,8 +110,8 @@ func (daq *DiscordAccountQuery) FirstX(ctx context.Context) *DiscordAccount {
 
 // FirstID returns the first DiscordAccount ID from the query.
 // Returns a *NotFoundError when no DiscordAccount ID was found.
-func (daq *DiscordAccountQuery) FirstID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (daq *DiscordAccountQuery) FirstID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = daq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -123,7 +123,7 @@ func (daq *DiscordAccountQuery) FirstID(ctx context.Context) (id string, err err
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (daq *DiscordAccountQuery) FirstIDX(ctx context.Context) string {
+func (daq *DiscordAccountQuery) FirstIDX(ctx context.Context) int {
 	id, err := daq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,8 +161,8 @@ func (daq *DiscordAccountQuery) OnlyX(ctx context.Context) *DiscordAccount {
 // OnlyID is like Only, but returns the only DiscordAccount ID in the query.
 // Returns a *NotSingularError when exactly one DiscordAccount ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (daq *DiscordAccountQuery) OnlyID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (daq *DiscordAccountQuery) OnlyID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = daq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -178,7 +178,7 @@ func (daq *DiscordAccountQuery) OnlyID(ctx context.Context) (id string, err erro
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (daq *DiscordAccountQuery) OnlyIDX(ctx context.Context) string {
+func (daq *DiscordAccountQuery) OnlyIDX(ctx context.Context) int {
 	id, err := daq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -204,8 +204,8 @@ func (daq *DiscordAccountQuery) AllX(ctx context.Context) []*DiscordAccount {
 }
 
 // IDs executes the query and returns a list of DiscordAccount IDs.
-func (daq *DiscordAccountQuery) IDs(ctx context.Context) ([]string, error) {
-	var ids []string
+func (daq *DiscordAccountQuery) IDs(ctx context.Context) ([]int, error) {
+	var ids []int
 	if err := daq.Select(discordaccount.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func (daq *DiscordAccountQuery) IDs(ctx context.Context) ([]string, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (daq *DiscordAccountQuery) IDsX(ctx context.Context) []string {
+func (daq *DiscordAccountQuery) IDsX(ctx context.Context) []int {
 	ids, err := daq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -291,12 +291,12 @@ func (daq *DiscordAccountQuery) WithOwner(opts ...func(*UserQuery)) *DiscordAcco
 // Example:
 //
 //	var v []struct {
-//		Username string `json:"username,omitempty"`
+//		DiscordID string `json:"discord_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.DiscordAccount.Query().
-//		GroupBy(discordaccount.FieldUsername).
+//		GroupBy(discordaccount.FieldDiscordID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -318,11 +318,11 @@ func (daq *DiscordAccountQuery) GroupBy(field string, fields ...string) *Discord
 // Example:
 //
 //	var v []struct {
-//		Username string `json:"username,omitempty"`
+//		DiscordID string `json:"discord_id,omitempty"`
 //	}
 //
 //	client.DiscordAccount.Query().
-//		Select(discordaccount.FieldUsername).
+//		Select(discordaccount.FieldDiscordID).
 //		Scan(ctx, &v)
 //
 func (daq *DiscordAccountQuery) Select(field string, fields ...string) *DiscordAccountSelect {
@@ -432,7 +432,7 @@ func (daq *DiscordAccountQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   discordaccount.Table,
 			Columns: discordaccount.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeInt,
 				Column: discordaccount.FieldID,
 			},
 		},
@@ -477,10 +477,14 @@ func (daq *DiscordAccountQuery) querySpec() *sqlgraph.QuerySpec {
 func (daq *DiscordAccountQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(daq.driver.Dialect())
 	t1 := builder.Table(discordaccount.Table)
-	selector := builder.Select(t1.Columns(discordaccount.Columns...)...).From(t1)
+	columns := daq.fields
+	if len(columns) == 0 {
+		columns = discordaccount.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if daq.sql != nil {
 		selector = daq.sql
-		selector.Select(selector.Columns(discordaccount.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range daq.predicates {
 		p(selector)
@@ -748,13 +752,24 @@ func (dagb *DiscordAccountGroupBy) sqlScan(ctx context.Context, v interface{}) e
 }
 
 func (dagb *DiscordAccountGroupBy) sqlQuery() *sql.Selector {
-	selector := dagb.sql
-	columns := make([]string, 0, len(dagb.fields)+len(dagb.fns))
-	columns = append(columns, dagb.fields...)
+	selector := dagb.sql.Select()
+	aggregation := make([]string, 0, len(dagb.fns))
 	for _, fn := range dagb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(dagb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(dagb.fields)+len(dagb.fns))
+		for _, f := range dagb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(dagb.fields...)...)
 }
 
 // DiscordAccountSelect is the builder for selecting fields of DiscordAccount entities.
@@ -970,16 +985,10 @@ func (das *DiscordAccountSelect) BoolX(ctx context.Context) bool {
 
 func (das *DiscordAccountSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := das.sqlQuery().Query()
+	query, args := das.sql.Query()
 	if err := das.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (das *DiscordAccountSelect) sqlQuery() sql.Querier {
-	selector := das.sql
-	selector.Select(selector.Columns(das.fields...)...)
-	return selector
 }

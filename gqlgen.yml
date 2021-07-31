@@ -1,0 +1,21 @@
+schema:
+  - grackdb.graphql
+  - ent.graphql
+
+resolver:
+  layout: follow-schema
+  dir: .
+
+autobind:
+  - github.com/fogo-sh/grackdb/ent
+
+models:
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.IntID
+  Node:
+   model:
+     - github.com/fogo-sh/grackdb/ent.Noder
+  GithubOrganizationMemberRole:
+    model:
+      - github.com/fogo-sh/grackdb/ent/githuborganizationmember.Role

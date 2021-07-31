@@ -20,6 +20,12 @@ type DiscordAccountCreate struct {
 	hooks    []Hook
 }
 
+// SetDiscordID sets the "discord_id" field.
+func (dac *DiscordAccountCreate) SetDiscordID(s string) *DiscordAccountCreate {
+	dac.mutation.SetDiscordID(s)
+	return dac
+}
+
 // SetUsername sets the "username" field.
 func (dac *DiscordAccountCreate) SetUsername(s string) *DiscordAccountCreate {
 	dac.mutation.SetUsername(s)
@@ -29,12 +35,6 @@ func (dac *DiscordAccountCreate) SetUsername(s string) *DiscordAccountCreate {
 // SetDiscriminator sets the "discriminator" field.
 func (dac *DiscordAccountCreate) SetDiscriminator(s string) *DiscordAccountCreate {
 	dac.mutation.SetDiscriminator(s)
-	return dac
-}
-
-// SetID sets the "id" field.
-func (dac *DiscordAccountCreate) SetID(s string) *DiscordAccountCreate {
-	dac.mutation.SetID(s)
 	return dac
 }
 
@@ -75,7 +75,10 @@ func (dac *DiscordAccountCreate) Save(ctx context.Context) (*DiscordAccount, err
 				return nil, err
 			}
 			dac.mutation = mutation
-			node, err = dac.sqlSave(ctx)
+			if node, err = dac.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
@@ -100,6 +103,14 @@ func (dac *DiscordAccountCreate) SaveX(ctx context.Context) *DiscordAccount {
 
 // check runs all checks and user-defined validators on the builder.
 func (dac *DiscordAccountCreate) check() error {
+	if _, ok := dac.mutation.DiscordID(); !ok {
+		return &ValidationError{Name: "discord_id", err: errors.New("ent: missing required field \"discord_id\"")}
+	}
+	if v, ok := dac.mutation.DiscordID(); ok {
+		if err := discordaccount.DiscordIDValidator(v); err != nil {
+			return &ValidationError{Name: "discord_id", err: fmt.Errorf("ent: validator failed for field \"discord_id\": %w", err)}
+		}
+	}
 	if _, ok := dac.mutation.Username(); !ok {
 		return &ValidationError{Name: "username", err: errors.New("ent: missing required field \"username\"")}
 	}
@@ -111,11 +122,6 @@ func (dac *DiscordAccountCreate) check() error {
 			return &ValidationError{Name: "discriminator", err: fmt.Errorf("ent: validator failed for field \"discriminator\": %w", err)}
 		}
 	}
-	if v, ok := dac.mutation.ID(); ok {
-		if err := discordaccount.IDValidator(v); err != nil {
-			return &ValidationError{Name: "id", err: fmt.Errorf("ent: validator failed for field \"id\": %w", err)}
-		}
-	}
 	if _, ok := dac.mutation.OwnerID(); !ok {
 		return &ValidationError{Name: "owner", err: errors.New("ent: missing required edge \"owner\"")}
 	}
@@ -125,11 +131,13 @@ func (dac *DiscordAccountCreate) check() error {
 func (dac *DiscordAccountCreate) sqlSave(ctx context.Context) (*DiscordAccount, error) {
 	_node, _spec := dac.createSpec()
 	if err := sqlgraph.CreateNode(ctx, dac.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
+	id := _spec.ID.Value.(int64)
+	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -139,14 +147,18 @@ func (dac *DiscordAccountCreate) createSpec() (*DiscordAccount, *sqlgraph.Create
 		_spec = &sqlgraph.CreateSpec{
 			Table: discordaccount.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeInt,
 				Column: discordaccount.FieldID,
 			},
 		}
 	)
-	if id, ok := dac.mutation.ID(); ok {
-		_node.ID = id
-		_spec.ID.Value = id
+	if value, ok := dac.mutation.DiscordID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: discordaccount.FieldDiscordID,
+		})
+		_node.DiscordID = value
 	}
 	if value, ok := dac.mutation.Username(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -217,15 +229,18 @@ func (dacb *DiscordAccountCreateBulk) Save(ctx context.Context) ([]*DiscordAccou
 				} else {
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, dacb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
+				id := specs[i].ID.Value.(int64)
+				nodes[i].ID = int(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

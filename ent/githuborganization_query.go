@@ -470,10 +470,14 @@ func (goq *GithubOrganizationQuery) querySpec() *sqlgraph.QuerySpec {
 func (goq *GithubOrganizationQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(goq.driver.Dialect())
 	t1 := builder.Table(githuborganization.Table)
-	selector := builder.Select(t1.Columns(githuborganization.Columns...)...).From(t1)
+	columns := goq.fields
+	if len(columns) == 0 {
+		columns = githuborganization.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if goq.sql != nil {
 		selector = goq.sql
-		selector.Select(selector.Columns(githuborganization.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range goq.predicates {
 		p(selector)
@@ -741,13 +745,24 @@ func (gogb *GithubOrganizationGroupBy) sqlScan(ctx context.Context, v interface{
 }
 
 func (gogb *GithubOrganizationGroupBy) sqlQuery() *sql.Selector {
-	selector := gogb.sql
-	columns := make([]string, 0, len(gogb.fields)+len(gogb.fns))
-	columns = append(columns, gogb.fields...)
+	selector := gogb.sql.Select()
+	aggregation := make([]string, 0, len(gogb.fns))
 	for _, fn := range gogb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(gogb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(gogb.fields)+len(gogb.fns))
+		for _, f := range gogb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(gogb.fields...)...)
 }
 
 // GithubOrganizationSelect is the builder for selecting fields of GithubOrganization entities.
@@ -963,16 +978,10 @@ func (gos *GithubOrganizationSelect) BoolX(ctx context.Context) bool {
 
 func (gos *GithubOrganizationSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := gos.sqlQuery().Query()
+	query, args := gos.sql.Query()
 	if err := gos.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (gos *GithubOrganizationSelect) sqlQuery() sql.Querier {
-	selector := gos.sql
-	selector.Select(selector.Columns(gos.fields...)...)
-	return selector
 }

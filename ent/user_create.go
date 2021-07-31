@@ -42,14 +42,14 @@ func (uc *UserCreate) SetNillableAvatarURL(s *string) *UserCreate {
 }
 
 // AddDiscordAccountIDs adds the "discord_accounts" edge to the DiscordAccount entity by IDs.
-func (uc *UserCreate) AddDiscordAccountIDs(ids ...string) *UserCreate {
+func (uc *UserCreate) AddDiscordAccountIDs(ids ...int) *UserCreate {
 	uc.mutation.AddDiscordAccountIDs(ids...)
 	return uc
 }
 
 // AddDiscordAccounts adds the "discord_accounts" edges to the DiscordAccount entity.
 func (uc *UserCreate) AddDiscordAccounts(d ...*DiscordAccount) *UserCreate {
-	ids := make([]string, len(d))
+	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -97,7 +97,10 @@ func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
 				return nil, err
 			}
 			uc.mutation = mutation
-			node, err = uc.sqlSave(ctx)
+			if node, err = uc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
@@ -131,8 +134,8 @@ func (uc *UserCreate) check() error {
 func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 	_node, _spec := uc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, uc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
@@ -177,7 +180,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: discordaccount.FieldID,
 				},
 			},
@@ -239,15 +242,16 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 				} else {
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ucb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				id := specs[i].ID.Value.(int64)
 				nodes[i].ID = int(id)
 				return nodes[i], nil

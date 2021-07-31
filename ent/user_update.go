@@ -55,14 +55,14 @@ func (uu *UserUpdate) ClearAvatarURL() *UserUpdate {
 }
 
 // AddDiscordAccountIDs adds the "discord_accounts" edge to the DiscordAccount entity by IDs.
-func (uu *UserUpdate) AddDiscordAccountIDs(ids ...string) *UserUpdate {
+func (uu *UserUpdate) AddDiscordAccountIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddDiscordAccountIDs(ids...)
 	return uu
 }
 
 // AddDiscordAccounts adds the "discord_accounts" edges to the DiscordAccount entity.
 func (uu *UserUpdate) AddDiscordAccounts(d ...*DiscordAccount) *UserUpdate {
-	ids := make([]string, len(d))
+	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -96,14 +96,14 @@ func (uu *UserUpdate) ClearDiscordAccounts() *UserUpdate {
 }
 
 // RemoveDiscordAccountIDs removes the "discord_accounts" edge to DiscordAccount entities by IDs.
-func (uu *UserUpdate) RemoveDiscordAccountIDs(ids ...string) *UserUpdate {
+func (uu *UserUpdate) RemoveDiscordAccountIDs(ids ...int) *UserUpdate {
 	uu.mutation.RemoveDiscordAccountIDs(ids...)
 	return uu
 }
 
 // RemoveDiscordAccounts removes "discord_accounts" edges to DiscordAccount entities.
 func (uu *UserUpdate) RemoveDiscordAccounts(d ...*DiscordAccount) *UserUpdate {
-	ids := make([]string, len(d))
+	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -229,7 +229,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: discordaccount.FieldID,
 				},
 			},
@@ -245,7 +245,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: discordaccount.FieldID,
 				},
 			},
@@ -264,7 +264,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: discordaccount.FieldID,
 				},
 			},
@@ -331,8 +331,8 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -374,14 +374,14 @@ func (uuo *UserUpdateOne) ClearAvatarURL() *UserUpdateOne {
 }
 
 // AddDiscordAccountIDs adds the "discord_accounts" edge to the DiscordAccount entity by IDs.
-func (uuo *UserUpdateOne) AddDiscordAccountIDs(ids ...string) *UserUpdateOne {
+func (uuo *UserUpdateOne) AddDiscordAccountIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddDiscordAccountIDs(ids...)
 	return uuo
 }
 
 // AddDiscordAccounts adds the "discord_accounts" edges to the DiscordAccount entity.
 func (uuo *UserUpdateOne) AddDiscordAccounts(d ...*DiscordAccount) *UserUpdateOne {
-	ids := make([]string, len(d))
+	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -415,14 +415,14 @@ func (uuo *UserUpdateOne) ClearDiscordAccounts() *UserUpdateOne {
 }
 
 // RemoveDiscordAccountIDs removes the "discord_accounts" edge to DiscordAccount entities by IDs.
-func (uuo *UserUpdateOne) RemoveDiscordAccountIDs(ids ...string) *UserUpdateOne {
+func (uuo *UserUpdateOne) RemoveDiscordAccountIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.RemoveDiscordAccountIDs(ids...)
 	return uuo
 }
 
 // RemoveDiscordAccounts removes "discord_accounts" edges to DiscordAccount entities.
 func (uuo *UserUpdateOne) RemoveDiscordAccounts(d ...*DiscordAccount) *UserUpdateOne {
-	ids := make([]string, len(d))
+	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -572,7 +572,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: discordaccount.FieldID,
 				},
 			},
@@ -588,7 +588,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: discordaccount.FieldID,
 				},
 			},
@@ -607,7 +607,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeInt,
 					Column: discordaccount.FieldID,
 				},
 			},
@@ -677,8 +677,8 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if err = sqlgraph.UpdateNode(ctx, uuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

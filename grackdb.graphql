@@ -1,0 +1,209 @@
+scalar Time
+scalar Cursor
+
+type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: Cursor
+    endCursor: Cursor
+}
+
+enum OrderDirection {
+    ASC
+    DESC
+}
+
+interface Node {
+    id: ID!
+}
+
+enum GithubOrganizationMemberRole {
+    ADMIN
+    MEMBER
+}
+
+type UserConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [UserEdge]
+}
+
+type UserEdge {
+    node: User
+    cursor: Cursor!
+}
+
+enum UserOrderField {
+    USERNAME
+}
+
+input UserOrder {
+    direction: OrderDirection!
+    field: UserOrderField
+}
+
+type User implements Node {
+    id: ID!
+    username: String!
+    avatar_url: String
+    discord_accounts: [DiscordAccount!]
+    github_accounts: [GithubAccount!]
+}
+
+type DiscordAccountConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [DiscordAccountEdge]
+}
+
+type DiscordAccountEdge {
+    node: DiscordAccount
+    cursor: Cursor!
+}
+
+enum DiscordAccountOrderField {
+    DISCORD_ID
+    USERNAME
+    DISCRIMINATOR
+}
+
+input DiscordAccountOrder {
+    direction: OrderDirection!
+    field: DiscordAccountOrderField
+}
+
+type DiscordAccount implements Node {
+    id: ID!
+    discord_id: String!
+    username: String!
+    discriminator: String!
+    owner: User!
+}
+
+type GithubAccountConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [GithubAccountEdge]
+}
+
+type GithubAccountEdge {
+    node: GithubAccount
+    cursor: Cursor!
+}
+
+enum GithubAccountOrderField {
+    USERNAME
+}
+
+input GithubAccountOrder {
+    direction: OrderDirection!
+    field: GithubAccountOrderField
+}
+
+type GithubAccount implements Node {
+    id: ID!
+    username: String!
+    owner: User!
+    organization_memberships: [GithubOrganizationMember!]
+}
+
+type GithubOrganizationMemberConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [GithubOrganizationMemberEdge]
+}
+
+type GithubOrganizationMemberEdge {
+    node: GithubOrganizationMember
+    cursor: Cursor!
+}
+
+enum GithubOrganizationMemberOrderField {
+    ROLE
+}
+
+input GithubOrganizationMemberOrder {
+    direction: OrderDirection!
+    field: GithubOrganizationMemberOrderField
+}
+
+type GithubOrganizationMember implements Node {
+    id: ID!
+    role: GithubOrganizationMemberRole!
+    account: GithubAccount!
+    organization: GithubOrganization!
+}
+
+type GithubOrganizationConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [GithubOrganizationEdge]
+}
+
+type GithubOrganizationEdge {
+    node: GithubOrganization
+    cursor: Cursor!
+}
+
+enum GithubOrganizationOrderField {
+    NAME
+    DISPLAY_NAME
+}
+
+input GithubOrganizationOrder {
+    direction: OrderDirection!
+    field: GithubOrganizationOrderField
+}
+
+type GithubOrganization implements Node {
+    id: ID!
+    name: String!
+    display_name: String
+    members: [GithubOrganizationMember!]
+}
+
+type Query {
+    node(id: ID!): Node
+    nodes(ids: [ID!]!): [Node]!
+
+    users(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: UserOrder
+        where: UserWhereInput
+    ): UserConnection
+    discord_accounts(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: DiscordAccountOrder
+        where: DiscordAccountWhereInput
+    ): DiscordAccountConnection
+    github_accounts(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: GithubAccountOrder
+        where: GithubAccountWhereInput
+    ): GithubAccountConnection
+    github_organization_members(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: GithubOrganizationMemberOrder
+        where: GithubOrganizationMemberWhereInput
+    ): GithubOrganizationMemberConnection
+    github_organizations(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: GithubOrganizationOrder
+        where: GithubOrganizationWhereInput
+    ): GithubOrganizationConnection
+}

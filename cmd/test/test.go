@@ -33,7 +33,7 @@ func main() {
 	}
 
 	testDiscordAccount, err := client.DiscordAccount.Create().
-		SetID("106162668032802816").
+		SetDiscordID("106162668032802816").
 		SetUsername("nint8835").
 		SetDiscriminator("0001").
 		SetOwner(testUser).

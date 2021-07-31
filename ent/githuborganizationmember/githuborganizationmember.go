@@ -4,6 +4,8 @@ package githuborganizationmember
 
 import (
 	"fmt"
+	"io"
+	"strconv"
 )
 
 const (
@@ -71,8 +73,8 @@ const DefaultRole = RoleMember
 
 // Role values.
 const (
-	RoleAdmin  Role = "admin"
-	RoleMember Role = "member"
+	RoleAdmin  Role = "ADMIN"
+	RoleMember Role = "MEMBER"
 )
 
 func (r Role) String() string {
@@ -87,4 +89,22 @@ func RoleValidator(r Role) error {
 	default:
 		return fmt.Errorf("githuborganizationmember: invalid enum value for role field: %q", r)
 	}
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (r Role) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(r.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (r *Role) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*r = Role(str)
+	if err := RoleValidator(*r); err != nil {
+		return fmt.Errorf("%s is not a valid Role", str)
+	}
+	return nil
 }

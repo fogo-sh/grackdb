@@ -543,10 +543,14 @@ func (gomq *GithubOrganizationMemberQuery) querySpec() *sqlgraph.QuerySpec {
 func (gomq *GithubOrganizationMemberQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(gomq.driver.Dialect())
 	t1 := builder.Table(githuborganizationmember.Table)
-	selector := builder.Select(t1.Columns(githuborganizationmember.Columns...)...).From(t1)
+	columns := gomq.fields
+	if len(columns) == 0 {
+		columns = githuborganizationmember.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if gomq.sql != nil {
 		selector = gomq.sql
-		selector.Select(selector.Columns(githuborganizationmember.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range gomq.predicates {
 		p(selector)
@@ -814,13 +818,24 @@ func (gomgb *GithubOrganizationMemberGroupBy) sqlScan(ctx context.Context, v int
 }
 
 func (gomgb *GithubOrganizationMemberGroupBy) sqlQuery() *sql.Selector {
-	selector := gomgb.sql
-	columns := make([]string, 0, len(gomgb.fields)+len(gomgb.fns))
-	columns = append(columns, gomgb.fields...)
+	selector := gomgb.sql.Select()
+	aggregation := make([]string, 0, len(gomgb.fns))
 	for _, fn := range gomgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(gomgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(gomgb.fields)+len(gomgb.fns))
+		for _, f := range gomgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(gomgb.fields...)...)
 }
 
 // GithubOrganizationMemberSelect is the builder for selecting fields of GithubOrganizationMember entities.
@@ -1036,16 +1051,10 @@ func (goms *GithubOrganizationMemberSelect) BoolX(ctx context.Context) bool {
 
 func (goms *GithubOrganizationMemberSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := goms.sqlQuery().Query()
+	query, args := goms.sql.Query()
 	if err := goms.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (goms *GithubOrganizationMemberSelect) sqlQuery() sql.Querier {
-	selector := goms.sql
-	selector.Select(selector.Columns(goms.fields...)...)
-	return selector
 }

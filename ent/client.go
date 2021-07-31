@@ -35,6 +35,8 @@ type Client struct {
 	GithubOrganizationMember *GithubOrganizationMemberClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// additional fields for node api
+	tables tables
 }
 
 // NewClient creates a new client configured with the given options.
@@ -190,7 +192,7 @@ func (c *DiscordAccountClient) UpdateOne(da *DiscordAccount) *DiscordAccountUpda
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DiscordAccountClient) UpdateOneID(id string) *DiscordAccountUpdateOne {
+func (c *DiscordAccountClient) UpdateOneID(id int) *DiscordAccountUpdateOne {
 	mutation := newDiscordAccountMutation(c.config, OpUpdateOne, withDiscordAccountID(id))
 	return &DiscordAccountUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -207,7 +209,7 @@ func (c *DiscordAccountClient) DeleteOne(da *DiscordAccount) *DiscordAccountDele
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *DiscordAccountClient) DeleteOneID(id string) *DiscordAccountDeleteOne {
+func (c *DiscordAccountClient) DeleteOneID(id int) *DiscordAccountDeleteOne {
 	builder := c.Delete().Where(discordaccount.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -222,12 +224,12 @@ func (c *DiscordAccountClient) Query() *DiscordAccountQuery {
 }
 
 // Get returns a DiscordAccount entity by its id.
-func (c *DiscordAccountClient) Get(ctx context.Context, id string) (*DiscordAccount, error) {
+func (c *DiscordAccountClient) Get(ctx context.Context, id int) (*DiscordAccount, error) {
 	return c.Query().Where(discordaccount.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DiscordAccountClient) GetX(ctx context.Context, id string) *DiscordAccount {
+func (c *DiscordAccountClient) GetX(ctx context.Context, id int) *DiscordAccount {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

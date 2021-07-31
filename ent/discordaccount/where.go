@@ -9,28 +9,28 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id string) predicate.DiscordAccount {
+func ID(id int) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id string) predicate.DiscordAccount {
+func IDEQ(id int) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id string) predicate.DiscordAccount {
+func IDNEQ(id int) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...string) predicate.DiscordAccount {
+func IDIn(ids ...int) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -47,7 +47,7 @@ func IDIn(ids ...string) predicate.DiscordAccount {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...string) predicate.DiscordAccount {
+func IDNotIn(ids ...int) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -64,30 +64,37 @@ func IDNotIn(ids ...string) predicate.DiscordAccount {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id string) predicate.DiscordAccount {
+func IDGT(id int) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id string) predicate.DiscordAccount {
+func IDGTE(id int) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id string) predicate.DiscordAccount {
+func IDLT(id int) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id string) predicate.DiscordAccount {
+func IDLTE(id int) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
+	})
+}
+
+// DiscordID applies equality check predicate on the "discord_id" field. It's identical to DiscordIDEQ.
+func DiscordID(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDiscordID), v))
 	})
 }
 
@@ -102,6 +109,117 @@ func Username(v string) predicate.DiscordAccount {
 func Discriminator(v string) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldDiscriminator), v))
+	})
+}
+
+// DiscordIDEQ applies the EQ predicate on the "discord_id" field.
+func DiscordIDEQ(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDiscordID), v))
+	})
+}
+
+// DiscordIDNEQ applies the NEQ predicate on the "discord_id" field.
+func DiscordIDNEQ(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldDiscordID), v))
+	})
+}
+
+// DiscordIDIn applies the In predicate on the "discord_id" field.
+func DiscordIDIn(vs ...string) predicate.DiscordAccount {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldDiscordID), v...))
+	})
+}
+
+// DiscordIDNotIn applies the NotIn predicate on the "discord_id" field.
+func DiscordIDNotIn(vs ...string) predicate.DiscordAccount {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldDiscordID), v...))
+	})
+}
+
+// DiscordIDGT applies the GT predicate on the "discord_id" field.
+func DiscordIDGT(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldDiscordID), v))
+	})
+}
+
+// DiscordIDGTE applies the GTE predicate on the "discord_id" field.
+func DiscordIDGTE(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldDiscordID), v))
+	})
+}
+
+// DiscordIDLT applies the LT predicate on the "discord_id" field.
+func DiscordIDLT(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldDiscordID), v))
+	})
+}
+
+// DiscordIDLTE applies the LTE predicate on the "discord_id" field.
+func DiscordIDLTE(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldDiscordID), v))
+	})
+}
+
+// DiscordIDContains applies the Contains predicate on the "discord_id" field.
+func DiscordIDContains(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldDiscordID), v))
+	})
+}
+
+// DiscordIDHasPrefix applies the HasPrefix predicate on the "discord_id" field.
+func DiscordIDHasPrefix(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldDiscordID), v))
+	})
+}
+
+// DiscordIDHasSuffix applies the HasSuffix predicate on the "discord_id" field.
+func DiscordIDHasSuffix(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldDiscordID), v))
+	})
+}
+
+// DiscordIDEqualFold applies the EqualFold predicate on the "discord_id" field.
+func DiscordIDEqualFold(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldDiscordID), v))
+	})
+}
+
+// DiscordIDContainsFold applies the ContainsFold predicate on the "discord_id" field.
+func DiscordIDContainsFold(v string) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldDiscordID), v))
 	})
 }
 

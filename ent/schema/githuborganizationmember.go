@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -15,8 +16,14 @@ type GithubOrganizationMember struct {
 func (GithubOrganizationMember) Fields() []ent.Field {
 	return []ent.Field{
 		field.Enum("role").
-			Values("admin", "member").
-			Default("member"),
+			NamedValues(
+				"Admin", "ADMIN",
+				"Member", "MEMBER",
+			).
+			Default("MEMBER").
+			Annotations(
+				entgql.OrderField("ROLE"),
+			),
 	}
 }
 
@@ -24,9 +31,11 @@ func (GithubOrganizationMember) Fields() []ent.Field {
 func (GithubOrganizationMember) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("organization", GithubOrganization.Type).
+			Annotations(entgql.Bind()).
 			Ref("members").
 			Unique(),
 		edge.From("account", GithubAccount.Type).
+			Annotations(entgql.Bind()).
 			Ref("organization_memberships").
 			Unique(),
 	}

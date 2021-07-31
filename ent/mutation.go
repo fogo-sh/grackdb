@@ -38,7 +38,8 @@ type DiscordAccountMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *string
+	id            *int
+	discord_id    *string
 	username      *string
 	discriminator *string
 	clearedFields map[string]struct{}
@@ -69,7 +70,7 @@ func newDiscordAccountMutation(c config, op Op, opts ...discordaccountOption) *D
 }
 
 // withDiscordAccountID sets the ID field of the mutation.
-func withDiscordAccountID(id string) discordaccountOption {
+func withDiscordAccountID(id int) discordaccountOption {
 	return func(m *DiscordAccountMutation) {
 		var (
 			err   error
@@ -119,19 +120,49 @@ func (m DiscordAccountMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of DiscordAccount entities.
-func (m *DiscordAccountMutation) SetID(id string) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
-func (m *DiscordAccountMutation) ID() (id string, exists bool) {
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DiscordAccountMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
 	return *m.id, true
+}
+
+// SetDiscordID sets the "discord_id" field.
+func (m *DiscordAccountMutation) SetDiscordID(s string) {
+	m.discord_id = &s
+}
+
+// DiscordID returns the value of the "discord_id" field in the mutation.
+func (m *DiscordAccountMutation) DiscordID() (r string, exists bool) {
+	v := m.discord_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDiscordID returns the old "discord_id" field's value of the DiscordAccount entity.
+// If the DiscordAccount object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DiscordAccountMutation) OldDiscordID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDiscordID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDiscordID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDiscordID: %w", err)
+	}
+	return oldValue.DiscordID, nil
+}
+
+// ResetDiscordID resets all changes to the "discord_id" field.
+func (m *DiscordAccountMutation) ResetDiscordID() {
+	m.discord_id = nil
 }
 
 // SetUsername sets the "username" field.
@@ -259,7 +290,10 @@ func (m *DiscordAccountMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DiscordAccountMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
+	if m.discord_id != nil {
+		fields = append(fields, discordaccount.FieldDiscordID)
+	}
 	if m.username != nil {
 		fields = append(fields, discordaccount.FieldUsername)
 	}
@@ -274,6 +308,8 @@ func (m *DiscordAccountMutation) Fields() []string {
 // schema.
 func (m *DiscordAccountMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case discordaccount.FieldDiscordID:
+		return m.DiscordID()
 	case discordaccount.FieldUsername:
 		return m.Username()
 	case discordaccount.FieldDiscriminator:
@@ -287,6 +323,8 @@ func (m *DiscordAccountMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *DiscordAccountMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case discordaccount.FieldDiscordID:
+		return m.OldDiscordID(ctx)
 	case discordaccount.FieldUsername:
 		return m.OldUsername(ctx)
 	case discordaccount.FieldDiscriminator:
@@ -300,6 +338,13 @@ func (m *DiscordAccountMutation) OldField(ctx context.Context, name string) (ent
 // type.
 func (m *DiscordAccountMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case discordaccount.FieldDiscordID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDiscordID(v)
+		return nil
 	case discordaccount.FieldUsername:
 		v, ok := value.(string)
 		if !ok {
@@ -363,6 +408,9 @@ func (m *DiscordAccountMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *DiscordAccountMutation) ResetField(name string) error {
 	switch name {
+	case discordaccount.FieldDiscordID:
+		m.ResetDiscordID()
+		return nil
 	case discordaccount.FieldUsername:
 		m.ResetUsername()
 		return nil
@@ -537,8 +585,8 @@ func (m GithubAccountMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
 func (m *GithubAccountMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
@@ -647,6 +695,7 @@ func (m *GithubAccountMutation) RemoveOrganizationMembershipIDs(ids ...int) {
 		m.removedorganization_memberships = make(map[int]struct{})
 	}
 	for i := range ids {
+		delete(m.organization_memberships, ids[i])
 		m.removedorganization_memberships[ids[i]] = struct{}{}
 	}
 }
@@ -974,8 +1023,8 @@ func (m GithubOrganizationMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
 func (m *GithubOrganizationMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
@@ -1094,6 +1143,7 @@ func (m *GithubOrganizationMutation) RemoveMemberIDs(ids ...int) {
 		m.removedmembers = make(map[int]struct{})
 	}
 	for i := range ids {
+		delete(m.members, ids[i])
 		m.removedmembers[ids[i]] = struct{}{}
 	}
 }
@@ -1429,8 +1479,8 @@ func (m GithubOrganizationMemberMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
 func (m *GithubOrganizationMemberMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
@@ -1766,8 +1816,8 @@ type UserMutation struct {
 	username                *string
 	avatar_url              *string
 	clearedFields           map[string]struct{}
-	discord_accounts        map[string]struct{}
-	removeddiscord_accounts map[string]struct{}
+	discord_accounts        map[int]struct{}
+	removeddiscord_accounts map[int]struct{}
 	cleareddiscord_accounts bool
 	github_accounts         map[int]struct{}
 	removedgithub_accounts  map[int]struct{}
@@ -1847,8 +1897,8 @@ func (m UserMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
 func (m *UserMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
@@ -1942,9 +1992,9 @@ func (m *UserMutation) ResetAvatarURL() {
 }
 
 // AddDiscordAccountIDs adds the "discord_accounts" edge to the DiscordAccount entity by ids.
-func (m *UserMutation) AddDiscordAccountIDs(ids ...string) {
+func (m *UserMutation) AddDiscordAccountIDs(ids ...int) {
 	if m.discord_accounts == nil {
-		m.discord_accounts = make(map[string]struct{})
+		m.discord_accounts = make(map[int]struct{})
 	}
 	for i := range ids {
 		m.discord_accounts[ids[i]] = struct{}{}
@@ -1962,17 +2012,18 @@ func (m *UserMutation) DiscordAccountsCleared() bool {
 }
 
 // RemoveDiscordAccountIDs removes the "discord_accounts" edge to the DiscordAccount entity by IDs.
-func (m *UserMutation) RemoveDiscordAccountIDs(ids ...string) {
+func (m *UserMutation) RemoveDiscordAccountIDs(ids ...int) {
 	if m.removeddiscord_accounts == nil {
-		m.removeddiscord_accounts = make(map[string]struct{})
+		m.removeddiscord_accounts = make(map[int]struct{})
 	}
 	for i := range ids {
+		delete(m.discord_accounts, ids[i])
 		m.removeddiscord_accounts[ids[i]] = struct{}{}
 	}
 }
 
 // RemovedDiscordAccounts returns the removed IDs of the "discord_accounts" edge to the DiscordAccount entity.
-func (m *UserMutation) RemovedDiscordAccountsIDs() (ids []string) {
+func (m *UserMutation) RemovedDiscordAccountsIDs() (ids []int) {
 	for id := range m.removeddiscord_accounts {
 		ids = append(ids, id)
 	}
@@ -1980,7 +2031,7 @@ func (m *UserMutation) RemovedDiscordAccountsIDs() (ids []string) {
 }
 
 // DiscordAccountsIDs returns the "discord_accounts" edge IDs in the mutation.
-func (m *UserMutation) DiscordAccountsIDs() (ids []string) {
+func (m *UserMutation) DiscordAccountsIDs() (ids []int) {
 	for id := range m.discord_accounts {
 		ids = append(ids, id)
 	}
@@ -2020,6 +2071,7 @@ func (m *UserMutation) RemoveGithubAccountIDs(ids ...int) {
 		m.removedgithub_accounts = make(map[int]struct{})
 	}
 	for i := range ids {
+		delete(m.github_accounts, ids[i])
 		m.removedgithub_accounts[ids[i]] = struct{}{}
 	}
 }

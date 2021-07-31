@@ -15,7 +15,9 @@ import (
 type DiscordAccount struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID string `json:"id,omitempty"`
+	ID int `json:"id,omitempty"`
+	// DiscordID holds the value of the "discord_id" field.
+	DiscordID string `json:"discord_id,omitempty"`
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
 	// Discriminator holds the value of the "discriminator" field.
@@ -54,7 +56,9 @@ func (*DiscordAccount) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case discordaccount.FieldID, discordaccount.FieldUsername, discordaccount.FieldDiscriminator:
+		case discordaccount.FieldID:
+			values[i] = new(sql.NullInt64)
+		case discordaccount.FieldDiscordID, discordaccount.FieldUsername, discordaccount.FieldDiscriminator:
 			values[i] = new(sql.NullString)
 		case discordaccount.ForeignKeys[0]: // user_discord_accounts
 			values[i] = new(sql.NullInt64)
@@ -74,10 +78,16 @@ func (da *DiscordAccount) assignValues(columns []string, values []interface{}) e
 	for i := range columns {
 		switch columns[i] {
 		case discordaccount.FieldID:
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
+			}
+			da.ID = int(value.Int64)
+		case discordaccount.FieldDiscordID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
+				return fmt.Errorf("unexpected type %T for field discord_id", values[i])
 			} else if value.Valid {
-				da.ID = value.String
+				da.DiscordID = value.String
 			}
 		case discordaccount.FieldUsername:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -131,6 +141,8 @@ func (da *DiscordAccount) String() string {
 	var builder strings.Builder
 	builder.WriteString("DiscordAccount(")
 	builder.WriteString(fmt.Sprintf("id=%v", da.ID))
+	builder.WriteString(", discord_id=")
+	builder.WriteString(da.DiscordID)
 	builder.WriteString(", username=")
 	builder.WriteString(da.Username)
 	builder.WriteString(", discriminator=")

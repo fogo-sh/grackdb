@@ -7,6 +7,8 @@ const (
 	Label = "discord_account"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldDiscordID holds the string denoting the discord_id field in the database.
+	FieldDiscordID = "discord_id"
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
 	// FieldDiscriminator holds the string denoting the discriminator field in the database.
@@ -27,6 +29,7 @@ const (
 // Columns holds all SQL columns for discordaccount fields.
 var Columns = []string{
 	FieldID,
+	FieldDiscordID,
 	FieldUsername,
 	FieldDiscriminator,
 }
@@ -53,8 +56,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DiscordIDValidator is a validator for the "discord_id" field. It is called by the builders before save.
+	DiscordIDValidator func(string) error
 	// DiscriminatorValidator is a validator for the "discriminator" field. It is called by the builders before save.
 	DiscriminatorValidator func(string) error
-	// IDValidator is a validator for the "id" field. It is called by the builders before save.
-	IDValidator func(string) error
 )

@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -16,15 +17,22 @@ func (GithubOrganization) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
 			Unique().
-			NotEmpty(),
+			NotEmpty().
+			Annotations(
+				entgql.OrderField("NAME"),
+			),
 		field.String("display_name").
-			Optional(),
+			Optional().
+			Annotations(
+				entgql.OrderField("DISPLAY_NAME"),
+			),
 	}
 }
 
 // Edges of the GithubOrganization.
 func (GithubOrganization) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("members", GithubOrganizationMember.Type),
+		edge.To("members", GithubOrganizationMember.Type).
+			Annotations(entgql.Bind()),
 	}
 }

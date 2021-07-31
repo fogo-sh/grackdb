@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -16,7 +17,10 @@ func (GithubAccount) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("username").
 			Unique().
-			NotEmpty(),
+			NotEmpty().
+			Annotations(
+				entgql.OrderField("USERNAME"),
+			),
 	}
 }
 
@@ -24,6 +28,7 @@ func (GithubAccount) Fields() []ent.Field {
 func (GithubAccount) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("owner", User.Type).
+			Annotations(entgql.Bind()).
 			Ref("github_accounts").
 			Required().
 			Unique(),

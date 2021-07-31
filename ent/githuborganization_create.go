@@ -81,7 +81,10 @@ func (goc *GithubOrganizationCreate) Save(ctx context.Context) (*GithubOrganizat
 				return nil, err
 			}
 			goc.mutation = mutation
-			node, err = goc.sqlSave(ctx)
+			if node, err = goc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
@@ -120,8 +123,8 @@ func (goc *GithubOrganizationCreate) check() error {
 func (goc *GithubOrganizationCreate) sqlSave(ctx context.Context) (*GithubOrganization, error) {
 	_node, _spec := goc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, goc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
@@ -209,15 +212,16 @@ func (gocb *GithubOrganizationCreateBulk) Save(ctx context.Context) ([]*GithubOr
 				} else {
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, gocb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				id := specs[i].ID.Value.(int64)
 				nodes[i].ID = int(id)
 				return nodes[i], nil
