@@ -45,9 +45,9 @@ input UserOrder {
 type User implements Node {
     id: ID!
     username: String!
-    avatar_url: String
-    discord_accounts: [DiscordAccount!]
-    github_accounts: [GithubAccount!]
+    avatarUrl: String
+    discordAccounts: [DiscordAccount!]
+    githubAccounts: [GithubAccount!]
 }
 
 type DiscordAccountConnection {
@@ -74,7 +74,7 @@ input DiscordAccountOrder {
 
 type DiscordAccount implements Node {
     id: ID!
-    discord_id: String!
+    discordId: String!
     username: String!
     discriminator: String!
     owner: User!
@@ -104,7 +104,7 @@ type GithubAccount implements Node {
     id: ID!
     username: String!
     owner: User!
-    organization_memberships: [GithubOrganizationMember!]
+    organizationMemberships: [GithubOrganizationMember!]
 }
 
 type GithubOrganizationMemberConnection {
@@ -158,7 +158,7 @@ input GithubOrganizationOrder {
 type GithubOrganization implements Node {
     id: ID!
     name: String!
-    display_name: String
+    displayName: String
     members: [GithubOrganizationMember!]
 }
 
@@ -174,7 +174,7 @@ type Query {
         orderBy: UserOrder
         where: UserWhereInput
     ): UserConnection
-    discord_accounts(
+    discordAccounts(
         after: Cursor
         first: Int
         before: Cursor
@@ -182,7 +182,7 @@ type Query {
         orderBy: DiscordAccountOrder
         where: DiscordAccountWhereInput
     ): DiscordAccountConnection
-    github_accounts(
+    githubAccounts(
         after: Cursor
         first: Int
         before: Cursor
@@ -190,7 +190,7 @@ type Query {
         orderBy: GithubAccountOrder
         where: GithubAccountWhereInput
     ): GithubAccountConnection
-    github_organization_members(
+    githubOrganizationMembers(
         after: Cursor
         first: Int
         before: Cursor
@@ -198,7 +198,7 @@ type Query {
         orderBy: GithubOrganizationMemberOrder
         where: GithubOrganizationMemberWhereInput
     ): GithubOrganizationMemberConnection
-    github_organizations(
+    githubOrganizations(
         after: Cursor
         first: Int
         before: Cursor

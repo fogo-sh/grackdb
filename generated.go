@@ -179,7 +179,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "DiscordAccount.discord_id":
+	case "DiscordAccount.discordId":
 		if e.complexity.DiscordAccount.DiscordID == nil {
 			break
 		}
@@ -256,7 +256,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GithubAccount.ID(childComplexity), true
 
-	case "GithubAccount.organization_memberships":
+	case "GithubAccount.organizationMemberships":
 		if e.complexity.GithubAccount.OrganizationMemberships == nil {
 			break
 		}
@@ -312,7 +312,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GithubAccountEdge.Node(childComplexity), true
 
-	case "GithubOrganization.display_name":
+	case "GithubOrganization.displayName":
 		if e.complexity.GithubOrganization.DisplayName == nil {
 			break
 		}
@@ -466,48 +466,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
 
-	case "Query.discord_accounts":
+	case "Query.discordAccounts":
 		if e.complexity.Query.DiscordAccounts == nil {
 			break
 		}
 
-		args, err := ec.field_Query_discord_accounts_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_discordAccounts_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
 		return e.complexity.Query.DiscordAccounts(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.DiscordAccountOrder), args["where"].(*ent.DiscordAccountWhereInput)), true
 
-	case "Query.github_accounts":
+	case "Query.githubAccounts":
 		if e.complexity.Query.GithubAccounts == nil {
 			break
 		}
 
-		args, err := ec.field_Query_github_accounts_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_githubAccounts_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
 		return e.complexity.Query.GithubAccounts(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.GithubAccountOrder), args["where"].(*ent.GithubAccountWhereInput)), true
 
-	case "Query.github_organization_members":
+	case "Query.githubOrganizationMembers":
 		if e.complexity.Query.GithubOrganizationMembers == nil {
 			break
 		}
 
-		args, err := ec.field_Query_github_organization_members_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_githubOrganizationMembers_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
 		return e.complexity.Query.GithubOrganizationMembers(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.GithubOrganizationMemberOrder), args["where"].(*ent.GithubOrganizationMemberWhereInput)), true
 
-	case "Query.github_organizations":
+	case "Query.githubOrganizations":
 		if e.complexity.Query.GithubOrganizations == nil {
 			break
 		}
 
-		args, err := ec.field_Query_github_organizations_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_githubOrganizations_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -550,21 +550,21 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Users(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.UserOrder), args["where"].(*ent.UserWhereInput)), true
 
-	case "User.avatar_url":
+	case "User.avatarUrl":
 		if e.complexity.User.AvatarURL == nil {
 			break
 		}
 
 		return e.complexity.User.AvatarURL(childComplexity), true
 
-	case "User.discord_accounts":
+	case "User.discordAccounts":
 		if e.complexity.User.DiscordAccounts == nil {
 			break
 		}
 
 		return e.complexity.User.DiscordAccounts(childComplexity), true
 
-	case "User.github_accounts":
+	case "User.githubAccounts":
 		if e.complexity.User.GithubAccounts == nil {
 			break
 		}
@@ -717,9 +717,9 @@ input UserOrder {
 type User implements Node {
     id: ID!
     username: String!
-    avatar_url: String
-    discord_accounts: [DiscordAccount!]
-    github_accounts: [GithubAccount!]
+    avatarUrl: String
+    discordAccounts: [DiscordAccount!]
+    githubAccounts: [GithubAccount!]
 }
 
 type DiscordAccountConnection {
@@ -746,7 +746,7 @@ input DiscordAccountOrder {
 
 type DiscordAccount implements Node {
     id: ID!
-    discord_id: String!
+    discordId: String!
     username: String!
     discriminator: String!
     owner: User!
@@ -776,7 +776,7 @@ type GithubAccount implements Node {
     id: ID!
     username: String!
     owner: User!
-    organization_memberships: [GithubOrganizationMember!]
+    organizationMemberships: [GithubOrganizationMember!]
 }
 
 type GithubOrganizationMemberConnection {
@@ -830,7 +830,7 @@ input GithubOrganizationOrder {
 type GithubOrganization implements Node {
     id: ID!
     name: String!
-    display_name: String
+    displayName: String
     members: [GithubOrganizationMember!]
 }
 
@@ -846,7 +846,7 @@ type Query {
         orderBy: UserOrder
         where: UserWhereInput
     ): UserConnection
-    discord_accounts(
+    discordAccounts(
         after: Cursor
         first: Int
         before: Cursor
@@ -854,7 +854,7 @@ type Query {
         orderBy: DiscordAccountOrder
         where: DiscordAccountWhereInput
     ): DiscordAccountConnection
-    github_accounts(
+    githubAccounts(
         after: Cursor
         first: Int
         before: Cursor
@@ -862,7 +862,7 @@ type Query {
         orderBy: GithubAccountOrder
         where: GithubAccountWhereInput
     ): GithubAccountConnection
-    github_organization_members(
+    githubOrganizationMembers(
         after: Cursor
         first: Int
         before: Cursor
@@ -870,7 +870,7 @@ type Query {
         orderBy: GithubOrganizationMemberOrder
         where: GithubOrganizationMemberWhereInput
     ): GithubOrganizationMemberConnection
-    github_organizations(
+    githubOrganizations(
         after: Cursor
         first: Int
         before: Cursor
@@ -878,7 +878,8 @@ type Query {
         orderBy: GithubOrganizationOrder
         where: GithubOrganizationWhereInput
     ): GithubOrganizationConnection
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "ent.graphql", Input: `"""
 GithubOrganizationMemberWhereInput is used for filtering GithubOrganizationMember objects.
 Input was generated by ent.
@@ -1163,7 +1164,7 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_discord_accounts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_discordAccounts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *ent.Cursor
@@ -1223,7 +1224,7 @@ func (ec *executionContext) field_Query_discord_accounts_args(ctx context.Contex
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_github_accounts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_githubAccounts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *ent.Cursor
@@ -1283,7 +1284,7 @@ func (ec *executionContext) field_Query_github_accounts_args(ctx context.Context
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_github_organization_members_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_githubOrganizationMembers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *ent.Cursor
@@ -1343,7 +1344,7 @@ func (ec *executionContext) field_Query_github_organization_members_args(ctx con
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_github_organizations_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_githubOrganizations_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *ent.Cursor
@@ -1566,7 +1567,7 @@ func (ec *executionContext) _DiscordAccount_id(ctx context.Context, field graphq
 	return ec.marshalNID2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _DiscordAccount_discord_id(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordAccount) (ret graphql.Marshaler) {
+func (ec *executionContext) _DiscordAccount_discordId(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordAccount) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1980,7 +1981,7 @@ func (ec *executionContext) _GithubAccount_owner(ctx context.Context, field grap
 	return ec.marshalNUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GithubAccount_organization_memberships(ctx context.Context, field graphql.CollectedField, obj *ent.GithubAccount) (ret graphql.Marshaler) {
+func (ec *executionContext) _GithubAccount_organizationMemberships(ctx context.Context, field graphql.CollectedField, obj *ent.GithubAccount) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2251,7 +2252,7 @@ func (ec *executionContext) _GithubOrganization_name(ctx context.Context, field 
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GithubOrganization_display_name(ctx context.Context, field graphql.CollectedField, obj *ent.GithubOrganization) (ret graphql.Marshaler) {
+func (ec *executionContext) _GithubOrganization_displayName(ctx context.Context, field graphql.CollectedField, obj *ent.GithubOrganization) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3047,7 +3048,7 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	return ec.marshalOUserConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUserConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_discord_accounts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_discordAccounts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3064,7 +3065,7 @@ func (ec *executionContext) _Query_discord_accounts(ctx context.Context, field g
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_discord_accounts_args(ctx, rawArgs)
+	args, err := ec.field_Query_discordAccounts_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -3086,7 +3087,7 @@ func (ec *executionContext) _Query_discord_accounts(ctx context.Context, field g
 	return ec.marshalODiscordAccountConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccountConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_github_accounts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_githubAccounts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3103,7 +3104,7 @@ func (ec *executionContext) _Query_github_accounts(ctx context.Context, field gr
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_github_accounts_args(ctx, rawArgs)
+	args, err := ec.field_Query_githubAccounts_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -3125,7 +3126,7 @@ func (ec *executionContext) _Query_github_accounts(ctx context.Context, field gr
 	return ec.marshalOGithubAccountConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubAccountConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_github_organization_members(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_githubOrganizationMembers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3142,7 +3143,7 @@ func (ec *executionContext) _Query_github_organization_members(ctx context.Conte
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_github_organization_members_args(ctx, rawArgs)
+	args, err := ec.field_Query_githubOrganizationMembers_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -3164,7 +3165,7 @@ func (ec *executionContext) _Query_github_organization_members(ctx context.Conte
 	return ec.marshalOGithubOrganizationMemberConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationMemberConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_github_organizations(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_githubOrganizations(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3181,7 +3182,7 @@ func (ec *executionContext) _Query_github_organizations(ctx context.Context, fie
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_github_organizations_args(ctx, rawArgs)
+	args, err := ec.field_Query_githubOrganizations_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -3344,7 +3345,7 @@ func (ec *executionContext) _User_username(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_avatar_url(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_avatarUrl(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3376,7 +3377,7 @@ func (ec *executionContext) _User_avatar_url(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_discord_accounts(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_discordAccounts(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3408,7 +3409,7 @@ func (ec *executionContext) _User_discord_accounts(ctx context.Context, field gr
 	return ec.marshalODiscordAccount2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccountᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_github_accounts(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_githubAccounts(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6418,8 +6419,8 @@ func (ec *executionContext) _DiscordAccount(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "discord_id":
-			out.Values[i] = ec._DiscordAccount_discord_id(ctx, field, obj)
+		case "discordId":
+			out.Values[i] = ec._DiscordAccount_discordId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -6556,7 +6557,7 @@ func (ec *executionContext) _GithubAccount(ctx context.Context, sel ast.Selectio
 				}
 				return res
 			})
-		case "organization_memberships":
+		case "organizationMemberships":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -6564,7 +6565,7 @@ func (ec *executionContext) _GithubAccount(ctx context.Context, sel ast.Selectio
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._GithubAccount_organization_memberships(ctx, field, obj)
+				res = ec._GithubAccount_organizationMemberships(ctx, field, obj)
 				return res
 			})
 		default:
@@ -6662,8 +6663,8 @@ func (ec *executionContext) _GithubOrganization(ctx context.Context, sel ast.Sel
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "display_name":
-			out.Values[i] = ec._GithubOrganization_display_name(ctx, field, obj)
+		case "displayName":
+			out.Values[i] = ec._GithubOrganization_displayName(ctx, field, obj)
 		case "members":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -6959,7 +6960,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_users(ctx, field)
 				return res
 			})
-		case "discord_accounts":
+		case "discordAccounts":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -6967,10 +6968,10 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_discord_accounts(ctx, field)
+				res = ec._Query_discordAccounts(ctx, field)
 				return res
 			})
-		case "github_accounts":
+		case "githubAccounts":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -6978,10 +6979,10 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_github_accounts(ctx, field)
+				res = ec._Query_githubAccounts(ctx, field)
 				return res
 			})
-		case "github_organization_members":
+		case "githubOrganizationMembers":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -6989,10 +6990,10 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_github_organization_members(ctx, field)
+				res = ec._Query_githubOrganizationMembers(ctx, field)
 				return res
 			})
-		case "github_organizations":
+		case "githubOrganizations":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -7000,7 +7001,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_github_organizations(ctx, field)
+				res = ec._Query_githubOrganizations(ctx, field)
 				return res
 			})
 		case "__type":
@@ -7039,9 +7040,9 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "avatar_url":
-			out.Values[i] = ec._User_avatar_url(ctx, field, obj)
-		case "discord_accounts":
+		case "avatarUrl":
+			out.Values[i] = ec._User_avatarUrl(ctx, field, obj)
+		case "discordAccounts":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -7049,10 +7050,10 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._User_discord_accounts(ctx, field, obj)
+				res = ec._User_discordAccounts(ctx, field, obj)
 				return res
 			})
-		case "github_accounts":
+		case "githubAccounts":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -7060,7 +7061,7 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._User_github_accounts(ctx, field, obj)
+				res = ec._User_githubAccounts(ctx, field, obj)
 				return res
 			})
 		default:
