@@ -1,4 +1,4 @@
-package grackdb
+package graphql
 
 import (
 	"github.com/fogo-sh/grackdb/ent"

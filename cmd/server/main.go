@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
 	"github.com/fogo-sh/grackdb/ent/migrate"
+	"github.com/fogo-sh/grackdb/graphql"
 
 	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// Configure the server and start listening on :8081.
-	srv := handler.NewDefaultServer(grackdb.NewSchema(client))
+	srv := handler.NewDefaultServer(graphql.NewSchema(client))
 	http.Handle("/",
 		playground.Handler("GrackDB", "/query"),
 	)
