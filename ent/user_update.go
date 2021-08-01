@@ -12,6 +12,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/predicate"
+	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -84,6 +85,21 @@ func (uu *UserUpdate) AddGithubAccounts(g ...*GithubAccount) *UserUpdate {
 	return uu.AddGithubAccountIDs(ids...)
 }
 
+// AddProjectContributionIDs adds the "project_contributions" edge to the ProjectContributor entity by IDs.
+func (uu *UserUpdate) AddProjectContributionIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddProjectContributionIDs(ids...)
+	return uu
+}
+
+// AddProjectContributions adds the "project_contributions" edges to the ProjectContributor entity.
+func (uu *UserUpdate) AddProjectContributions(p ...*ProjectContributor) *UserUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uu.AddProjectContributionIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -129,6 +145,27 @@ func (uu *UserUpdate) RemoveGithubAccounts(g ...*GithubAccount) *UserUpdate {
 		ids[i] = g[i].ID
 	}
 	return uu.RemoveGithubAccountIDs(ids...)
+}
+
+// ClearProjectContributions clears all "project_contributions" edges to the ProjectContributor entity.
+func (uu *UserUpdate) ClearProjectContributions() *UserUpdate {
+	uu.mutation.ClearProjectContributions()
+	return uu
+}
+
+// RemoveProjectContributionIDs removes the "project_contributions" edge to ProjectContributor entities by IDs.
+func (uu *UserUpdate) RemoveProjectContributionIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveProjectContributionIDs(ids...)
+	return uu
+}
+
+// RemoveProjectContributions removes "project_contributions" edges to ProjectContributor entities.
+func (uu *UserUpdate) RemoveProjectContributions(p ...*ProjectContributor) *UserUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uu.RemoveProjectContributionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -328,6 +365,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.ProjectContributionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProjectContributionsTable,
+			Columns: []string{user.ProjectContributionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectcontributor.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedProjectContributionsIDs(); len(nodes) > 0 && !uu.mutation.ProjectContributionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProjectContributionsTable,
+			Columns: []string{user.ProjectContributionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectcontributor.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.ProjectContributionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProjectContributionsTable,
+			Columns: []string{user.ProjectContributionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectcontributor.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -403,6 +494,21 @@ func (uuo *UserUpdateOne) AddGithubAccounts(g ...*GithubAccount) *UserUpdateOne 
 	return uuo.AddGithubAccountIDs(ids...)
 }
 
+// AddProjectContributionIDs adds the "project_contributions" edge to the ProjectContributor entity by IDs.
+func (uuo *UserUpdateOne) AddProjectContributionIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddProjectContributionIDs(ids...)
+	return uuo
+}
+
+// AddProjectContributions adds the "project_contributions" edges to the ProjectContributor entity.
+func (uuo *UserUpdateOne) AddProjectContributions(p ...*ProjectContributor) *UserUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uuo.AddProjectContributionIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -448,6 +554,27 @@ func (uuo *UserUpdateOne) RemoveGithubAccounts(g ...*GithubAccount) *UserUpdateO
 		ids[i] = g[i].ID
 	}
 	return uuo.RemoveGithubAccountIDs(ids...)
+}
+
+// ClearProjectContributions clears all "project_contributions" edges to the ProjectContributor entity.
+func (uuo *UserUpdateOne) ClearProjectContributions() *UserUpdateOne {
+	uuo.mutation.ClearProjectContributions()
+	return uuo
+}
+
+// RemoveProjectContributionIDs removes the "project_contributions" edge to ProjectContributor entities by IDs.
+func (uuo *UserUpdateOne) RemoveProjectContributionIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveProjectContributionIDs(ids...)
+	return uuo
+}
+
+// RemoveProjectContributions removes "project_contributions" edges to ProjectContributor entities.
+func (uuo *UserUpdateOne) RemoveProjectContributions(p ...*ProjectContributor) *UserUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uuo.RemoveProjectContributionIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -663,6 +790,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: githubaccount.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.ProjectContributionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProjectContributionsTable,
+			Columns: []string{user.ProjectContributionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectcontributor.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedProjectContributionsIDs(); len(nodes) > 0 && !uuo.mutation.ProjectContributionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProjectContributionsTable,
+			Columns: []string{user.ProjectContributionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectcontributor.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.ProjectContributionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProjectContributionsTable,
+			Columns: []string{user.ProjectContributionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectcontributor.FieldID,
 				},
 			},
 		}

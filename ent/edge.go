@@ -52,6 +52,30 @@ func (gom *GithubOrganizationMember) Account(ctx context.Context) (*GithubAccoun
 	return result, MaskNotFound(err)
 }
 
+func (pr *Project) Contributors(ctx context.Context) ([]*ProjectContributor, error) {
+	result, err := pr.Edges.ContributorsOrErr()
+	if IsNotLoaded(err) {
+		result, err = pr.QueryContributors().All(ctx)
+	}
+	return result, err
+}
+
+func (pc *ProjectContributor) Project(ctx context.Context) (*Project, error) {
+	result, err := pc.Edges.ProjectOrErr()
+	if IsNotLoaded(err) {
+		result, err = pc.QueryProject().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (pc *ProjectContributor) User(ctx context.Context) (*User, error) {
+	result, err := pc.Edges.UserOrErr()
+	if IsNotLoaded(err) {
+		result, err = pc.QueryUser().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (u *User) DiscordAccounts(ctx context.Context) ([]*DiscordAccount, error) {
 	result, err := u.Edges.DiscordAccountsOrErr()
 	if IsNotLoaded(err) {
@@ -64,6 +88,14 @@ func (u *User) GithubAccounts(ctx context.Context) ([]*GithubAccount, error) {
 	result, err := u.Edges.GithubAccountsOrErr()
 	if IsNotLoaded(err) {
 		result, err = u.QueryGithubAccounts().All(ctx)
+	}
+	return result, err
+}
+
+func (u *User) ProjectContributions(ctx context.Context) ([]*ProjectContributor, error) {
+	result, err := u.Edges.ProjectContributionsOrErr()
+	if IsNotLoaded(err) {
+		result, err = u.QueryProjectContributions().All(ctx)
 	}
 	return result, err
 }

@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/privacy"
+	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	_ "github.com/fogo-sh/grackdb/ent/runtime"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -100,5 +102,58 @@ func main() {
 		Save(ctx)
 	if err != nil {
 		log.Fatalf("failed creating test github org membership: %v", err)
+	}
+
+	borik, err := client.Project.Create().
+		SetName("Borik").
+		SetDescription("a discord bot, written using discordgo, for ✨ breaking images ✨").
+		SetStartDate(time.Date(2020, time.November, 5, 0, 0, 0, 0, time.UTC)).
+		Save(ctx)
+	if err != nil {
+		log.Fatalf("failed creating test project: %v", err)
+	}
+
+	_, err = client.ProjectContributor.Create().
+		SetRole(projectcontributor.RoleOwner).
+		SetProject(borik).
+		SetUser(riley).
+		Save(ctx)
+	if err != nil {
+		log.Fatalf("failed creating test project contributor: %v", err)
+	}
+
+	_, err = client.ProjectContributor.Create().
+		SetRole(projectcontributor.RoleOwner).
+		SetProject(borik).
+		SetUser(jack).
+		Save(ctx)
+	if err != nil {
+		log.Fatalf("failed creating test project contributor: %v", err)
+	}
+
+	grackDb, err := client.Project.Create().
+		SetName("GrackDB").
+		SetStartDate(time.Date(2021, time.July, 30, 0, 0, 0, 0, time.UTC)).
+		Save(ctx)
+	if err != nil {
+		log.Fatalf("failed creating test project: %v", err)
+	}
+
+	_, err = client.ProjectContributor.Create().
+		SetRole(projectcontributor.RoleOwner).
+		SetProject(grackDb).
+		SetUser(riley).
+		Save(ctx)
+	if err != nil {
+		log.Fatalf("failed creating test project contributor: %v", err)
+	}
+
+	_, err = client.ProjectContributor.Create().
+		SetRole(projectcontributor.RoleOwner).
+		SetProject(grackDb).
+		SetUser(jack).
+		Save(ctx)
+	if err != nil {
+		log.Fatalf("failed creating test project contributor: %v", err)
 	}
 }

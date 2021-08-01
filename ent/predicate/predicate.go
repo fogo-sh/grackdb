@@ -18,5 +18,11 @@ type GithubOrganization func(*sql.Selector)
 // GithubOrganizationMember is the predicate function for githuborganizationmember builders.
 type GithubOrganizationMember func(*sql.Selector)
 
+// Project is the predicate function for project builders.
+type Project func(*sql.Selector)
+
+// ProjectContributor is the predicate function for projectcontributor builders.
+type ProjectContributor func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

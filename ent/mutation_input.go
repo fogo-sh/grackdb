@@ -2,7 +2,12 @@
 
 package ent
 
-import "github.com/fogo-sh/grackdb/ent/githuborganizationmember"
+import (
+	"time"
+
+	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
+	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+)
 
 // CreateDiscordAccountInput represents a mutation input for creating discordaccounts.
 type CreateDiscordAccountInput struct {
@@ -254,12 +259,159 @@ func (u *GithubOrganizationMemberUpdateOne) SetInput(i UpdateGithubOrganizationM
 	return u
 }
 
+// CreateProjectInput represents a mutation input for creating projects.
+type CreateProjectInput struct {
+	Name         string
+	Description  *string
+	StartDate    time.Time
+	EndDate      *time.Time
+	Contributors []int
+}
+
+// Mutate applies the CreateProjectInput on the ProjectCreate builder.
+func (i *CreateProjectInput) Mutate(m *ProjectCreate) {
+	m.SetName(i.Name)
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
+	m.SetStartDate(i.StartDate)
+	if v := i.EndDate; v != nil {
+		m.SetEndDate(*v)
+	}
+	if ids := i.Contributors; len(ids) > 0 {
+		m.AddContributorIDs(ids...)
+	}
+}
+
+// SetInput applies the change-set in the CreateProjectInput on the create builder.
+func (c *ProjectCreate) SetInput(i CreateProjectInput) *ProjectCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateProjectInput represents a mutation input for updating projects.
+type UpdateProjectInput struct {
+	Name                 *string
+	Description          *string
+	ClearDescription     bool
+	StartDate            *time.Time
+	EndDate              *time.Time
+	ClearEndDate         bool
+	AddContributorIDs    []int
+	RemoveContributorIDs []int
+}
+
+// Mutate applies the UpdateProjectInput on the ProjectMutation.
+func (i *UpdateProjectInput) Mutate(m *ProjectMutation) {
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if i.ClearDescription {
+		m.ClearDescription()
+	}
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
+	if v := i.StartDate; v != nil {
+		m.SetStartDate(*v)
+	}
+	if i.ClearEndDate {
+		m.ClearEndDate()
+	}
+	if v := i.EndDate; v != nil {
+		m.SetEndDate(*v)
+	}
+	if ids := i.AddContributorIDs; len(ids) > 0 {
+		m.AddContributorIDs(ids...)
+	}
+	if ids := i.RemoveContributorIDs; len(ids) > 0 {
+		m.RemoveContributorIDs(ids...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateProjectInput on the update builder.
+func (u *ProjectUpdate) SetInput(i UpdateProjectInput) *ProjectUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateProjectInput on the update-one builder.
+func (u *ProjectUpdateOne) SetInput(i UpdateProjectInput) *ProjectUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// CreateProjectContributorInput represents a mutation input for creating projectcontributors.
+type CreateProjectContributorInput struct {
+	Role    projectcontributor.Role
+	Project *int
+	User    *int
+}
+
+// Mutate applies the CreateProjectContributorInput on the ProjectContributorCreate builder.
+func (i *CreateProjectContributorInput) Mutate(m *ProjectContributorCreate) {
+	m.SetRole(i.Role)
+	if v := i.Project; v != nil {
+		m.SetProjectID(*v)
+	}
+	if v := i.User; v != nil {
+		m.SetUserID(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateProjectContributorInput on the create builder.
+func (c *ProjectContributorCreate) SetInput(i CreateProjectContributorInput) *ProjectContributorCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateProjectContributorInput represents a mutation input for updating projectcontributors.
+type UpdateProjectContributorInput struct {
+	Role         *projectcontributor.Role
+	Project      *int
+	ClearProject bool
+	User         *int
+	ClearUser    bool
+}
+
+// Mutate applies the UpdateProjectContributorInput on the ProjectContributorMutation.
+func (i *UpdateProjectContributorInput) Mutate(m *ProjectContributorMutation) {
+	if v := i.Role; v != nil {
+		m.SetRole(*v)
+	}
+	if i.ClearProject {
+		m.ClearProject()
+	}
+	if v := i.Project; v != nil {
+		m.SetProjectID(*v)
+	}
+	if i.ClearUser {
+		m.ClearUser()
+	}
+	if v := i.User; v != nil {
+		m.SetUserID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateProjectContributorInput on the update builder.
+func (u *ProjectContributorUpdate) SetInput(i UpdateProjectContributorInput) *ProjectContributorUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateProjectContributorInput on the update-one builder.
+func (u *ProjectContributorUpdateOne) SetInput(i UpdateProjectContributorInput) *ProjectContributorUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
 // CreateUserInput represents a mutation input for creating users.
 type CreateUserInput struct {
-	Username        string
-	AvatarURL       *string
-	DiscordAccounts []int
-	GithubAccounts  []int
+	Username             string
+	AvatarURL            *string
+	DiscordAccounts      []int
+	GithubAccounts       []int
+	ProjectContributions []int
 }
 
 // Mutate applies the CreateUserInput on the UserCreate builder.
@@ -274,6 +426,9 @@ func (i *CreateUserInput) Mutate(m *UserCreate) {
 	if ids := i.GithubAccounts; len(ids) > 0 {
 		m.AddGithubAccountIDs(ids...)
 	}
+	if ids := i.ProjectContributions; len(ids) > 0 {
+		m.AddProjectContributionIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the CreateUserInput on the create builder.
@@ -284,13 +439,15 @@ func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
 
 // UpdateUserInput represents a mutation input for updating users.
 type UpdateUserInput struct {
-	Username                *string
-	AvatarURL               *string
-	ClearAvatarURL          bool
-	AddDiscordAccountIDs    []int
-	RemoveDiscordAccountIDs []int
-	AddGithubAccountIDs     []int
-	RemoveGithubAccountIDs  []int
+	Username                     *string
+	AvatarURL                    *string
+	ClearAvatarURL               bool
+	AddDiscordAccountIDs         []int
+	RemoveDiscordAccountIDs      []int
+	AddGithubAccountIDs          []int
+	RemoveGithubAccountIDs       []int
+	AddProjectContributionIDs    []int
+	RemoveProjectContributionIDs []int
 }
 
 // Mutate applies the UpdateUserInput on the UserMutation.
@@ -315,6 +472,12 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	}
 	if ids := i.RemoveGithubAccountIDs; len(ids) > 0 {
 		m.RemoveGithubAccountIDs(ids...)
+	}
+	if ids := i.AddProjectContributionIDs; len(ids) > 0 {
+		m.AddProjectContributionIDs(ids...)
+	}
+	if ids := i.RemoveProjectContributionIDs; len(ids) > 0 {
+		m.RemoveProjectContributionIDs(ids...)
 	}
 }
 

@@ -35,6 +35,8 @@ func (User) Edges() []ent.Edge {
 			Annotations(entgql.MapsTo("discordAccounts")),
 		edge.To("github_accounts", GithubAccount.Type).
 			Annotations(entgql.MapsTo("githubAccounts")),
+		edge.To("project_contributions", ProjectContributor.Type).
+			Annotations(entgql.MapsTo("projectContributions")),
 	}
 }
 

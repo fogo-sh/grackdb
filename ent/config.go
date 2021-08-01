@@ -28,6 +28,8 @@ type hooks struct {
 	GithubAccount            []ent.Hook
 	GithubOrganization       []ent.Hook
 	GithubOrganizationMember []ent.Hook
+	Project                  []ent.Hook
+	ProjectContributor       []ent.Hook
 	User                     []ent.Hook
 }
 

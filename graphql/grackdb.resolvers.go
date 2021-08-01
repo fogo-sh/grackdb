@@ -46,6 +46,20 @@ func (r *mutationResolver) CreateGithubOrganizationMember(ctx context.Context, i
 		Save(ctx)
 }
 
+func (r *mutationResolver) CreateProject(ctx context.Context, input ent.CreateProjectInput) (*ent.Project, error) {
+	return ent.FromContext(ctx).Project.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
+func (r *mutationResolver) CreateProjectContributor(ctx context.Context, input ent.CreateProjectContributorInput) (*ent.ProjectContributor, error) {
+	return ent.FromContext(ctx).ProjectContributor.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
 	return r.client.Noder(ctx, id)
 }
@@ -91,6 +105,22 @@ func (r *queryResolver) GithubOrganizations(ctx context.Context, after *ent.Curs
 		Paginate(ctx, after, first, before, last,
 			ent.WithGithubOrganizationOrder(orderBy),
 			ent.WithGithubOrganizationFilter(where.Filter),
+		)
+}
+
+func (r *queryResolver) Projects(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectOrder, where *ent.ProjectWhereInput) (*ent.ProjectConnection, error) {
+	return r.client.Project.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithProjectOrder(orderBy),
+			ent.WithProjectFilter(where.Filter),
+		)
+}
+
+func (r *queryResolver) ProjectContributors(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectContributorOrder, where *ent.ProjectContributorWhereInput) (*ent.ProjectContributorConnection, error) {
+	return r.client.ProjectContributor.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithProjectContributorOrder(orderBy),
+			ent.WithProjectContributorFilter(where.Filter),
 		)
 }
 

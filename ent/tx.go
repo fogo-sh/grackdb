@@ -20,6 +20,10 @@ type Tx struct {
 	GithubOrganization *GithubOrganizationClient
 	// GithubOrganizationMember is the client for interacting with the GithubOrganizationMember builders.
 	GithubOrganizationMember *GithubOrganizationMemberClient
+	// Project is the client for interacting with the Project builders.
+	Project *ProjectClient
+	// ProjectContributor is the client for interacting with the ProjectContributor builders.
+	ProjectContributor *ProjectContributorClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -161,6 +165,8 @@ func (tx *Tx) init() {
 	tx.GithubAccount = NewGithubAccountClient(tx.config)
 	tx.GithubOrganization = NewGithubOrganizationClient(tx.config)
 	tx.GithubOrganizationMember = NewGithubOrganizationMemberClient(tx.config)
+	tx.Project = NewProjectClient(tx.config)
+	tx.ProjectContributor = NewProjectContributorClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

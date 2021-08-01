@@ -97,6 +97,50 @@ func (gom *GithubOrganizationMemberQuery) collectField(ctx *graphql.OperationCon
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (pr *ProjectQuery) CollectFields(ctx context.Context, satisfies ...string) *ProjectQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		pr = pr.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return pr
+}
+
+func (pr *ProjectQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *ProjectQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "contributors":
+			pr = pr.WithContributors(func(query *ProjectContributorQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
+	return pr
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (pc *ProjectContributorQuery) CollectFields(ctx context.Context, satisfies ...string) *ProjectContributorQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		pc = pc.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return pc
+}
+
+func (pc *ProjectContributorQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *ProjectContributorQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "project":
+			pc = pc.WithProject(func(query *ProjectQuery) {
+				query.collectField(ctx, field)
+			})
+		case "user":
+			pc = pc.WithUser(func(query *UserQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
+	return pc
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (u *UserQuery) CollectFields(ctx context.Context, satisfies ...string) *UserQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		u = u.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
@@ -113,6 +157,10 @@ func (u *UserQuery) collectField(ctx *graphql.OperationContext, field graphql.Co
 			})
 		case "githubAccounts":
 			u = u.WithGithubAccounts(func(query *GithubAccountQuery) {
+				query.collectField(ctx, field)
+			})
+		case "projectContributions":
+			u = u.WithProjectContributions(func(query *ProjectContributorQuery) {
 				query.collectField(ctx, field)
 			})
 		}

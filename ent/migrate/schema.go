@@ -89,6 +89,47 @@ var (
 			},
 		},
 	}
+	// ProjectsColumns holds the columns for the "projects" table.
+	ProjectsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "start_date", Type: field.TypeTime},
+		{Name: "end_date", Type: field.TypeTime, Nullable: true},
+	}
+	// ProjectsTable holds the schema information for the "projects" table.
+	ProjectsTable = &schema.Table{
+		Name:       "projects",
+		Columns:    ProjectsColumns,
+		PrimaryKey: []*schema.Column{ProjectsColumns[0]},
+	}
+	// ProjectContributorsColumns holds the columns for the "project_contributors" table.
+	ProjectContributorsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"OWNER", "CONTRIBUTOR"}},
+		{Name: "project_contributors", Type: field.TypeInt, Nullable: true},
+		{Name: "user_project_contributions", Type: field.TypeInt, Nullable: true},
+	}
+	// ProjectContributorsTable holds the schema information for the "project_contributors" table.
+	ProjectContributorsTable = &schema.Table{
+		Name:       "project_contributors",
+		Columns:    ProjectContributorsColumns,
+		PrimaryKey: []*schema.Column{ProjectContributorsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "project_contributors_projects_contributors",
+				Columns:    []*schema.Column{ProjectContributorsColumns[2]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "project_contributors_users_project_contributions",
+				Columns:    []*schema.Column{ProjectContributorsColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -107,6 +148,8 @@ var (
 		GithubAccountsTable,
 		GithubOrganizationsTable,
 		GithubOrganizationMembersTable,
+		ProjectsTable,
+		ProjectContributorsTable,
 		UsersTable,
 	}
 )
@@ -116,4 +159,6 @@ func init() {
 	GithubAccountsTable.ForeignKeys[0].RefTable = UsersTable
 	GithubOrganizationMembersTable.ForeignKeys[0].RefTable = GithubAccountsTable
 	GithubOrganizationMembersTable.ForeignKeys[1].RefTable = GithubOrganizationsTable
+	ProjectContributorsTable.ForeignKeys[0].RefTable = ProjectsTable
+	ProjectContributorsTable.ForeignKeys[1].RefTable = UsersTable
 }

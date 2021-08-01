@@ -260,6 +260,54 @@ func (f GithubOrganizationMemberMutationRuleFunc) EvalMutation(ctx context.Conte
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.GithubOrganizationMemberMutation", m)
 }
 
+// The ProjectQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type ProjectQueryRuleFunc func(context.Context, *ent.ProjectQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f ProjectQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ProjectQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ProjectQuery", q)
+}
+
+// The ProjectMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type ProjectMutationRuleFunc func(context.Context, *ent.ProjectMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f ProjectMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.ProjectMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ProjectMutation", m)
+}
+
+// The ProjectContributorQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type ProjectContributorQueryRuleFunc func(context.Context, *ent.ProjectContributorQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f ProjectContributorQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ProjectContributorQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ProjectContributorQuery", q)
+}
+
+// The ProjectContributorMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type ProjectContributorMutationRuleFunc func(context.Context, *ent.ProjectContributorMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f ProjectContributorMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.ProjectContributorMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ProjectContributorMutation", m)
+}
+
 // The UserQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type UserQueryRuleFunc func(context.Context, *ent.UserQuery) error

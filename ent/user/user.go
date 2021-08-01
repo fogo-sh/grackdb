@@ -19,6 +19,8 @@ const (
 	EdgeDiscordAccounts = "discord_accounts"
 	// EdgeGithubAccounts holds the string denoting the github_accounts edge name in mutations.
 	EdgeGithubAccounts = "github_accounts"
+	// EdgeProjectContributions holds the string denoting the project_contributions edge name in mutations.
+	EdgeProjectContributions = "project_contributions"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// DiscordAccountsTable is the table the holds the discord_accounts relation/edge.
@@ -35,6 +37,13 @@ const (
 	GithubAccountsInverseTable = "github_accounts"
 	// GithubAccountsColumn is the table column denoting the github_accounts relation/edge.
 	GithubAccountsColumn = "user_github_accounts"
+	// ProjectContributionsTable is the table the holds the project_contributions relation/edge.
+	ProjectContributionsTable = "project_contributors"
+	// ProjectContributionsInverseTable is the table name for the ProjectContributor entity.
+	// It exists in this package in order to avoid circular dependency with the "projectcontributor" package.
+	ProjectContributionsInverseTable = "project_contributors"
+	// ProjectContributionsColumn is the table column denoting the project_contributions relation/edge.
+	ProjectContributionsColumn = "user_project_contributions"
 )
 
 // Columns holds all SQL columns for user fields.

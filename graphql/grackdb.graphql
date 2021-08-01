@@ -48,6 +48,7 @@ type User implements Node {
     avatarUrl: String
     discordAccounts: [DiscordAccount!]
     githubAccounts: [GithubAccount!]
+    projectContributions: [ProjectContributor!]
 }
 
 type DiscordAccountConnection {
@@ -172,6 +173,70 @@ type AuthProvider {
     url: String!
 }
 
+type ProjectConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [ProjectEdge]
+}
+
+type ProjectEdge {
+    node: Project
+    cursor: Cursor!
+}
+
+enum ProjectOrderField {
+    NAME
+    DESCRIPTION
+    START_DATE
+    END_DATE
+}
+
+input ProjectOrder {
+    direction: OrderDirection!
+    field: ProjectOrderField
+}
+
+type Project implements Node {
+    id: ID!
+    name: String!
+    description: String
+    startDate: Time!
+    endDate: Time
+    contributors: [ProjectContributor!]
+}
+
+enum ProjectContributorRole {
+    OWNER
+    CONTRIBUTOR
+}
+
+type ProjectContributorConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [ProjectContributorEdge]
+}
+
+type ProjectContributorEdge {
+    node: ProjectContributor
+    cursor: Cursor!
+}
+
+enum ProjectContributorOrderField {
+    ROLE
+}
+
+input ProjectContributorOrder {
+    direction: OrderDirection!
+    field: ProjectContributorOrderField
+}
+
+type ProjectContributor implements Node {
+    id: ID!
+    role: ProjectContributorRole!
+    project: Project!
+    user: User!
+}
+
 type Query {
     node(id: ID!): Node
     nodes(ids: [ID!]!): [Node]!
@@ -217,6 +282,23 @@ type Query {
         where: GithubOrganizationWhereInput
     ): GithubOrganizationConnection
 
+    projects(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: ProjectOrder
+        where: ProjectWhereInput
+    ): ProjectConnection
+    projectContributors(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: ProjectContributorOrder
+        where: ProjectContributorWhereInput
+    ): ProjectContributorConnection
+
     availableAuthProviders: [AuthProvider]
     currentUser: User
 }
@@ -249,10 +331,25 @@ input CreateGithubOrganizationMemberInput {
     organization: Int!
 }
 
+input CreateProjectInput {
+    name: String!
+    description: String
+    startDate: Time!
+    endDate: Time
+}
+
+input CreateProjectContributorInput {
+    role: ProjectContributorRole!
+    project: Int!
+    user: Int!
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
     createGithubAccount(input: CreateGithubAccountInput!): GithubAccount!
     createGithubOrganization(input: CreateGithubOrganizationInput!): GithubOrganization!
     createGithubOrganizationMember(input: CreateGithubOrganizationMemberInput!): GithubOrganizationMember!
+    createProject(input: CreateProjectInput!): Project!
+    createProjectContributor(input: CreateProjectContributorInput!): ProjectContributor!
 }

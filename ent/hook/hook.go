@@ -61,6 +61,32 @@ func (f GithubOrganizationMemberFunc) Mutate(ctx context.Context, m ent.Mutation
 	return f(ctx, mv)
 }
 
+// The ProjectFunc type is an adapter to allow the use of ordinary
+// function as Project mutator.
+type ProjectFunc func(context.Context, *ent.ProjectMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ProjectMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The ProjectContributorFunc type is an adapter to allow the use of ordinary
+// function as ProjectContributor mutator.
+type ProjectContributorFunc func(context.Context, *ent.ProjectContributorMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectContributorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ProjectContributorMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectContributorMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

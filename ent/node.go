@@ -18,6 +18,8 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
+	"github.com/fogo-sh/grackdb/ent/project"
+	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/user"
 	"github.com/hashicorp/go-multierror"
 	"golang.org/x/sync/semaphore"
@@ -210,12 +212,104 @@ func (gom *GithubOrganizationMember) Node(ctx context.Context) (node *Node, err 
 	return node, nil
 }
 
+func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     pr.ID,
+		Type:   "Project",
+		Fields: make([]*Field, 4),
+		Edges:  make([]*Edge, 1),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(pr.Name); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pr.Description); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "description",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pr.StartDate); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "time.Time",
+		Name:  "start_date",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pr.EndDate); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "time.Time",
+		Name:  "end_date",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "ProjectContributor",
+		Name: "contributors",
+	}
+	node.Edges[0].IDs, err = pr.QueryContributors().
+		Select(projectcontributor.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (pc *ProjectContributor) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     pc.ID,
+		Type:   "ProjectContributor",
+		Fields: make([]*Field, 1),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(pc.Role); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "projectcontributor.Role",
+		Name:  "role",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Project",
+		Name: "project",
+	}
+	node.Edges[0].IDs, err = pc.QueryProject().
+		Select(project.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "User",
+		Name: "user",
+	}
+	node.Edges[1].IDs, err = pc.QueryUser().
+		Select(user.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
 func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     u.ID,
 		Type:   "User",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 2),
+		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(u.Username); err != nil {
@@ -250,6 +344,16 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[1].IDs, err = u.QueryGithubAccounts().
 		Select(githubaccount.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "ProjectContributor",
+		Name: "project_contributions",
+	}
+	node.Edges[2].IDs, err = u.QueryProjectContributions().
+		Select(projectcontributor.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -355,6 +459,24 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 		n, err := c.GithubOrganizationMember.Query().
 			Where(githuborganizationmember.ID(id)).
 			CollectFields(ctx, "GithubOrganizationMember").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case project.Table:
+		n, err := c.Project.Query().
+			Where(project.ID(id)).
+			CollectFields(ctx, "Project").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case projectcontributor.Table:
+		n, err := c.ProjectContributor.Query().
+			Where(projectcontributor.ID(id)).
+			CollectFields(ctx, "ProjectContributor").
 			Only(ctx)
 		if err != nil {
 			return nil, err
@@ -485,6 +607,32 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.GithubOrganizationMember.Query().
 			Where(githuborganizationmember.IDIn(ids...)).
 			CollectFields(ctx, "GithubOrganizationMember").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case project.Table:
+		nodes, err := c.Project.Query().
+			Where(project.IDIn(ids...)).
+			CollectFields(ctx, "Project").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case projectcontributor.Table:
+		nodes, err := c.ProjectContributor.Query().
+			Where(projectcontributor.IDIn(ids...)).
+			CollectFields(ctx, "ProjectContributor").
 			All(ctx)
 		if err != nil {
 			return nil, err

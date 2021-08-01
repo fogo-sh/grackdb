@@ -397,6 +397,34 @@ func HasGithubAccountsWith(preds ...predicate.GithubAccount) predicate.User {
 	})
 }
 
+// HasProjectContributions applies the HasEdge predicate on the "project_contributions" edge.
+func HasProjectContributions() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProjectContributionsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProjectContributionsTable, ProjectContributionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectContributionsWith applies the HasEdge predicate on the "project_contributions" edge with a given conditions (other predicates).
+func HasProjectContributionsWith(preds ...predicate.ProjectContributor) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProjectContributionsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProjectContributionsTable, ProjectContributionsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(func(s *sql.Selector) {

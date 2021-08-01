@@ -30,9 +30,11 @@ type UserEdges struct {
 	DiscordAccounts []*DiscordAccount `json:"discord_accounts,omitempty"`
 	// GithubAccounts holds the value of the github_accounts edge.
 	GithubAccounts []*GithubAccount `json:"github_accounts,omitempty"`
+	// ProjectContributions holds the value of the project_contributions edge.
+	ProjectContributions []*ProjectContributor `json:"project_contributions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // DiscordAccountsOrErr returns the DiscordAccounts value or an error if the edge
@@ -51,6 +53,15 @@ func (e UserEdges) GithubAccountsOrErr() ([]*GithubAccount, error) {
 		return e.GithubAccounts, nil
 	}
 	return nil, &NotLoadedError{edge: "github_accounts"}
+}
+
+// ProjectContributionsOrErr returns the ProjectContributions value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ProjectContributionsOrErr() ([]*ProjectContributor, error) {
+	if e.loadedTypes[2] {
+		return e.ProjectContributions, nil
+	}
+	return nil, &NotLoadedError{edge: "project_contributions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -109,6 +120,11 @@ func (u *User) QueryDiscordAccounts() *DiscordAccountQuery {
 // QueryGithubAccounts queries the "github_accounts" edge of the User entity.
 func (u *User) QueryGithubAccounts() *GithubAccountQuery {
 	return (&UserClient{config: u.config}).QueryGithubAccounts(u)
+}
+
+// QueryProjectContributions queries the "project_contributions" edge of the User entity.
+func (u *User) QueryProjectContributions() *ProjectContributorQuery {
+	return (&UserClient{config: u.config}).QueryProjectContributions(u)
 }
 
 // Update returns a builder for updating this User.

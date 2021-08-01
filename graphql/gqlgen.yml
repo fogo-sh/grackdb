@@ -19,3 +19,6 @@ models:
   GithubOrganizationMemberRole:
     model:
       - github.com/fogo-sh/grackdb/ent/githuborganizationmember.Role
+  ProjectContributorRole:
+    model:
+      - github.com/fogo-sh/grackdb/ent/projectcontributor.Role
