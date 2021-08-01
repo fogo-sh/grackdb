@@ -23,11 +23,14 @@ function Users() {
   if (error) return <p>Oh no... {error.message}</p>;
 
   return (
-    <ul>
-      {data.users.edges.map(({ node }) => (
-        <li key={node.username}>{node.username}</li>
-      ))}
-    </ul>
+    <div className="p-2">
+      <p>Users</p>
+      <ul class="list-disc">
+        {data.users.edges.map(({ node }) => (
+          <li key={node.username}>{node.username}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
