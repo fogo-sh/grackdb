@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -12,6 +13,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/migrate"
 	"github.com/fogo-sh/grackdb/graphql"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
@@ -27,6 +29,60 @@ func playgroundHandler() gin.HandlerFunc {
 func graphqlHandler(server *handler.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		server.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+func jwtAuthMiddleware(client *ent.Client) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			c.Set("user", (*ent.User)(nil))
+			return
+		}
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+
+		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %s", token.Header["alg"])
+			}
+
+			return []byte(grackdb.AppConfig.JwtSigningSecret), nil
+		})
+
+		if err != nil {
+			fmt.Printf("Error parsing JWT: %s\n", err)
+			c.Set("user", (*ent.User)(nil))
+			return
+		}
+
+		if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
+			userId, ok := claims["sub"].(float64)
+			if !ok {
+				fmt.Printf("Got non-float64 user ID %s\n", claims["sub"])
+				c.Set("user", (*ent.User)(nil))
+				return
+			}
+			user, err := client.User.Get(c, int(userId))
+			if err != nil {
+				fmt.Printf("Error fetching JWT user: %s\n", err)
+				c.Set("user", (*ent.User)(nil))
+			} else {
+				fmt.Printf("Got user %s\n", user.Username)
+				c.Set("user", user)
+			}
+		} else {
+			fmt.Printf("Error parsing JWT: %s\n", err)
+			c.Set("user", (*ent.User)(nil))
+			return
+		}
+	}
+}
+
+func ginContextToContextMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx := context.WithValue(c.Request.Context(), "GinContextKey", c)
+		c.Request = c.Request.WithContext(ctx)
+		c.Next()
 	}
 }
 
@@ -67,6 +123,8 @@ func StartApi() error {
 	}
 
 	app := gin.Default()
+	app.Use(jwtAuthMiddleware(entClient))
+	app.Use(ginContextToContextMiddleware())
 
 	srv := handler.NewDefaultServer(graphql.NewSchema(entClient))
 

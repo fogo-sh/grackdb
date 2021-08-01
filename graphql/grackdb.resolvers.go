@@ -5,6 +5,7 @@ package graphql
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
@@ -76,6 +77,14 @@ func (r *queryResolver) AvailableAuthProviders(ctx context.Context) ([]*AuthProv
 	}
 
 	return availableAuthProviders, nil
+}
+
+func (r *queryResolver) CurrentUser(ctx context.Context) (*ent.User, error) {
+	ginCtx, err := grackdb.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching context: %w", err)
+	}
+	return ginCtx.Value("user").(*ent.User), nil
 }
 
 // Query returns QueryResolver implementation.

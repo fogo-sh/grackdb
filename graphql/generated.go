@@ -131,6 +131,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		AvailableAuthProviders    func(childComplexity int) int
+		CurrentUser               func(childComplexity int) int
 		DiscordAccounts           func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.DiscordAccountOrder, where *ent.DiscordAccountWhereInput) int
 		GithubAccounts            func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubAccountOrder, where *ent.GithubAccountWhereInput) int
 		GithubOrganizationMembers func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationMemberOrder, where *ent.GithubOrganizationMemberWhereInput) int
@@ -169,6 +170,7 @@ type QueryResolver interface {
 	GithubOrganizationMembers(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationMemberOrder, where *ent.GithubOrganizationMemberWhereInput) (*ent.GithubOrganizationMemberConnection, error)
 	GithubOrganizations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationOrder, where *ent.GithubOrganizationWhereInput) (*ent.GithubOrganizationConnection, error)
 	AvailableAuthProviders(ctx context.Context) ([]*AuthProvider, error)
+	CurrentUser(ctx context.Context) (*ent.User, error)
 }
 
 type executableSchema struct {
@@ -493,6 +495,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.AvailableAuthProviders(childComplexity), true
+
+	case "Query.currentUser":
+		if e.complexity.Query.CurrentUser == nil {
+			break
+		}
+
+		return e.complexity.Query.CurrentUser(childComplexity), true
 
 	case "Query.discordAccounts":
 		if e.complexity.Query.DiscordAccounts == nil {
@@ -918,6 +927,7 @@ type Query {
     ): GithubOrganizationConnection
 
     availableAuthProviders: [AuthProvider]
+    currentUser: User
 }
 `, BuiltIn: false},
 	{Name: "ent.graphql", Input: `"""
@@ -3344,6 +3354,38 @@ func (ec *executionContext) _Query_availableAuthProviders(ctx context.Context, f
 	res := resTmp.([]*AuthProvider)
 	fc.Result = res
 	return ec.marshalOAuthProvider2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋgraphqlᚐAuthProvider(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_currentUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().CurrentUser(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7187,6 +7229,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_availableAuthProviders(ctx, field)
+				return res
+			})
+		case "currentUser":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_currentUser(ctx, field)
 				return res
 			})
 		case "__type":

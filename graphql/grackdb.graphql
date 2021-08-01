@@ -218,4 +218,5 @@ type Query {
     ): GithubOrganizationConnection
 
     availableAuthProviders: [AuthProvider]
+    currentUser: User
 }
