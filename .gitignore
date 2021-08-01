@@ -18,3 +18,5 @@
 grack.db
 
 .env
+.env.*
+!.env.dist

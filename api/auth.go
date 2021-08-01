@@ -110,6 +110,9 @@ func handleGithubCallback(c *gin.Context) {
 		return
 	}
 
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("jwt", tokenString, 0, "/", "", false, false)
+
 	c.Data(
 		http.StatusOK,
 		"text/plain;charset=UTF-8",
@@ -217,6 +220,9 @@ func handleDiscordCallback(c *gin.Context) {
 		)
 		return
 	}
+
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("jwt", tokenString, 0, "/", "", false, false)
 
 	c.Data(
 		http.StatusOK,

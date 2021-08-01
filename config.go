@@ -2,6 +2,7 @@ package grackdb
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
@@ -24,7 +25,12 @@ type Config struct {
 var AppConfig Config
 
 func LoadConfig() error {
-	godotenv.Load()
+	envfile, ok := os.LookupEnv("GRACKDB_DOTENV_PATH")
+	if ok {
+		godotenv.Load(envfile)
+	} else {
+		godotenv.Load(".env")
+	}
 
 	err := envconfig.Process("grackdb", &AppConfig)
 	if err != nil {

@@ -8,6 +8,9 @@ export default defineConfig({
       "/query": {
         target: "http://localhost:8081/",
       },
+      "/oauth": {
+        target: "http://localhost:8081/"
+      }
     },
   },
 });
