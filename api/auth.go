@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/fogo-sh/grackdb/ent"
+	"github.com/fogo-sh/grackdb/ent/discordaccount"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -13,7 +15,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// var discordOauthConfig oauth2.Config
+var discordOauthConfig *oauth2.Config
 var githubOauthConfig *oauth2.Config
 
 func handleGithubAuth(c *gin.Context) {
@@ -112,5 +114,112 @@ func handleGithubCallback(c *gin.Context) {
 		"text/plain;charset=UTF-8",
 		[]byte(fmt.Sprintf("Welcome to GrackDB!\n\nYour auth token is:\n%s\n\nYou can use this to query restricted API fields (and in the future, to make changes to the DB!)", tokenString)),
 	)
+}
 
+func handleDiscordAuth(c *gin.Context) {
+	c.Redirect(
+		http.StatusTemporaryRedirect,
+		discordOauthConfig.AuthCodeURL("state"),
+	)
+}
+
+func handleDiscordCallback(c *gin.Context) {
+	code := c.Query("code")
+	state := c.Query("state")
+
+	if state != "state" {
+		c.JSON(
+			http.StatusForbidden,
+			gin.H{
+				"status":  "error",
+				"message": "invalid state",
+			},
+		)
+		return
+	}
+
+	token, err := discordOauthConfig.Exchange(c, code)
+	if err != nil {
+		c.JSON(
+			http.StatusForbidden,
+			gin.H{
+				"status":  "error",
+				"message": "invalid code",
+			},
+		)
+		return
+	}
+
+	discordClient, err := discordgo.New()
+	if err != nil {
+		fmt.Printf("error creating discord client: %s\n", err)
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{},
+		)
+		return
+	}
+
+	discordClient.Client = discordOauthConfig.Client(c, token)
+
+	discordUser, err := discordClient.User("@me")
+	if err != nil {
+		fmt.Printf("error fetching discord user: %s\n", err)
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{},
+		)
+		return
+	}
+
+	discordAccountEntity, err := entClient.DiscordAccount.Query().
+		Where(
+			discordaccount.DiscordIDEQ(discordUser.ID),
+			discordaccount.HasOwner(),
+		).
+		WithOwner().
+		First(c)
+
+	if err != nil {
+		_, ok := err.(*ent.NotFoundError)
+		if ok {
+			c.Data(
+				http.StatusForbidden,
+				"text/plain;charset=UTF-8",
+				[]byte("You aren't part of the GrackDB - have another member add you and then try again."),
+			)
+			return
+		}
+		fmt.Printf("error fetching github account: %s\n", err)
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{},
+		)
+		return
+	}
+
+	unsignedToken := jwt.NewWithClaims(
+		jwt.SigningMethodHS512,
+		jwt.MapClaims{
+			"iat": time.Now().UTC().Unix(),
+			"sub": discordAccountEntity.Edges.Owner.ID,
+		},
+	)
+
+	tokenString, err := unsignedToken.SignedString([]byte(config.JwtSigningSecret))
+
+	if err != nil {
+		fmt.Printf("error signing token: %s\n", err)
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{},
+		)
+		return
+	}
+
+	c.Data(
+		http.StatusOK,
+		"text/plain;charset=UTF-8",
+		[]byte(fmt.Sprintf("Welcome to GrackDB!\n\nYour auth token is:\n%s\n\nYou can use this to query restricted API fields (and in the future, to make changes to the DB!)", tokenString)),
+	)
 }

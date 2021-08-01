@@ -15,6 +15,10 @@ type Config struct {
 
 	GithubClientId     string `default:"" split_words:"true"`
 	GithubClientSecret string `default:"" split_words:"true"`
+
+	DiscordClientId     string `default:"" split_words:"true"`
+	DiscordClientSecret string `default:"" split_words:"true"`
+	DiscordCallbackUrl  string `default:"http://localhost:8081/oauth/discord/callback" split_words:"true"`
 }
 
 var config Config

@@ -6,6 +6,7 @@ require (
 	entgo.io/contrib v0.0.0-20210726113942-478c3f3c33cb
 	entgo.io/ent v0.8.1-0.20210630104730-a19a89a141cf
 	github.com/99designs/gqlgen v0.13.0
+	github.com/bwmarrin/discordgo v0.23.2
 	github.com/gin-gonic/gin v1.7.2
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/go-github/v37 v37.0.0

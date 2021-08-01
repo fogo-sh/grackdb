@@ -43,6 +43,16 @@ func StartApi() error {
 		Scopes:       []string{"read:user"},
 		Endpoint:     github.Endpoint,
 	}
+	discordOauthConfig = &oauth2.Config{
+		ClientID:     config.DiscordClientId,
+		ClientSecret: config.DiscordClientSecret,
+		Scopes:       []string{"identify"},
+		RedirectURL:  config.DiscordCallbackUrl,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  "https://discordapp.com/api/oauth2/authorize",
+			TokenURL: "https://discordapp.com/api/oauth2/token",
+		},
+	}
 
 	entClient, err = ent.Open(dialect.SQLite, config.DBConnectionString)
 	if err != nil {
@@ -64,6 +74,9 @@ func StartApi() error {
 
 	app.GET("/oauth/github/auth", handleGithubAuth)
 	app.GET("/oauth/github/callback", handleGithubCallback)
+
+	app.GET("/oauth/discord/auth", handleDiscordAuth)
+	app.GET("/oauth/discord/callback", handleDiscordCallback)
 
 	if err := app.Run(config.BindAddr); err != nil {
 		return fmt.Errorf("error starting server: %w", err)
