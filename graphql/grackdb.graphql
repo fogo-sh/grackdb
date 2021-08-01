@@ -220,3 +220,39 @@ type Query {
     availableAuthProviders: [AuthProvider]
     currentUser: User
 }
+
+input CreateUserInput {
+    username: String!
+	avatarUrl: String
+}
+
+input CreateDiscordAccountInput {
+    discordId: String!
+    username: String!
+    discriminator: String!
+    owner: Int!
+}
+
+input CreateGithubAccountInput {
+    username: String!
+    owner: Int!
+}
+
+input CreateGithubOrganizationInput {
+    name: String!
+    displayName: String
+}
+
+input CreateGithubOrganizationMemberInput {
+    role: GithubOrganizationMemberRole!
+    account: Int!
+    organization: Int!
+}
+
+type Mutation {
+    createUser(input: CreateUserInput!): User!
+    createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
+    createGithubAccount(input: CreateGithubAccountInput!): GithubAccount!
+    createGithubOrganization(input: CreateGithubOrganizationInput!): GithubOrganization!
+    createGithubOrganizationMember(input: CreateGithubOrganizationMemberInput!): GithubOrganizationMember!
+}

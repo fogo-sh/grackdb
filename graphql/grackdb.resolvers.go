@@ -11,6 +11,41 @@ import (
 	"github.com/fogo-sh/grackdb/ent"
 )
 
+func (r *mutationResolver) CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
+	return ent.FromContext(ctx).User.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
+func (r *mutationResolver) CreateDiscordAccount(ctx context.Context, input ent.CreateDiscordAccountInput) (*ent.DiscordAccount, error) {
+	return ent.FromContext(ctx).DiscordAccount.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
+func (r *mutationResolver) CreateGithubAccount(ctx context.Context, input ent.CreateGithubAccountInput) (*ent.GithubAccount, error) {
+	return ent.FromContext(ctx).GithubAccount.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
+func (r *mutationResolver) CreateGithubOrganization(ctx context.Context, input ent.CreateGithubOrganizationInput) (*ent.GithubOrganization, error) {
+	return ent.FromContext(ctx).GithubOrganization.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
+func (r *mutationResolver) CreateGithubOrganizationMember(ctx context.Context, input ent.CreateGithubOrganizationMemberInput) (*ent.GithubOrganizationMember, error) {
+	return ent.FromContext(ctx).GithubOrganizationMember.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
 	return r.client.Noder(ctx, id)
 }
@@ -87,7 +122,11 @@ func (r *queryResolver) CurrentUser(ctx context.Context) (*ent.User, error) {
 	return ginCtx.Value("user").(*ent.User), nil
 }
 
+// Mutation returns MutationResolver implementation.
+func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

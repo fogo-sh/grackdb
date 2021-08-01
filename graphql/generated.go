@@ -37,6 +37,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
@@ -122,6 +123,14 @@ type ComplexityRoot struct {
 		Node   func(childComplexity int) int
 	}
 
+	Mutation struct {
+		CreateDiscordAccount           func(childComplexity int, input ent.CreateDiscordAccountInput) int
+		CreateGithubAccount            func(childComplexity int, input ent.CreateGithubAccountInput) int
+		CreateGithubOrganization       func(childComplexity int, input ent.CreateGithubOrganizationInput) int
+		CreateGithubOrganizationMember func(childComplexity int, input ent.CreateGithubOrganizationMemberInput) int
+		CreateUser                     func(childComplexity int, input ent.CreateUserInput) int
+	}
+
 	PageInfo struct {
 		EndCursor       func(childComplexity int) int
 		HasNextPage     func(childComplexity int) int
@@ -161,6 +170,13 @@ type ComplexityRoot struct {
 	}
 }
 
+type MutationResolver interface {
+	CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error)
+	CreateDiscordAccount(ctx context.Context, input ent.CreateDiscordAccountInput) (*ent.DiscordAccount, error)
+	CreateGithubAccount(ctx context.Context, input ent.CreateGithubAccountInput) (*ent.GithubAccount, error)
+	CreateGithubOrganization(ctx context.Context, input ent.CreateGithubOrganizationInput) (*ent.GithubOrganization, error)
+	CreateGithubOrganizationMember(ctx context.Context, input ent.CreateGithubOrganizationMemberInput) (*ent.GithubOrganizationMember, error)
+}
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
 	Nodes(ctx context.Context, ids []int) ([]ent.Noder, error)
@@ -461,6 +477,66 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GithubOrganizationMemberEdge.Node(childComplexity), true
 
+	case "Mutation.createDiscordAccount":
+		if e.complexity.Mutation.CreateDiscordAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createDiscordAccount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateDiscordAccount(childComplexity, args["input"].(ent.CreateDiscordAccountInput)), true
+
+	case "Mutation.createGithubAccount":
+		if e.complexity.Mutation.CreateGithubAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createGithubAccount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateGithubAccount(childComplexity, args["input"].(ent.CreateGithubAccountInput)), true
+
+	case "Mutation.createGithubOrganization":
+		if e.complexity.Mutation.CreateGithubOrganization == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createGithubOrganization_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateGithubOrganization(childComplexity, args["input"].(ent.CreateGithubOrganizationInput)), true
+
+	case "Mutation.createGithubOrganizationMember":
+		if e.complexity.Mutation.CreateGithubOrganizationMember == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createGithubOrganizationMember_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateGithubOrganizationMember(childComplexity, args["input"].(ent.CreateGithubOrganizationMemberInput)), true
+
+	case "Mutation.createUser":
+		if e.complexity.Mutation.CreateUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(ent.CreateUserInput)), true
+
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
 			break
@@ -674,6 +750,20 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			}
 			first = false
 			data := ec._Query(ctx, rc.Operation.SelectionSet)
+			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
+	case ast.Mutation:
+		return func(ctx context.Context) *graphql.Response {
+			if !first {
+				return nil
+			}
+			first = false
+			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
 			var buf bytes.Buffer
 			data.MarshalGQL(&buf)
 
@@ -928,6 +1018,42 @@ type Query {
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
+}
+
+input CreateUserInput {
+    username: String!
+	avatarUrl: String
+}
+
+input CreateDiscordAccountInput {
+    discordId: String!
+    username: String!
+    discriminator: String!
+    owner: Int!
+}
+
+input CreateGithubAccountInput {
+    username: String!
+    owner: Int!
+}
+
+input CreateGithubOrganizationInput {
+    name: String!
+    displayName: String
+}
+
+input CreateGithubOrganizationMemberInput {
+    role: GithubOrganizationMemberRole!
+    account: Int!
+    organization: Int!
+}
+
+type Mutation {
+    createUser(input: CreateUserInput!): User!
+    createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
+    createGithubAccount(input: CreateGithubAccountInput!): GithubAccount!
+    createGithubOrganization(input: CreateGithubOrganizationInput!): GithubOrganization!
+    createGithubOrganizationMember(input: CreateGithubOrganizationMemberInput!): GithubOrganizationMember!
 }
 `, BuiltIn: false},
 	{Name: "ent.graphql", Input: `"""
@@ -1198,6 +1324,81 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_createDiscordAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateDiscordAccountInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateDiscordAccountInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateDiscordAccountInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createGithubAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateGithubAccountInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateGithubAccountInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateGithubAccountInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createGithubOrganizationMember_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateGithubOrganizationMemberInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateGithubOrganizationMemberInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateGithubOrganizationMemberInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createGithubOrganization_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateGithubOrganizationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateGithubOrganizationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateGithubOrganizationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateUserInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateUserInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateUserInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -2912,6 +3113,216 @@ func (ec *executionContext) _GithubOrganizationMemberEdge_cursor(ctx context.Con
 	res := resTmp.(ent.Cursor)
 	fc.Result = res
 	return ec.marshalNCursor2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createUser_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateUser(rctx, args["input"].(ent.CreateUserInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createDiscordAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createDiscordAccount_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateDiscordAccount(rctx, args["input"].(ent.CreateDiscordAccountInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DiscordAccount)
+	fc.Result = res
+	return ec.marshalNDiscordAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createGithubAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createGithubAccount_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateGithubAccount(rctx, args["input"].(ent.CreateGithubAccountInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubAccount)
+	fc.Result = res
+	return ec.marshalNGithubAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createGithubOrganization(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createGithubOrganization_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateGithubOrganization(rctx, args["input"].(ent.CreateGithubOrganizationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubOrganization)
+	fc.Result = res
+	return ec.marshalNGithubOrganization2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganization(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createGithubOrganizationMember(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createGithubOrganizationMember_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateGithubOrganizationMember(rctx, args["input"].(ent.CreateGithubOrganizationMemberInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubOrganizationMember)
+	fc.Result = res
+	return ec.marshalNGithubOrganizationMember2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationMember(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
@@ -4880,6 +5291,170 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 // endregion **************************** field.gotpl *****************************
 
 // region    **************************** input.gotpl *****************************
+
+func (ec *executionContext) unmarshalInputCreateDiscordAccountInput(ctx context.Context, obj interface{}) (ent.CreateDiscordAccountInput, error) {
+	var it ent.CreateDiscordAccountInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "discordId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("discordId"))
+			it.DiscordID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "username":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "discriminator":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("discriminator"))
+			it.Discriminator, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "owner":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("owner"))
+			it.Owner, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateGithubAccountInput(ctx context.Context, obj interface{}) (ent.CreateGithubAccountInput, error) {
+	var it ent.CreateGithubAccountInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "username":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "owner":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("owner"))
+			it.Owner, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateGithubOrganizationInput(ctx context.Context, obj interface{}) (ent.CreateGithubOrganizationInput, error) {
+	var it ent.CreateGithubOrganizationInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "displayName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
+			it.DisplayName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateGithubOrganizationMemberInput(ctx context.Context, obj interface{}) (ent.CreateGithubOrganizationMemberInput, error) {
+	var it ent.CreateGithubOrganizationMemberInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "role":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			it.Role, err = ec.unmarshalNGithubOrganizationMemberRole2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋgithuborganizationmemberᚐRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "account":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("account"))
+			it.Account, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "organization":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("organization"))
+			it.Organization, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, obj interface{}) (ent.CreateUserInput, error) {
+	var it ent.CreateUserInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "username":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "avatarUrl":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("avatarUrl"))
+			it.AvatarURL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
 
 func (ec *executionContext) unmarshalInputDiscordAccountOrder(ctx context.Context, obj interface{}) (ent.DiscordAccountOrder, error) {
 	var it ent.DiscordAccountOrder
@@ -7089,6 +7664,57 @@ func (ec *executionContext) _GithubOrganizationMemberEdge(ctx context.Context, s
 	return out
 }
 
+var mutationImplementors = []string{"Mutation"}
+
+func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
+
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Mutation",
+	})
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mutation")
+		case "createUser":
+			out.Values[i] = ec._Mutation_createUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createDiscordAccount":
+			out.Values[i] = ec._Mutation_createDiscordAccount(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createGithubAccount":
+			out.Values[i] = ec._Mutation_createGithubAccount(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createGithubOrganization":
+			out.Values[i] = ec._Mutation_createGithubOrganization(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createGithubOrganizationMember":
+			out.Values[i] = ec._Mutation_createGithubOrganizationMember(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var pageInfoImplementors = []string{"PageInfo"}
 
 func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *ent.PageInfo) graphql.Marshaler {
@@ -7646,6 +8272,31 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNCreateDiscordAccountInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateDiscordAccountInput(ctx context.Context, v interface{}) (ent.CreateDiscordAccountInput, error) {
+	res, err := ec.unmarshalInputCreateDiscordAccountInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateGithubAccountInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateGithubAccountInput(ctx context.Context, v interface{}) (ent.CreateGithubAccountInput, error) {
+	res, err := ec.unmarshalInputCreateGithubAccountInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateGithubOrganizationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateGithubOrganizationInput(ctx context.Context, v interface{}) (ent.CreateGithubOrganizationInput, error) {
+	res, err := ec.unmarshalInputCreateGithubOrganizationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateGithubOrganizationMemberInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateGithubOrganizationMemberInput(ctx context.Context, v interface{}) (ent.CreateGithubOrganizationMemberInput, error) {
+	res, err := ec.unmarshalInputCreateGithubOrganizationMemberInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateUserInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateUserInput(ctx context.Context, v interface{}) (ent.CreateUserInput, error) {
+	res, err := ec.unmarshalInputCreateUserInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCursor2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx context.Context, v interface{}) (ent.Cursor, error) {
 	var res ent.Cursor
 	err := res.UnmarshalGQL(v)
@@ -7654,6 +8305,10 @@ func (ec *executionContext) unmarshalNCursor2githubᚗcomᚋfogoᚑshᚋgrackdb�
 
 func (ec *executionContext) marshalNCursor2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx context.Context, sel ast.SelectionSet, v ent.Cursor) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNDiscordAccount2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccount(ctx context.Context, sel ast.SelectionSet, v ent.DiscordAccount) graphql.Marshaler {
+	return ec._DiscordAccount(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNDiscordAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccount(ctx context.Context, sel ast.SelectionSet, v *ent.DiscordAccount) graphql.Marshaler {
@@ -7671,6 +8326,10 @@ func (ec *executionContext) unmarshalNDiscordAccountWhereInput2ᚖgithubᚗcom�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNGithubAccount2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubAccount(ctx context.Context, sel ast.SelectionSet, v ent.GithubAccount) graphql.Marshaler {
+	return ec._GithubAccount(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNGithubAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubAccount(ctx context.Context, sel ast.SelectionSet, v *ent.GithubAccount) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -7686,6 +8345,10 @@ func (ec *executionContext) unmarshalNGithubAccountWhereInput2ᚖgithubᚗcomᚋ
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNGithubOrganization2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganization(ctx context.Context, sel ast.SelectionSet, v ent.GithubOrganization) graphql.Marshaler {
+	return ec._GithubOrganization(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNGithubOrganization2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganization(ctx context.Context, sel ast.SelectionSet, v *ent.GithubOrganization) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -7694,6 +8357,10 @@ func (ec *executionContext) marshalNGithubOrganization2ᚖgithubᚗcomᚋfogoᚑ
 		return graphql.Null
 	}
 	return ec._GithubOrganization(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNGithubOrganizationMember2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationMember(ctx context.Context, sel ast.SelectionSet, v ent.GithubOrganizationMember) graphql.Marshaler {
+	return ec._GithubOrganizationMember(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNGithubOrganizationMember2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationMember(ctx context.Context, sel ast.SelectionSet, v *ent.GithubOrganizationMember) graphql.Marshaler {
@@ -7713,6 +8380,22 @@ func (ec *executionContext) unmarshalNGithubOrganizationMemberRole2githubᚗcom�
 }
 
 func (ec *executionContext) marshalNGithubOrganizationMemberRole2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋgithuborganizationmemberᚐRole(ctx context.Context, sel ast.SelectionSet, v githuborganizationmember.Role) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNGithubOrganizationMemberRole2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋgithuborganizationmemberᚐRole(ctx context.Context, v interface{}) (*githuborganizationmember.Role, error) {
+	var res = new(githuborganizationmember.Role)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGithubOrganizationMemberRole2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋgithuborganizationmemberᚐRole(ctx context.Context, sel ast.SelectionSet, v *githuborganizationmember.Role) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
 	return v
 }
 
@@ -7786,6 +8469,27 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v []ent.Noder) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -7850,6 +8554,10 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v ent.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {

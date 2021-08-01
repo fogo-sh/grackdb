@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -126,6 +127,7 @@ func StartApi() error {
 	app.Use(ginContextToContextMiddleware())
 
 	srv := handler.NewDefaultServer(graphql.NewSchema(entClient))
+	srv.Use(entgql.Transactioner{TxOpener: entClient})
 
 	app.GET("/", playgroundHandler())
 	app.POST("/query", graphqlHandler(srv))
