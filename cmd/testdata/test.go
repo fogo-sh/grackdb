@@ -8,6 +8,8 @@ import (
 	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
+	"github.com/fogo-sh/grackdb/ent/privacy"
+	_ "github.com/fogo-sh/grackdb/ent/runtime"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -22,6 +24,7 @@ func main() {
 	}
 	defer client.Close()
 	ctx := context.Background()
+	ctx = privacy.DecisionContext(ctx, privacy.Allow)
 	// Run the automatic migration tool to create all schema resources.
 	if err := client.Schema.Create(ctx); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
