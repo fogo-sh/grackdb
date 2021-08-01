@@ -39,8 +39,8 @@ func (DiscordAccount) Fields() []ent.Field {
 func (DiscordAccount) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("owner", User.Type).
-			Annotations(entgql.Bind()).
 			Ref("discord_accounts").
+			Annotations(entgql.Bind()).
 			Required().
 			Unique(),
 	}

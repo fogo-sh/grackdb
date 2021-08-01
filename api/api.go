@@ -67,7 +67,6 @@ func jwtAuthMiddleware(client *ent.Client) gin.HandlerFunc {
 				fmt.Printf("Error fetching JWT user: %s\n", err)
 				c.Set("user", (*ent.User)(nil))
 			} else {
-				fmt.Printf("Got user %s\n", user.Username)
 				c.Set("user", user)
 			}
 		} else {

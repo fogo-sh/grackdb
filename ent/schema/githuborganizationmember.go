@@ -31,12 +31,12 @@ func (GithubOrganizationMember) Fields() []ent.Field {
 func (GithubOrganizationMember) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("organization", GithubOrganization.Type).
-			Annotations(entgql.Bind()).
 			Ref("members").
+			Annotations(entgql.Bind()).
 			Unique(),
 		edge.From("account", GithubAccount.Type).
-			Annotations(entgql.Bind()).
 			Ref("organization_memberships").
+			Annotations(entgql.Bind()).
 			Unique(),
 	}
 }

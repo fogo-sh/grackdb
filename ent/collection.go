@@ -39,6 +39,10 @@ func (ga *GithubAccountQuery) CollectFields(ctx context.Context, satisfies ...st
 func (ga *GithubAccountQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *GithubAccountQuery {
 	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
 		switch field.Name {
+		case "organizationMemberships":
+			ga = ga.WithOrganizationMemberships(func(query *GithubOrganizationMemberQuery) {
+				query.collectField(ctx, field)
+			})
 		case "owner":
 			ga = ga.WithOwner(func(query *UserQuery) {
 				query.collectField(ctx, field)
@@ -103,11 +107,11 @@ func (u *UserQuery) CollectFields(ctx context.Context, satisfies ...string) *Use
 func (u *UserQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *UserQuery {
 	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
 		switch field.Name {
-		case "discord_accounts":
+		case "discordAccounts":
 			u = u.WithDiscordAccounts(func(query *DiscordAccountQuery) {
 				query.collectField(ctx, field)
 			})
-		case "github_accounts":
+		case "githubAccounts":
 			u = u.WithGithubAccounts(func(query *GithubAccountQuery) {
 				query.collectField(ctx, field)
 			})

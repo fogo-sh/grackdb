@@ -28,10 +28,11 @@ func (GithubAccount) Fields() []ent.Field {
 func (GithubAccount) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("owner", User.Type).
-			Annotations(entgql.Bind()).
 			Ref("github_accounts").
+			Annotations(entgql.Bind()).
 			Required().
 			Unique(),
-		edge.To("organization_memberships", GithubOrganizationMember.Type),
+		edge.To("organization_memberships", GithubOrganizationMember.Type).
+			Annotations(entgql.MapsTo("organizationMemberships")),
 	}
 }
