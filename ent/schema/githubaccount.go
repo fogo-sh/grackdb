@@ -5,6 +5,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/fogo-sh/grackdb/ent/privacy"
+	"github.com/fogo-sh/grackdb/ent/rules"
 )
 
 // GithubAccount holds the schema definition for the GithubAccount entity.
@@ -34,5 +36,17 @@ func (GithubAccount) Edges() []ent.Edge {
 			Unique(),
 		edge.To("organization_memberships", GithubOrganizationMember.Type).
 			Annotations(entgql.MapsTo("organizationMemberships")),
+	}
+}
+
+func (GithubAccount) Policy() ent.Policy {
+	return privacy.Policy{
+		Mutation: privacy.MutationPolicy{
+			rules.DenyIfNotAuthenticated(),
+			privacy.AlwaysAllowRule(),
+		},
+		Query: privacy.QueryPolicy{
+			privacy.AlwaysAllowRule(),
+		},
 	}
 }

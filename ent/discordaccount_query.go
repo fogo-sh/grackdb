@@ -343,6 +343,12 @@ func (daq *DiscordAccountQuery) prepareQuery(ctx context.Context) error {
 		}
 		daq.sql = prev
 	}
+	if discordaccount.Policy == nil {
+		return errors.New("ent: uninitialized discordaccount.Policy (forgotten import ent/runtime?)")
+	}
+	if err := discordaccount.Policy.EvalQuery(ctx, daq); err != nil {
+		return err
+	}
 	return nil
 }
 

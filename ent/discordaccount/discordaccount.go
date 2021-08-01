@@ -2,6 +2,10 @@
 
 package discordaccount
 
+import (
+	"entgo.io/ent"
+)
+
 const (
 	// Label holds the string label denoting the discordaccount type in the database.
 	Label = "discord_account"
@@ -55,7 +59,15 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "github.com/fogo-sh/grackdb/ent/runtime"
+//
 var (
+	Hooks  [1]ent.Hook
+	Policy ent.Policy
 	// DiscordIDValidator is a validator for the "discord_id" field. It is called by the builders before save.
 	DiscordIDValidator func(string) error
 	// DiscriminatorValidator is a validator for the "discriminator" field. It is called by the builders before save.

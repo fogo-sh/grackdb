@@ -2,6 +2,10 @@
 
 package githubaccount
 
+import (
+	"entgo.io/ent"
+)
+
 const (
 	// Label holds the string label denoting the githubaccount type in the database.
 	Label = "github_account"
@@ -58,7 +62,15 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "github.com/fogo-sh/grackdb/ent/runtime"
+//
 var (
+	Hooks  [1]ent.Hook
+	Policy ent.Policy
 	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	UsernameValidator func(string) error
 )

@@ -5,6 +5,7 @@ import (
 
 	"github.com/fogo-sh/grackdb/api"
 
+	_ "github.com/fogo-sh/grackdb/ent/runtime"
 	_ "github.com/mattn/go-sqlite3"
 )
 

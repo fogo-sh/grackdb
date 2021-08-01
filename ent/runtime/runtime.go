@@ -2,7 +2,108 @@
 
 package runtime
 
-// The schema-stitching logic is generated in github.com/fogo-sh/grackdb/ent/runtime.go
+import (
+	"context"
+
+	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/githubaccount"
+	"github.com/fogo-sh/grackdb/ent/githuborganization"
+	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
+	"github.com/fogo-sh/grackdb/ent/schema"
+	"github.com/fogo-sh/grackdb/ent/user"
+
+	"entgo.io/ent"
+	"entgo.io/ent/privacy"
+)
+
+// The init function reads all schema descriptors with runtime code
+// (default values, validators, hooks and policies) and stitches it
+// to their package variables.
+func init() {
+	discordaccount.Policy = privacy.NewPolicies(schema.DiscordAccount{})
+	discordaccount.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := discordaccount.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	discordaccountFields := schema.DiscordAccount{}.Fields()
+	_ = discordaccountFields
+	// discordaccountDescDiscordID is the schema descriptor for discord_id field.
+	discordaccountDescDiscordID := discordaccountFields[0].Descriptor()
+	// discordaccount.DiscordIDValidator is a validator for the "discord_id" field. It is called by the builders before save.
+	discordaccount.DiscordIDValidator = discordaccountDescDiscordID.Validators[0].(func(string) error)
+	// discordaccountDescDiscriminator is the schema descriptor for discriminator field.
+	discordaccountDescDiscriminator := discordaccountFields[2].Descriptor()
+	// discordaccount.DiscriminatorValidator is a validator for the "discriminator" field. It is called by the builders before save.
+	discordaccount.DiscriminatorValidator = func() func(string) error {
+		validators := discordaccountDescDiscriminator.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(discriminator string) error {
+			for _, fn := range fns {
+				if err := fn(discriminator); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	githubaccount.Policy = privacy.NewPolicies(schema.GithubAccount{})
+	githubaccount.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := githubaccount.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	githubaccountFields := schema.GithubAccount{}.Fields()
+	_ = githubaccountFields
+	// githubaccountDescUsername is the schema descriptor for username field.
+	githubaccountDescUsername := githubaccountFields[0].Descriptor()
+	// githubaccount.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	githubaccount.UsernameValidator = githubaccountDescUsername.Validators[0].(func(string) error)
+	githuborganization.Policy = privacy.NewPolicies(schema.GithubOrganization{})
+	githuborganization.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := githuborganization.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	githuborganizationFields := schema.GithubOrganization{}.Fields()
+	_ = githuborganizationFields
+	// githuborganizationDescName is the schema descriptor for name field.
+	githuborganizationDescName := githuborganizationFields[0].Descriptor()
+	// githuborganization.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	githuborganization.NameValidator = githuborganizationDescName.Validators[0].(func(string) error)
+	githuborganizationmember.Policy = privacy.NewPolicies(schema.GithubOrganizationMember{})
+	githuborganizationmember.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := githuborganizationmember.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	githuborganizationmemberFields := schema.GithubOrganizationMember{}.Fields()
+	_ = githuborganizationmemberFields
+	user.Policy = privacy.NewPolicies(schema.User{})
+	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := user.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+}
 
 const (
 	Version = "(devel)" // Version of ent codegen.

@@ -255,7 +255,8 @@ func (c *DiscordAccountClient) QueryOwner(da *DiscordAccount) *UserQuery {
 
 // Hooks returns the client hooks.
 func (c *DiscordAccountClient) Hooks() []Hook {
-	return c.hooks.DiscordAccount
+	hooks := c.hooks.DiscordAccount
+	return append(hooks[:len(hooks):len(hooks)], discordaccount.Hooks[:]...)
 }
 
 // GithubAccountClient is a client for the GithubAccount schema.
@@ -377,7 +378,8 @@ func (c *GithubAccountClient) QueryOrganizationMemberships(ga *GithubAccount) *G
 
 // Hooks returns the client hooks.
 func (c *GithubAccountClient) Hooks() []Hook {
-	return c.hooks.GithubAccount
+	hooks := c.hooks.GithubAccount
+	return append(hooks[:len(hooks):len(hooks)], githubaccount.Hooks[:]...)
 }
 
 // GithubOrganizationClient is a client for the GithubOrganization schema.
@@ -483,7 +485,8 @@ func (c *GithubOrganizationClient) QueryMembers(_go *GithubOrganization) *Github
 
 // Hooks returns the client hooks.
 func (c *GithubOrganizationClient) Hooks() []Hook {
-	return c.hooks.GithubOrganization
+	hooks := c.hooks.GithubOrganization
+	return append(hooks[:len(hooks):len(hooks)], githuborganization.Hooks[:]...)
 }
 
 // GithubOrganizationMemberClient is a client for the GithubOrganizationMember schema.
@@ -605,7 +608,8 @@ func (c *GithubOrganizationMemberClient) QueryAccount(gom *GithubOrganizationMem
 
 // Hooks returns the client hooks.
 func (c *GithubOrganizationMemberClient) Hooks() []Hook {
-	return c.hooks.GithubOrganizationMember
+	hooks := c.hooks.GithubOrganizationMember
+	return append(hooks[:len(hooks):len(hooks)], githuborganizationmember.Hooks[:]...)
 }
 
 // UserClient is a client for the User schema.
@@ -727,5 +731,6 @@ func (c *UserClient) QueryGithubAccounts(u *User) *GithubAccountQuery {
 
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
-	return c.hooks.User
+	hooks := c.hooks.User
+	return append(hooks[:len(hooks):len(hooks)], user.Hooks[:]...)
 }

@@ -379,6 +379,12 @@ func (gomq *GithubOrganizationMemberQuery) prepareQuery(ctx context.Context) err
 		}
 		gomq.sql = prev
 	}
+	if githuborganizationmember.Policy == nil {
+		return errors.New("ent: uninitialized githuborganizationmember.Policy (forgotten import ent/runtime?)")
+	}
+	if err := githuborganizationmember.Policy.EvalQuery(ctx, gomq); err != nil {
+		return err
+	}
 	return nil
 }
 

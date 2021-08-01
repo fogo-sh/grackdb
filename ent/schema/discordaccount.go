@@ -5,6 +5,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/fogo-sh/grackdb/ent/privacy"
+	"github.com/fogo-sh/grackdb/ent/rules"
 )
 
 // DiscordAccount holds the schema definition for the DiscordAccount entity.
@@ -43,5 +45,17 @@ func (DiscordAccount) Edges() []ent.Edge {
 			Annotations(entgql.Bind()).
 			Required().
 			Unique(),
+	}
+}
+
+func (DiscordAccount) Policy() ent.Policy {
+	return privacy.Policy{
+		Mutation: privacy.MutationPolicy{
+			rules.DenyIfNotAuthenticated(),
+			privacy.AlwaysAllowRule(),
+		},
+		Query: privacy.QueryPolicy{
+			privacy.AlwaysAllowRule(),
+		},
 	}
 }

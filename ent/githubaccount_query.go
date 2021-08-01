@@ -380,6 +380,12 @@ func (gaq *GithubAccountQuery) prepareQuery(ctx context.Context) error {
 		}
 		gaq.sql = prev
 	}
+	if githubaccount.Policy == nil {
+		return errors.New("ent: uninitialized githubaccount.Policy (forgotten import ent/runtime?)")
+	}
+	if err := githubaccount.Policy.EvalQuery(ctx, gaq); err != nil {
+		return err
+	}
 	return nil
 }
 

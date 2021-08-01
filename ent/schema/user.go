@@ -5,6 +5,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/fogo-sh/grackdb/ent/privacy"
+	"github.com/fogo-sh/grackdb/ent/rules"
 )
 
 // User holds the schema definition for the User entity.
@@ -33,5 +35,17 @@ func (User) Edges() []ent.Edge {
 			Annotations(entgql.MapsTo("discordAccounts")),
 		edge.To("github_accounts", GithubAccount.Type).
 			Annotations(entgql.MapsTo("githubAccounts")),
+	}
+}
+
+func (User) Policy() ent.Policy {
+	return privacy.Policy{
+		Mutation: privacy.MutationPolicy{
+			rules.DenyIfNotAuthenticated(),
+			privacy.AlwaysAllowRule(),
+		},
+		Query: privacy.QueryPolicy{
+			privacy.AlwaysAllowRule(),
+		},
 	}
 }
