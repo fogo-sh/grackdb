@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
 	"github.com/fogo-sh/grackdb/ent/migrate"
 	"github.com/fogo-sh/grackdb/graphql"
@@ -32,29 +33,29 @@ func graphqlHandler(server *handler.Server) gin.HandlerFunc {
 var entClient *ent.Client
 
 func StartApi() error {
-	err := LoadConfig()
+	err := grackdb.LoadConfig()
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 
 	githubOauthConfig = &oauth2.Config{
-		ClientID:     config.GithubClientId,
-		ClientSecret: config.GithubClientSecret,
+		ClientID:     grackdb.AppConfig.GithubClientId,
+		ClientSecret: grackdb.AppConfig.GithubClientSecret,
 		Scopes:       []string{"read:user"},
 		Endpoint:     github.Endpoint,
 	}
 	discordOauthConfig = &oauth2.Config{
-		ClientID:     config.DiscordClientId,
-		ClientSecret: config.DiscordClientSecret,
+		ClientID:     grackdb.AppConfig.DiscordClientId,
+		ClientSecret: grackdb.AppConfig.DiscordClientSecret,
 		Scopes:       []string{"identify"},
-		RedirectURL:  config.DiscordCallbackUrl,
+		RedirectURL:  grackdb.AppConfig.DiscordCallbackUrl,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://discordapp.com/api/oauth2/authorize",
 			TokenURL: "https://discordapp.com/api/oauth2/token",
 		},
 	}
 
-	entClient, err = ent.Open(dialect.SQLite, config.DBConnectionString)
+	entClient, err = ent.Open(dialect.SQLite, grackdb.AppConfig.DBConnectionString)
 	if err != nil {
 		return fmt.Errorf("error opening ent client: %w", err)
 	}
@@ -78,7 +79,7 @@ func StartApi() error {
 	app.GET("/oauth/discord/auth", handleDiscordAuth)
 	app.GET("/oauth/discord/callback", handleDiscordCallback)
 
-	if err := app.Run(config.BindAddr); err != nil {
+	if err := app.Run(grackdb.AppConfig.BindAddr); err != nil {
 		return fmt.Errorf("error starting server: %w", err)
 	}
 

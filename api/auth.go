@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
@@ -98,7 +99,7 @@ func handleGithubCallback(c *gin.Context) {
 		},
 	)
 
-	tokenString, err := unsignedToken.SignedString([]byte(config.JwtSigningSecret))
+	tokenString, err := unsignedToken.SignedString([]byte(grackdb.AppConfig.JwtSigningSecret))
 
 	if err != nil {
 		fmt.Printf("error signing token: %s\n", err)
@@ -206,7 +207,7 @@ func handleDiscordCallback(c *gin.Context) {
 		},
 	)
 
-	tokenString, err := unsignedToken.SignedString([]byte(config.JwtSigningSecret))
+	tokenString, err := unsignedToken.SignedString([]byte(grackdb.AppConfig.JwtSigningSecret))
 
 	if err != nil {
 		fmt.Printf("error signing token: %s\n", err)

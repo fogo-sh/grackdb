@@ -6,6 +6,7 @@ package graphql
 import (
 	"context"
 
+	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
 )
 
@@ -55,6 +56,26 @@ func (r *queryResolver) GithubOrganizations(ctx context.Context, after *ent.Curs
 			ent.WithGithubOrganizationOrder(orderBy),
 			ent.WithGithubOrganizationFilter(where.Filter),
 		)
+}
+
+func (r *queryResolver) AvailableAuthProviders(ctx context.Context) ([]*AuthProvider, error) {
+	availableAuthProviders := []*AuthProvider{}
+
+	if grackdb.AppConfig.DiscordClientId != "" {
+		availableAuthProviders = append(availableAuthProviders, &AuthProvider{
+			Type: AuthProviderTypeDiscord,
+			URL:  "/oauth/discord/auth",
+		})
+	}
+
+	if grackdb.AppConfig.GithubClientId != "" {
+		availableAuthProviders = append(availableAuthProviders, &AuthProvider{
+			Type: AuthProviderTypeGithub,
+			URL:  "/oauth/github/auth",
+		})
+	}
+
+	return availableAuthProviders, nil
 }
 
 // Query returns QueryResolver implementation.

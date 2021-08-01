@@ -44,6 +44,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AuthProvider struct {
+		Type func(childComplexity int) int
+		URL  func(childComplexity int) int
+	}
+
 	DiscordAccount struct {
 		DiscordID     func(childComplexity int) int
 		Discriminator func(childComplexity int) int
@@ -125,6 +130,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		AvailableAuthProviders    func(childComplexity int) int
 		DiscordAccounts           func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.DiscordAccountOrder, where *ent.DiscordAccountWhereInput) int
 		GithubAccounts            func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubAccountOrder, where *ent.GithubAccountWhereInput) int
 		GithubOrganizationMembers func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationMemberOrder, where *ent.GithubOrganizationMemberWhereInput) int
@@ -162,6 +168,7 @@ type QueryResolver interface {
 	GithubAccounts(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubAccountOrder, where *ent.GithubAccountWhereInput) (*ent.GithubAccountConnection, error)
 	GithubOrganizationMembers(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationMemberOrder, where *ent.GithubOrganizationMemberWhereInput) (*ent.GithubOrganizationMemberConnection, error)
 	GithubOrganizations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationOrder, where *ent.GithubOrganizationWhereInput) (*ent.GithubOrganizationConnection, error)
+	AvailableAuthProviders(ctx context.Context) ([]*AuthProvider, error)
 }
 
 type executableSchema struct {
@@ -178,6 +185,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AuthProvider.type":
+		if e.complexity.AuthProvider.Type == nil {
+			break
+		}
+
+		return e.complexity.AuthProvider.Type(childComplexity), true
+
+	case "AuthProvider.url":
+		if e.complexity.AuthProvider.URL == nil {
+			break
+		}
+
+		return e.complexity.AuthProvider.URL(childComplexity), true
 
 	case "DiscordAccount.discordId":
 		if e.complexity.DiscordAccount.DiscordID == nil {
@@ -465,6 +486,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
+
+	case "Query.availableAuthProviders":
+		if e.complexity.Query.AvailableAuthProviders == nil {
+			break
+		}
+
+		return e.complexity.Query.AvailableAuthProviders(childComplexity), true
 
 	case "Query.discordAccounts":
 		if e.complexity.Query.DiscordAccounts == nil {
@@ -834,6 +862,16 @@ type GithubOrganization implements Node {
     members: [GithubOrganizationMember!]
 }
 
+enum AuthProviderType {
+    GITHUB
+    DISCORD
+}
+
+type AuthProvider {
+    type: AuthProviderType!
+    url: String!
+}
+
 type Query {
     node(id: ID!): Node
     nodes(ids: [ID!]!): [Node]!
@@ -878,6 +916,8 @@ type Query {
         orderBy: GithubOrganizationOrder
         where: GithubOrganizationWhereInput
     ): GithubOrganizationConnection
+
+    availableAuthProviders: [AuthProvider]
 }
 `, BuiltIn: false},
 	{Name: "ent.graphql", Input: `"""
@@ -1531,6 +1571,76 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AuthProvider_type(ctx context.Context, field graphql.CollectedField, obj *AuthProvider) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AuthProvider",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(AuthProviderType)
+	fc.Result = res
+	return ec.marshalNAuthProviderType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋgraphqlᚐAuthProviderType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AuthProvider_url(ctx context.Context, field graphql.CollectedField, obj *AuthProvider) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AuthProvider",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.URL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _DiscordAccount_id(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordAccount) (ret graphql.Marshaler) {
 	defer func() {
@@ -3202,6 +3312,38 @@ func (ec *executionContext) _Query_githubOrganizations(ctx context.Context, fiel
 	res := resTmp.(*ent.GithubOrganizationConnection)
 	fc.Result = res
 	return ec.marshalOGithubOrganizationConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_availableAuthProviders(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AvailableAuthProviders(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*AuthProvider)
+	fc.Result = res
+	return ec.marshalOAuthProvider2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋgraphqlᚐAuthProvider(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6403,6 +6545,38 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 
 // region    **************************** object.gotpl ****************************
 
+var authProviderImplementors = []string{"AuthProvider"}
+
+func (ec *executionContext) _AuthProvider(ctx context.Context, sel ast.SelectionSet, obj *AuthProvider) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, authProviderImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AuthProvider")
+		case "type":
+			out.Values[i] = ec._AuthProvider_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "url":
+			out.Values[i] = ec._AuthProvider_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var discordAccountImplementors = []string{"DiscordAccount", "Node"}
 
 func (ec *executionContext) _DiscordAccount(ctx context.Context, sel ast.SelectionSet, obj *ent.DiscordAccount) graphql.Marshaler {
@@ -7004,6 +7178,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_githubOrganizations(ctx, field)
 				return res
 			})
+		case "availableAuthProviders":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_availableAuthProviders(ctx, field)
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -7382,6 +7567,16 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) unmarshalNAuthProviderType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋgraphqlᚐAuthProviderType(ctx context.Context, v interface{}) (AuthProviderType, error) {
+	var res AuthProviderType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAuthProviderType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋgraphqlᚐAuthProviderType(ctx context.Context, sel ast.SelectionSet, v AuthProviderType) graphql.Marshaler {
+	return v
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
@@ -7846,6 +8041,53 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalOAuthProvider2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋgraphqlᚐAuthProvider(ctx context.Context, sel ast.SelectionSet, v []*AuthProvider) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOAuthProvider2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋgraphqlᚐAuthProvider(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOAuthProvider2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋgraphqlᚐAuthProvider(ctx context.Context, sel ast.SelectionSet, v *AuthProvider) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AuthProvider(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

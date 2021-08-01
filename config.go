@@ -1,4 +1,4 @@
-package api
+package grackdb
 
 import (
 	"fmt"
@@ -21,12 +21,12 @@ type Config struct {
 	DiscordCallbackUrl  string `default:"http://localhost:8081/oauth/discord/callback" split_words:"true"`
 }
 
-var config Config
+var AppConfig Config
 
 func LoadConfig() error {
 	godotenv.Load()
 
-	err := envconfig.Process("grackdb", &config)
+	err := envconfig.Process("grackdb", &AppConfig)
 	if err != nil {
 		return fmt.Errorf("error loading config: %w", err)
 	}

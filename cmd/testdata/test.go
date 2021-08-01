@@ -5,13 +5,18 @@ import (
 	"log"
 
 	"entgo.io/ent/dialect"
+	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-	client, err := ent.Open(dialect.SQLite, "file:grack.db?_fk=1")
+	err := grackdb.LoadConfig()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	client, err := ent.Open(dialect.SQLite, grackdb.AppConfig.DBConnectionString)
 	if err != nil {
 		log.Fatalf("failed opening connection to sqlite: %v", err)
 	}

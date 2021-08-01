@@ -162,6 +162,16 @@ type GithubOrganization implements Node {
     members: [GithubOrganizationMember!]
 }
 
+enum AuthProviderType {
+    GITHUB
+    DISCORD
+}
+
+type AuthProvider {
+    type: AuthProviderType!
+    url: String!
+}
+
 type Query {
     node(id: ID!): Node
     nodes(ids: [ID!]!): [Node]!
@@ -206,4 +216,6 @@ type Query {
         orderBy: GithubOrganizationOrder
         where: GithubOrganizationWhereInput
     ): GithubOrganizationConnection
+
+    availableAuthProviders: [AuthProvider]
 }
