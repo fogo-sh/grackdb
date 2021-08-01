@@ -20,9 +20,6 @@ const UsersQuery = `
           organizationMemberships {
             id
             role
-            account {
-              username
-            }
             organization {
               name
               displayName
@@ -45,37 +42,33 @@ function Users() {
 
   return (
     <div className="p-2">
-      <p>Users</p>
-      <ul class="list-disc">
+      <p className="text-xl pb-5">Users</p>
+      <ul>
         {data.users.edges.map(({ node }) => (
           <li key={node.id} className="pb-4">
-            {node.username}
+            <p className="text-lg">{node.username}</p>
             {node.discordAccounts.length > 0 && (
               <ul className="mt-2 pl-3">
-                Discord:
                 {node.discordAccounts.map(({ id, username, discriminator }) => (
                   <li key={id}>
-                    {username}#{discriminator}
+                    <i class="fab fa-discord" /> {username}#{discriminator}
                   </li>
                 ))}
               </ul>
             )}
             {node.githubAccounts.length > 0 && (
               <ul className="mt-2 pl-3">
-                GitHub:
                 {node.githubAccounts.map(
                   ({ id, username, organizationMemberships }) => (
                     <li key={id}>
-                      {username}
+                      <i class="fab fa-github-square" /> {username}
                       {organizationMemberships.length > 0 && (
                         <ul className="mt-2 pl-3">
                           Organizations:
                           {organizationMemberships.map(
-                            ({ id, role, account, organization }) => (
+                            ({ id, role, organization }) => (
                               <li key={id}>
-                                {role}
-                                {account.username}
-                                {organization.name}
+                                {organization.name} ({role})
                               </li>
                             )
                           )}
