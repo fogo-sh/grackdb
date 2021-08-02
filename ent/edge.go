@@ -28,10 +28,26 @@ func (ga *GithubAccount) OrganizationMemberships(ctx context.Context) ([]*Github
 	return result, err
 }
 
+func (ga *GithubAccount) Repositories(ctx context.Context) ([]*Repository, error) {
+	result, err := ga.Edges.RepositoriesOrErr()
+	if IsNotLoaded(err) {
+		result, err = ga.QueryRepositories().All(ctx)
+	}
+	return result, err
+}
+
 func (_go *GithubOrganization) Members(ctx context.Context) ([]*GithubOrganizationMember, error) {
 	result, err := _go.Edges.MembersOrErr()
 	if IsNotLoaded(err) {
 		result, err = _go.QueryMembers().All(ctx)
+	}
+	return result, err
+}
+
+func (_go *GithubOrganization) Repositories(ctx context.Context) ([]*Repository, error) {
+	result, err := _go.Edges.RepositoriesOrErr()
+	if IsNotLoaded(err) {
+		result, err = _go.QueryRepositories().All(ctx)
 	}
 	return result, err
 }
@@ -76,6 +92,14 @@ func (pr *Project) ChildProjects(ctx context.Context) ([]*ProjectAssociation, er
 	return result, err
 }
 
+func (pr *Project) Repositories(ctx context.Context) ([]*Repository, error) {
+	result, err := pr.Edges.RepositoriesOrErr()
+	if IsNotLoaded(err) {
+		result, err = pr.QueryRepositories().All(ctx)
+	}
+	return result, err
+}
+
 func (pa *ProjectAssociation) Parent(ctx context.Context) (*Project, error) {
 	result, err := pa.Edges.ParentOrErr()
 	if IsNotLoaded(err) {
@@ -104,6 +128,30 @@ func (pc *ProjectContributor) User(ctx context.Context) (*User, error) {
 	result, err := pc.Edges.UserOrErr()
 	if IsNotLoaded(err) {
 		result, err = pc.QueryUser().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (r *Repository) Project(ctx context.Context) (*Project, error) {
+	result, err := r.Edges.ProjectOrErr()
+	if IsNotLoaded(err) {
+		result, err = r.QueryProject().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (r *Repository) GithubAccount(ctx context.Context) (*GithubAccount, error) {
+	result, err := r.Edges.GithubAccountOrErr()
+	if IsNotLoaded(err) {
+		result, err = r.QueryGithubAccount().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (r *Repository) GithubOrganization(ctx context.Context) (*GithubOrganization, error) {
+	result, err := r.Edges.GithubOrganizationOrErr()
+	if IsNotLoaded(err) {
+		result, err = r.QueryGithubOrganization().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }

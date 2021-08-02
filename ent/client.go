@@ -16,6 +16,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -42,6 +43,8 @@ type Client struct {
 	ProjectAssociation *ProjectAssociationClient
 	// ProjectContributor is the client for interacting with the ProjectContributor builders.
 	ProjectContributor *ProjectContributorClient
+	// Repository is the client for interacting with the Repository builders.
+	Repository *RepositoryClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// additional fields for node api
@@ -66,6 +69,7 @@ func (c *Client) init() {
 	c.Project = NewProjectClient(c.config)
 	c.ProjectAssociation = NewProjectAssociationClient(c.config)
 	c.ProjectContributor = NewProjectContributorClient(c.config)
+	c.Repository = NewRepositoryClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -107,6 +111,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Project:                  NewProjectClient(cfg),
 		ProjectAssociation:       NewProjectAssociationClient(cfg),
 		ProjectContributor:       NewProjectContributorClient(cfg),
+		Repository:               NewRepositoryClient(cfg),
 		User:                     NewUserClient(cfg),
 	}, nil
 }
@@ -133,6 +138,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Project:                  NewProjectClient(cfg),
 		ProjectAssociation:       NewProjectAssociationClient(cfg),
 		ProjectContributor:       NewProjectContributorClient(cfg),
+		Repository:               NewRepositoryClient(cfg),
 		User:                     NewUserClient(cfg),
 	}, nil
 }
@@ -170,6 +176,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Project.Use(hooks...)
 	c.ProjectAssociation.Use(hooks...)
 	c.ProjectContributor.Use(hooks...)
+	c.Repository.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -397,6 +404,22 @@ func (c *GithubAccountClient) QueryOrganizationMemberships(ga *GithubAccount) *G
 	return query
 }
 
+// QueryRepositories queries the repositories edge of a GithubAccount.
+func (c *GithubAccountClient) QueryRepositories(ga *GithubAccount) *RepositoryQuery {
+	query := &RepositoryQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ga.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubaccount.Table, githubaccount.FieldID, id),
+			sqlgraph.To(repository.Table, repository.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githubaccount.RepositoriesTable, githubaccount.RepositoriesColumn),
+		)
+		fromV = sqlgraph.Neighbors(ga.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GithubAccountClient) Hooks() []Hook {
 	hooks := c.hooks.GithubAccount
@@ -497,6 +520,22 @@ func (c *GithubOrganizationClient) QueryMembers(_go *GithubOrganization) *Github
 			sqlgraph.From(githuborganization.Table, githuborganization.FieldID, id),
 			sqlgraph.To(githuborganizationmember.Table, githuborganizationmember.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, githuborganization.MembersTable, githuborganization.MembersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_go.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRepositories queries the repositories edge of a GithubOrganization.
+func (c *GithubOrganizationClient) QueryRepositories(_go *GithubOrganization) *RepositoryQuery {
+	query := &RepositoryQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := _go.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githuborganization.Table, githuborganization.FieldID, id),
+			sqlgraph.To(repository.Table, repository.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githuborganization.RepositoriesTable, githuborganization.RepositoriesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_go.driver.Dialect(), step)
 		return fromV, nil
@@ -766,6 +805,22 @@ func (c *ProjectClient) QueryChildProjects(pr *Project) *ProjectAssociationQuery
 	return query
 }
 
+// QueryRepositories queries the repositories edge of a Project.
+func (c *ProjectClient) QueryRepositories(pr *Project) *RepositoryQuery {
+	query := &RepositoryQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(repository.Table, repository.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.RepositoriesTable, project.RepositoriesColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProjectClient) Hooks() []Hook {
 	hooks := c.hooks.Project
@@ -1016,6 +1071,145 @@ func (c *ProjectContributorClient) QueryUser(pc *ProjectContributor) *UserQuery 
 func (c *ProjectContributorClient) Hooks() []Hook {
 	hooks := c.hooks.ProjectContributor
 	return append(hooks[:len(hooks):len(hooks)], projectcontributor.Hooks[:]...)
+}
+
+// RepositoryClient is a client for the Repository schema.
+type RepositoryClient struct {
+	config
+}
+
+// NewRepositoryClient returns a client for the Repository from the given config.
+func NewRepositoryClient(c config) *RepositoryClient {
+	return &RepositoryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `repository.Hooks(f(g(h())))`.
+func (c *RepositoryClient) Use(hooks ...Hook) {
+	c.hooks.Repository = append(c.hooks.Repository, hooks...)
+}
+
+// Create returns a create builder for Repository.
+func (c *RepositoryClient) Create() *RepositoryCreate {
+	mutation := newRepositoryMutation(c.config, OpCreate)
+	return &RepositoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Repository entities.
+func (c *RepositoryClient) CreateBulk(builders ...*RepositoryCreate) *RepositoryCreateBulk {
+	return &RepositoryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Repository.
+func (c *RepositoryClient) Update() *RepositoryUpdate {
+	mutation := newRepositoryMutation(c.config, OpUpdate)
+	return &RepositoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RepositoryClient) UpdateOne(r *Repository) *RepositoryUpdateOne {
+	mutation := newRepositoryMutation(c.config, OpUpdateOne, withRepository(r))
+	return &RepositoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RepositoryClient) UpdateOneID(id int) *RepositoryUpdateOne {
+	mutation := newRepositoryMutation(c.config, OpUpdateOne, withRepositoryID(id))
+	return &RepositoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Repository.
+func (c *RepositoryClient) Delete() *RepositoryDelete {
+	mutation := newRepositoryMutation(c.config, OpDelete)
+	return &RepositoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *RepositoryClient) DeleteOne(r *Repository) *RepositoryDeleteOne {
+	return c.DeleteOneID(r.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *RepositoryClient) DeleteOneID(id int) *RepositoryDeleteOne {
+	builder := c.Delete().Where(repository.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RepositoryDeleteOne{builder}
+}
+
+// Query returns a query builder for Repository.
+func (c *RepositoryClient) Query() *RepositoryQuery {
+	return &RepositoryQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Repository entity by its id.
+func (c *RepositoryClient) Get(ctx context.Context, id int) (*Repository, error) {
+	return c.Query().Where(repository.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RepositoryClient) GetX(ctx context.Context, id int) *Repository {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProject queries the project edge of a Repository.
+func (c *RepositoryClient) QueryProject(r *Repository) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repository.Table, repository.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, repository.ProjectTable, repository.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGithubAccount queries the github_account edge of a Repository.
+func (c *RepositoryClient) QueryGithubAccount(r *Repository) *GithubAccountQuery {
+	query := &GithubAccountQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repository.Table, repository.FieldID, id),
+			sqlgraph.To(githubaccount.Table, githubaccount.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, repository.GithubAccountTable, repository.GithubAccountColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGithubOrganization queries the github_organization edge of a Repository.
+func (c *RepositoryClient) QueryGithubOrganization(r *Repository) *GithubOrganizationQuery {
+	query := &GithubOrganizationQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repository.Table, repository.FieldID, id),
+			sqlgraph.To(githuborganization.Table, githuborganization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, repository.GithubOrganizationTable, repository.GithubOrganizationColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *RepositoryClient) Hooks() []Hook {
+	hooks := c.hooks.Repository
+	return append(hooks[:len(hooks):len(hooks)], repository.Hooks[:]...)
 }
 
 // UserClient is a client for the User schema.

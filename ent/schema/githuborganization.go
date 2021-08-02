@@ -36,6 +36,8 @@ func (GithubOrganization) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("members", GithubOrganizationMember.Type).
 			Annotations(entgql.Bind()),
+		edge.To("repositories", Repository.Type).
+			Annotations(entgql.Bind()),
 	}
 }
 

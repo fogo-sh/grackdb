@@ -15,6 +15,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/predicate"
+	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -30,6 +31,7 @@ type GithubAccountQuery struct {
 	// eager-loading edges.
 	withOwner                   *UserQuery
 	withOrganizationMemberships *GithubOrganizationMemberQuery
+	withRepositories            *RepositoryQuery
 	withFKs                     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -104,6 +106,28 @@ func (gaq *GithubAccountQuery) QueryOrganizationMemberships() *GithubOrganizatio
 			sqlgraph.From(githubaccount.Table, githubaccount.FieldID, selector),
 			sqlgraph.To(githuborganizationmember.Table, githuborganizationmember.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, githubaccount.OrganizationMembershipsTable, githubaccount.OrganizationMembershipsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(gaq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRepositories chains the current query on the "repositories" edge.
+func (gaq *GithubAccountQuery) QueryRepositories() *RepositoryQuery {
+	query := &RepositoryQuery{config: gaq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := gaq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := gaq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githubaccount.Table, githubaccount.FieldID, selector),
+			sqlgraph.To(repository.Table, repository.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githubaccount.RepositoriesTable, githubaccount.RepositoriesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(gaq.driver.Dialect(), step)
 		return fromU, nil
@@ -294,6 +318,7 @@ func (gaq *GithubAccountQuery) Clone() *GithubAccountQuery {
 		predicates:                  append([]predicate.GithubAccount{}, gaq.predicates...),
 		withOwner:                   gaq.withOwner.Clone(),
 		withOrganizationMemberships: gaq.withOrganizationMemberships.Clone(),
+		withRepositories:            gaq.withRepositories.Clone(),
 		// clone intermediate query.
 		sql:  gaq.sql.Clone(),
 		path: gaq.path,
@@ -319,6 +344,17 @@ func (gaq *GithubAccountQuery) WithOrganizationMemberships(opts ...func(*GithubO
 		opt(query)
 	}
 	gaq.withOrganizationMemberships = query
+	return gaq
+}
+
+// WithRepositories tells the query-builder to eager-load the nodes that are connected to
+// the "repositories" edge. The optional arguments are used to configure the query builder of the edge.
+func (gaq *GithubAccountQuery) WithRepositories(opts ...func(*RepositoryQuery)) *GithubAccountQuery {
+	query := &RepositoryQuery{config: gaq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	gaq.withRepositories = query
 	return gaq
 }
 
@@ -394,9 +430,10 @@ func (gaq *GithubAccountQuery) sqlAll(ctx context.Context) ([]*GithubAccount, er
 		nodes       = []*GithubAccount{}
 		withFKs     = gaq.withFKs
 		_spec       = gaq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			gaq.withOwner != nil,
 			gaq.withOrganizationMemberships != nil,
+			gaq.withRepositories != nil,
 		}
 	)
 	if gaq.withOwner != nil {
@@ -480,6 +517,35 @@ func (gaq *GithubAccountQuery) sqlAll(ctx context.Context) ([]*GithubAccount, er
 				return nil, fmt.Errorf(`unexpected foreign-key "github_account_organization_memberships" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.OrganizationMemberships = append(node.Edges.OrganizationMemberships, n)
+		}
+	}
+
+	if query := gaq.withRepositories; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*GithubAccount)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Repositories = []*Repository{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Repository(func(s *sql.Selector) {
+			s.Where(sql.InValues(githubaccount.RepositoriesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.github_account_repositories
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "github_account_repositories" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "github_account_repositories" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Repositories = append(node.Edges.Repositories, n)
 		}
 	}
 

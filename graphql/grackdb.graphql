@@ -106,6 +106,7 @@ type GithubAccount implements Node {
     username: String!
     owner: User!
     organizationMemberships: [GithubOrganizationMember!]
+    repositories: [Repository!]
 }
 
 type GithubOrganizationMemberConnection {
@@ -161,6 +162,7 @@ type GithubOrganization implements Node {
     name: String!
     displayName: String
     members: [GithubOrganizationMember!]
+    repositories: [Repository!]
 }
 
 enum AuthProviderType {
@@ -205,6 +207,7 @@ type Project implements Node {
     contributors: [ProjectContributor!]
     parentProjects: [ProjectAssociation!]
     childProjects: [ProjectAssociation!]
+    repositories: [Repository!]
 }
 
 enum ProjectContributorRole {
@@ -273,6 +276,36 @@ type ProjectAssociation implements Node {
     child: Project!
 }
 
+type RepositoryConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [RepositoryEdge]
+}
+
+type RepositoryEdge {
+    node: Repository
+    cursor: Cursor!
+}
+
+enum RepositoryOrderField {
+    NAME
+    DESCRIPTION
+}
+
+input RepositoryOrder {
+    direction: OrderDirection!
+    field: RepositoryOrderField
+}
+
+type Repository implements Node {
+    id: ID!
+    name: String!
+    description: String
+    project: Project!
+    githubAccount: GithubAccount
+    githubOrganization: GithubOrganization
+}
+
 type Query {
     node(id: ID!): Node
     nodes(ids: [ID!]!): [Node]!
@@ -334,7 +367,7 @@ type Query {
         orderBy: ProjectContributorOrder
         where: ProjectContributorWhereInput
     ): ProjectContributorConnection
-    projectAssociation(
+    projectAssociations(
         after: Cursor
         first: Int
         before: Cursor
@@ -342,6 +375,15 @@ type Query {
         orderBy: ProjectAssociationOrder
         where: ProjectAssociationWhereInput
     ): ProjectAssociationConnection
+
+    repositories(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: RepositoryOrder
+        where: RepositoryWhereInput
+    ): RepositoryConnection
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
@@ -394,6 +436,14 @@ input CreateProjectAssociationInput {
     child: Int!
 }
 
+input CreateRepositoryInput {
+    name: String!
+    description: String
+    project: Int!
+    githubAccount: Int
+    githubOrganization: Int
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
@@ -403,4 +453,5 @@ type Mutation {
     createProject(input: CreateProjectInput!): Project!
     createProjectContributor(input: CreateProjectContributorInput!): ProjectContributor!
     createProjectAssociation(input: CreateProjectAssociationInput!): ProjectAssociation!
+    createRepository(input: CreateRepositoryInput!): Repository!
 }

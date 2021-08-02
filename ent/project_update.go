@@ -14,6 +14,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/repository"
 )
 
 // ProjectUpdate is the builder for updating Project entities.
@@ -126,6 +127,21 @@ func (pu *ProjectUpdate) AddChildProjects(p ...*ProjectAssociation) *ProjectUpda
 	return pu.AddChildProjectIDs(ids...)
 }
 
+// AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
+func (pu *ProjectUpdate) AddRepositoryIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.AddRepositoryIDs(ids...)
+	return pu
+}
+
+// AddRepositories adds the "repositories" edges to the Repository entity.
+func (pu *ProjectUpdate) AddRepositories(r ...*Repository) *ProjectUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return pu.AddRepositoryIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -192,6 +208,27 @@ func (pu *ProjectUpdate) RemoveChildProjects(p ...*ProjectAssociation) *ProjectU
 		ids[i] = p[i].ID
 	}
 	return pu.RemoveChildProjectIDs(ids...)
+}
+
+// ClearRepositories clears all "repositories" edges to the Repository entity.
+func (pu *ProjectUpdate) ClearRepositories() *ProjectUpdate {
+	pu.mutation.ClearRepositories()
+	return pu
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to Repository entities by IDs.
+func (pu *ProjectUpdate) RemoveRepositoryIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.RemoveRepositoryIDs(ids...)
+	return pu
+}
+
+// RemoveRepositories removes "repositories" edges to Repository entities.
+func (pu *ProjectUpdate) RemoveRepositories(r ...*Repository) *ProjectUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return pu.RemoveRepositoryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -481,6 +518,60 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RepositoriesTable,
+			Columns: []string{project.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedRepositoriesIDs(); len(nodes) > 0 && !pu.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RepositoriesTable,
+			Columns: []string{project.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RepositoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RepositoriesTable,
+			Columns: []string{project.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{project.Label}
@@ -597,6 +688,21 @@ func (puo *ProjectUpdateOne) AddChildProjects(p ...*ProjectAssociation) *Project
 	return puo.AddChildProjectIDs(ids...)
 }
 
+// AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
+func (puo *ProjectUpdateOne) AddRepositoryIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.AddRepositoryIDs(ids...)
+	return puo
+}
+
+// AddRepositories adds the "repositories" edges to the Repository entity.
+func (puo *ProjectUpdateOne) AddRepositories(r ...*Repository) *ProjectUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return puo.AddRepositoryIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -663,6 +769,27 @@ func (puo *ProjectUpdateOne) RemoveChildProjects(p ...*ProjectAssociation) *Proj
 		ids[i] = p[i].ID
 	}
 	return puo.RemoveChildProjectIDs(ids...)
+}
+
+// ClearRepositories clears all "repositories" edges to the Repository entity.
+func (puo *ProjectUpdateOne) ClearRepositories() *ProjectUpdateOne {
+	puo.mutation.ClearRepositories()
+	return puo
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to Repository entities by IDs.
+func (puo *ProjectUpdateOne) RemoveRepositoryIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.RemoveRepositoryIDs(ids...)
+	return puo
+}
+
+// RemoveRepositories removes "repositories" edges to Repository entities.
+func (puo *ProjectUpdateOne) RemoveRepositories(r ...*Repository) *ProjectUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return puo.RemoveRepositoryIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -968,6 +1095,60 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RepositoriesTable,
+			Columns: []string{project.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedRepositoriesIDs(); len(nodes) > 0 && !puo.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RepositoriesTable,
+			Columns: []string{project.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RepositoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RepositoriesTable,
+			Columns: []string{project.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
 				},
 			},
 		}

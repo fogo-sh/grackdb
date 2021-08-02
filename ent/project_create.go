@@ -13,6 +13,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/repository"
 )
 
 // ProjectCreate is the builder for creating a Project entity.
@@ -105,6 +106,21 @@ func (pc *ProjectCreate) AddChildProjects(p ...*ProjectAssociation) *ProjectCrea
 		ids[i] = p[i].ID
 	}
 	return pc.AddChildProjectIDs(ids...)
+}
+
+// AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
+func (pc *ProjectCreate) AddRepositoryIDs(ids ...int) *ProjectCreate {
+	pc.mutation.AddRepositoryIDs(ids...)
+	return pc
+}
+
+// AddRepositories adds the "repositories" edges to the Repository entity.
+func (pc *ProjectCreate) AddRepositories(r ...*Repository) *ProjectCreate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return pc.AddRepositoryIDs(ids...)
 }
 
 // Mutation returns the ProjectMutation object of the builder.
@@ -280,6 +296,25 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.RepositoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RepositoriesTable,
+			Columns: []string{project.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
 				},
 			},
 		}

@@ -17,6 +17,8 @@ const (
 	FieldDisplayName = "display_name"
 	// EdgeMembers holds the string denoting the members edge name in mutations.
 	EdgeMembers = "members"
+	// EdgeRepositories holds the string denoting the repositories edge name in mutations.
+	EdgeRepositories = "repositories"
 	// Table holds the table name of the githuborganization in the database.
 	Table = "github_organizations"
 	// MembersTable is the table the holds the members relation/edge.
@@ -26,6 +28,13 @@ const (
 	MembersInverseTable = "github_organization_members"
 	// MembersColumn is the table column denoting the members relation/edge.
 	MembersColumn = "github_organization_members"
+	// RepositoriesTable is the table the holds the repositories relation/edge.
+	RepositoriesTable = "repositories"
+	// RepositoriesInverseTable is the table name for the Repository entity.
+	// It exists in this package in order to avoid circular dependency with the "repository" package.
+	RepositoriesInverseTable = "repositories"
+	// RepositoriesColumn is the table column denoting the repositories relation/edge.
+	RepositoriesColumn = "github_organization_repositories"
 )
 
 // Columns holds all SQL columns for githuborganization fields.

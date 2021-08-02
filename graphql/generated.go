@@ -76,6 +76,7 @@ type ComplexityRoot struct {
 		ID                      func(childComplexity int) int
 		OrganizationMemberships func(childComplexity int) int
 		Owner                   func(childComplexity int) int
+		Repositories            func(childComplexity int) int
 		Username                func(childComplexity int) int
 	}
 
@@ -91,10 +92,11 @@ type ComplexityRoot struct {
 	}
 
 	GithubOrganization struct {
-		DisplayName func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Members     func(childComplexity int) int
-		Name        func(childComplexity int) int
+		DisplayName  func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Members      func(childComplexity int) int
+		Name         func(childComplexity int) int
+		Repositories func(childComplexity int) int
 	}
 
 	GithubOrganizationConnection struct {
@@ -134,6 +136,7 @@ type ComplexityRoot struct {
 		CreateProject                  func(childComplexity int, input ent.CreateProjectInput) int
 		CreateProjectAssociation       func(childComplexity int, input ent.CreateProjectAssociationInput) int
 		CreateProjectContributor       func(childComplexity int, input ent.CreateProjectContributorInput) int
+		CreateRepository               func(childComplexity int, input ent.CreateRepositoryInput) int
 		CreateUser                     func(childComplexity int, input ent.CreateUserInput) int
 	}
 
@@ -152,6 +155,7 @@ type ComplexityRoot struct {
 		ID             func(childComplexity int) int
 		Name           func(childComplexity int) int
 		ParentProjects func(childComplexity int) int
+		Repositories   func(childComplexity int) int
 		StartDate      func(childComplexity int) int
 	}
 
@@ -211,10 +215,31 @@ type ComplexityRoot struct {
 		GithubOrganizations       func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationOrder, where *ent.GithubOrganizationWhereInput) int
 		Node                      func(childComplexity int, id int) int
 		Nodes                     func(childComplexity int, ids []int) int
-		ProjectAssociation        func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) int
+		ProjectAssociations       func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) int
 		ProjectContributors       func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectContributorOrder, where *ent.ProjectContributorWhereInput) int
 		Projects                  func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectOrder, where *ent.ProjectWhereInput) int
+		Repositories              func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryOrder, where *ent.RepositoryWhereInput) int
 		Users                     func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) int
+	}
+
+	Repository struct {
+		Description        func(childComplexity int) int
+		GithubAccount      func(childComplexity int) int
+		GithubOrganization func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		Name               func(childComplexity int) int
+		Project            func(childComplexity int) int
+	}
+
+	RepositoryConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	RepositoryEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	User struct {
@@ -247,6 +272,7 @@ type MutationResolver interface {
 	CreateProject(ctx context.Context, input ent.CreateProjectInput) (*ent.Project, error)
 	CreateProjectContributor(ctx context.Context, input ent.CreateProjectContributorInput) (*ent.ProjectContributor, error)
 	CreateProjectAssociation(ctx context.Context, input ent.CreateProjectAssociationInput) (*ent.ProjectAssociation, error)
+	CreateRepository(ctx context.Context, input ent.CreateRepositoryInput) (*ent.Repository, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
@@ -258,7 +284,8 @@ type QueryResolver interface {
 	GithubOrganizations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationOrder, where *ent.GithubOrganizationWhereInput) (*ent.GithubOrganizationConnection, error)
 	Projects(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectOrder, where *ent.ProjectWhereInput) (*ent.ProjectConnection, error)
 	ProjectContributors(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectContributorOrder, where *ent.ProjectContributorWhereInput) (*ent.ProjectContributorConnection, error)
-	ProjectAssociation(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) (*ent.ProjectAssociationConnection, error)
+	ProjectAssociations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) (*ent.ProjectAssociationConnection, error)
+	Repositories(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryOrder, where *ent.RepositoryWhereInput) (*ent.RepositoryConnection, error)
 	AvailableAuthProviders(ctx context.Context) ([]*AuthProvider, error)
 	CurrentUser(ctx context.Context) (*ent.User, error)
 }
@@ -383,6 +410,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GithubAccount.Owner(childComplexity), true
 
+	case "GithubAccount.repositories":
+		if e.complexity.GithubAccount.Repositories == nil {
+			break
+		}
+
+		return e.complexity.GithubAccount.Repositories(childComplexity), true
+
 	case "GithubAccount.username":
 		if e.complexity.GithubAccount.Username == nil {
 			break
@@ -452,6 +486,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.GithubOrganization.Name(childComplexity), true
+
+	case "GithubOrganization.repositories":
+		if e.complexity.GithubOrganization.Repositories == nil {
+			break
+		}
+
+		return e.complexity.GithubOrganization.Repositories(childComplexity), true
 
 	case "GithubOrganizationConnection.edges":
 		if e.complexity.GithubOrganizationConnection.Edges == nil {
@@ -635,6 +676,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateProjectContributor(childComplexity, args["input"].(ent.CreateProjectContributorInput)), true
 
+	case "Mutation.createRepository":
+		if e.complexity.Mutation.CreateRepository == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createRepository_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateRepository(childComplexity, args["input"].(ent.CreateRepositoryInput)), true
+
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
 			break
@@ -723,6 +776,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Project.ParentProjects(childComplexity), true
+
+	case "Project.repositories":
+		if e.complexity.Project.Repositories == nil {
+			break
+		}
+
+		return e.complexity.Project.Repositories(childComplexity), true
 
 	case "Project.startDate":
 		if e.complexity.Project.StartDate == nil {
@@ -978,17 +1038,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Nodes(childComplexity, args["ids"].([]int)), true
 
-	case "Query.projectAssociation":
-		if e.complexity.Query.ProjectAssociation == nil {
+	case "Query.projectAssociations":
+		if e.complexity.Query.ProjectAssociations == nil {
 			break
 		}
 
-		args, err := ec.field_Query_projectAssociation_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_projectAssociations_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.ProjectAssociation(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.ProjectAssociationOrder), args["where"].(*ent.ProjectAssociationWhereInput)), true
+		return e.complexity.Query.ProjectAssociations(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.ProjectAssociationOrder), args["where"].(*ent.ProjectAssociationWhereInput)), true
 
 	case "Query.projectContributors":
 		if e.complexity.Query.ProjectContributors == nil {
@@ -1014,6 +1074,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Projects(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.ProjectOrder), args["where"].(*ent.ProjectWhereInput)), true
 
+	case "Query.repositories":
+		if e.complexity.Query.Repositories == nil {
+			break
+		}
+
+		args, err := ec.field_Query_repositories_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Repositories(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.RepositoryOrder), args["where"].(*ent.RepositoryWhereInput)), true
+
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
 			break
@@ -1025,6 +1097,83 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Users(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.UserOrder), args["where"].(*ent.UserWhereInput)), true
+
+	case "Repository.description":
+		if e.complexity.Repository.Description == nil {
+			break
+		}
+
+		return e.complexity.Repository.Description(childComplexity), true
+
+	case "Repository.githubAccount":
+		if e.complexity.Repository.GithubAccount == nil {
+			break
+		}
+
+		return e.complexity.Repository.GithubAccount(childComplexity), true
+
+	case "Repository.githubOrganization":
+		if e.complexity.Repository.GithubOrganization == nil {
+			break
+		}
+
+		return e.complexity.Repository.GithubOrganization(childComplexity), true
+
+	case "Repository.id":
+		if e.complexity.Repository.ID == nil {
+			break
+		}
+
+		return e.complexity.Repository.ID(childComplexity), true
+
+	case "Repository.name":
+		if e.complexity.Repository.Name == nil {
+			break
+		}
+
+		return e.complexity.Repository.Name(childComplexity), true
+
+	case "Repository.project":
+		if e.complexity.Repository.Project == nil {
+			break
+		}
+
+		return e.complexity.Repository.Project(childComplexity), true
+
+	case "RepositoryConnection.edges":
+		if e.complexity.RepositoryConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.RepositoryConnection.Edges(childComplexity), true
+
+	case "RepositoryConnection.pageInfo":
+		if e.complexity.RepositoryConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.RepositoryConnection.PageInfo(childComplexity), true
+
+	case "RepositoryConnection.totalCount":
+		if e.complexity.RepositoryConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.RepositoryConnection.TotalCount(childComplexity), true
+
+	case "RepositoryEdge.cursor":
+		if e.complexity.RepositoryEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.RepositoryEdge.Cursor(childComplexity), true
+
+	case "RepositoryEdge.node":
+		if e.complexity.RepositoryEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.RepositoryEdge.Node(childComplexity), true
 
 	case "User.avatarUrl":
 		if e.complexity.User.AvatarURL == nil {
@@ -1275,6 +1424,7 @@ type GithubAccount implements Node {
     username: String!
     owner: User!
     organizationMemberships: [GithubOrganizationMember!]
+    repositories: [Repository!]
 }
 
 type GithubOrganizationMemberConnection {
@@ -1330,6 +1480,7 @@ type GithubOrganization implements Node {
     name: String!
     displayName: String
     members: [GithubOrganizationMember!]
+    repositories: [Repository!]
 }
 
 enum AuthProviderType {
@@ -1374,6 +1525,7 @@ type Project implements Node {
     contributors: [ProjectContributor!]
     parentProjects: [ProjectAssociation!]
     childProjects: [ProjectAssociation!]
+    repositories: [Repository!]
 }
 
 enum ProjectContributorRole {
@@ -1442,6 +1594,36 @@ type ProjectAssociation implements Node {
     child: Project!
 }
 
+type RepositoryConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [RepositoryEdge]
+}
+
+type RepositoryEdge {
+    node: Repository
+    cursor: Cursor!
+}
+
+enum RepositoryOrderField {
+    NAME
+    DESCRIPTION
+}
+
+input RepositoryOrder {
+    direction: OrderDirection!
+    field: RepositoryOrderField
+}
+
+type Repository implements Node {
+    id: ID!
+    name: String!
+    description: String
+    project: Project!
+    githubAccount: GithubAccount
+    githubOrganization: GithubOrganization
+}
+
 type Query {
     node(id: ID!): Node
     nodes(ids: [ID!]!): [Node]!
@@ -1503,7 +1685,7 @@ type Query {
         orderBy: ProjectContributorOrder
         where: ProjectContributorWhereInput
     ): ProjectContributorConnection
-    projectAssociation(
+    projectAssociations(
         after: Cursor
         first: Int
         before: Cursor
@@ -1511,6 +1693,15 @@ type Query {
         orderBy: ProjectAssociationOrder
         where: ProjectAssociationWhereInput
     ): ProjectAssociationConnection
+
+    repositories(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: RepositoryOrder
+        where: RepositoryWhereInput
+    ): RepositoryConnection
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
@@ -1563,6 +1754,14 @@ input CreateProjectAssociationInput {
     child: Int!
 }
 
+input CreateRepositoryInput {
+    name: String!
+    description: String
+    project: Int!
+    githubAccount: Int
+    githubOrganization: Int
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
@@ -1572,6 +1771,7 @@ type Mutation {
     createProject(input: CreateProjectInput!): Project!
     createProjectContributor(input: CreateProjectContributorInput!): ProjectContributor!
     createProjectAssociation(input: CreateProjectAssociationInput!): ProjectAssociation!
+    createRepository(input: CreateRepositoryInput!): Repository!
 }
 `, BuiltIn: false},
 	{Name: "ent.graphql", Input: `"""
@@ -1748,6 +1948,10 @@ input GithubAccountWhereInput {
   """organization_memberships edge predicates"""
   hasOrganizationMemberships: Boolean
   hasOrganizationMembershipsWith: [GithubOrganizationMemberWhereInput!]
+  
+  """repositories edge predicates"""
+  hasRepositories: Boolean
+  hasRepositoriesWith: [RepositoryWhereInput!]
 }
 
 """
@@ -1804,6 +2008,10 @@ input GithubOrganizationWhereInput {
   """members edge predicates"""
   hasMembers: Boolean
   hasMembersWith: [GithubOrganizationMemberWhereInput!]
+  
+  """repositories edge predicates"""
+  hasRepositories: Boolean
+  hasRepositoriesWith: [RepositoryWhereInput!]
 }
 
 """
@@ -1924,6 +2132,10 @@ input ProjectWhereInput {
   """child_projects edge predicates"""
   hasChildProjects: Boolean
   hasChildProjectsWith: [ProjectAssociationWhereInput!]
+  
+  """repositories edge predicates"""
+  hasRepositories: Boolean
+  hasRepositoriesWith: [RepositoryWhereInput!]
 }
 
 """
@@ -1992,6 +2204,70 @@ input ProjectAssociationWhereInput {
   """child edge predicates"""
   hasChild: Boolean
   hasChildWith: [ProjectWhereInput!]
+}
+
+"""
+RepositoryWhereInput is used for filtering Repository objects.
+Input was generated by ent.
+"""
+input RepositoryWhereInput {
+  not: RepositoryWhereInput
+  and: [RepositoryWhereInput!]
+  or: [RepositoryWhereInput!]
+  
+  """name field predicates"""
+  name: String
+  nameNEQ: String
+  nameIn: [String!]
+  nameNotIn: [String!]
+  nameGT: String
+  nameGTE: String
+  nameLT: String
+  nameLTE: String
+  nameContains: String
+  nameHasPrefix: String
+  nameHasSuffix: String
+  nameEqualFold: String
+  nameContainsFold: String
+  
+  """description field predicates"""
+  description: String
+  descriptionNEQ: String
+  descriptionIn: [String!]
+  descriptionNotIn: [String!]
+  descriptionGT: String
+  descriptionGTE: String
+  descriptionLT: String
+  descriptionLTE: String
+  descriptionContains: String
+  descriptionHasPrefix: String
+  descriptionHasSuffix: String
+  descriptionIsNil: Boolean
+  descriptionNotNil: Boolean
+  descriptionEqualFold: String
+  descriptionContainsFold: String
+  
+  """id field predicates"""
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
+  
+  """project edge predicates"""
+  hasProject: Boolean
+  hasProjectWith: [ProjectWhereInput!]
+  
+  """github_account edge predicates"""
+  hasGithubAccount: Boolean
+  hasGithubAccountWith: [GithubAccountWhereInput!]
+  
+  """github_organization edge predicates"""
+  hasGithubOrganization: Boolean
+  hasGithubOrganizationWith: [GithubOrganizationWhereInput!]
 }
 `, BuiltIn: false},
 }
@@ -2098,6 +2374,21 @@ func (ec *executionContext) field_Mutation_createProject_args(ctx context.Contex
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateProjectInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateProjectInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createRepository_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateRepositoryInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateRepositoryInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateRepositoryInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2406,7 +2697,7 @@ func (ec *executionContext) field_Query_nodes_args(ctx context.Context, rawArgs 
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_projectAssociation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_projectAssociations_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *ent.Cursor
@@ -2578,6 +2869,66 @@ func (ec *executionContext) field_Query_projects_args(ctx context.Context, rawAr
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
 		arg5, err = ec.unmarshalOProjectWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_repositories_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.Cursor
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *ent.Cursor
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.RepositoryOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalORepositoryOrder2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *ent.RepositoryWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalORepositoryWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3235,6 +3586,38 @@ func (ec *executionContext) _GithubAccount_organizationMemberships(ctx context.C
 	return ec.marshalOGithubOrganizationMember2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationMemberᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _GithubAccount_repositories(ctx context.Context, field graphql.CollectedField, obj *ent.GithubAccount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GithubAccount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Repositories(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Repository)
+	fc.Result = res
+	return ec.marshalORepository2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _GithubAccountConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.GithubAccountConnection) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3536,6 +3919,38 @@ func (ec *executionContext) _GithubOrganization_members(ctx context.Context, fie
 	res := resTmp.([]*ent.GithubOrganizationMember)
 	fc.Result = res
 	return ec.marshalOGithubOrganizationMember2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationMemberᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GithubOrganization_repositories(ctx context.Context, field graphql.CollectedField, obj *ent.GithubOrganization) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GithubOrganization",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Repositories(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Repository)
+	fc.Result = res
+	return ec.marshalORepository2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _GithubOrganizationConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.GithubOrganizationConnection) (ret graphql.Marshaler) {
@@ -4352,6 +4767,48 @@ func (ec *executionContext) _Mutation_createProjectAssociation(ctx context.Conte
 	return ec.marshalNProjectAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociation(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createRepository(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createRepository_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateRepository(rctx, args["input"].(ent.CreateRepositoryInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Repository)
+	fc.Result = res
+	return ec.marshalNRepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4749,6 +5206,38 @@ func (ec *executionContext) _Project_childProjects(ctx context.Context, field gr
 	res := resTmp.([]*ent.ProjectAssociation)
 	fc.Result = res
 	return ec.marshalOProjectAssociation2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_repositories(ctx context.Context, field graphql.CollectedField, obj *ent.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Repositories(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Repository)
+	fc.Result = res
+	return ec.marshalORepository2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ProjectAssociation_id(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociation) (ret graphql.Marshaler) {
@@ -5892,7 +6381,7 @@ func (ec *executionContext) _Query_projectContributors(ctx context.Context, fiel
 	return ec.marshalOProjectContributorConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectContributorConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_projectAssociation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_projectAssociations(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5909,7 +6398,7 @@ func (ec *executionContext) _Query_projectAssociation(ctx context.Context, field
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_projectAssociation_args(ctx, rawArgs)
+	args, err := ec.field_Query_projectAssociations_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -5917,7 +6406,7 @@ func (ec *executionContext) _Query_projectAssociation(ctx context.Context, field
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ProjectAssociation(rctx, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.ProjectAssociationOrder), args["where"].(*ent.ProjectAssociationWhereInput))
+		return ec.resolvers.Query().ProjectAssociations(rctx, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.ProjectAssociationOrder), args["where"].(*ent.ProjectAssociationWhereInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5929,6 +6418,45 @@ func (ec *executionContext) _Query_projectAssociation(ctx context.Context, field
 	res := resTmp.(*ent.ProjectAssociationConnection)
 	fc.Result = res
 	return ec.marshalOProjectAssociationConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_repositories(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_repositories_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Repositories(rctx, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.RepositoryOrder), args["where"].(*ent.RepositoryWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.RepositoryConnection)
+	fc.Result = res
+	return ec.marshalORepositoryConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_availableAuthProviders(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6064,6 +6592,376 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Repository_id(ctx context.Context, field graphql.CollectedField, obj *ent.Repository) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Repository",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Repository_name(ctx context.Context, field graphql.CollectedField, obj *ent.Repository) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Repository",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Repository_description(ctx context.Context, field graphql.CollectedField, obj *ent.Repository) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Repository",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Repository_project(ctx context.Context, field graphql.CollectedField, obj *ent.Repository) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Repository",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Project(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Project)
+	fc.Result = res
+	return ec.marshalNProject2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Repository_githubAccount(ctx context.Context, field graphql.CollectedField, obj *ent.Repository) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Repository",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GithubAccount(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubAccount)
+	fc.Result = res
+	return ec.marshalOGithubAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Repository_githubOrganization(ctx context.Context, field graphql.CollectedField, obj *ent.Repository) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Repository",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GithubOrganization(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubOrganization)
+	fc.Result = res
+	return ec.marshalOGithubOrganization2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganization(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.RepositoryEdge)
+	fc.Result = res
+	return ec.marshalORepositoryEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Repository)
+	fc.Result = res
+	return ec.marshalORepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.Cursor)
+	fc.Result = res
+	return ec.marshalNCursor2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
@@ -7772,6 +8670,58 @@ func (ec *executionContext) unmarshalInputCreateProjectInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateRepositoryInput(ctx context.Context, obj interface{}) (ent.CreateRepositoryInput, error) {
+	var it ent.CreateRepositoryInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "project":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("project"))
+			it.Project, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "githubAccount":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("githubAccount"))
+			it.GithubAccount, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "githubOrganization":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("githubOrganization"))
+			it.GithubOrganization, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, obj interface{}) (ent.CreateUserInput, error) {
 	var it ent.CreateUserInput
 	var asMap = obj.(map[string]interface{})
@@ -8514,6 +9464,22 @@ func (ec *executionContext) unmarshalInputGithubAccountWhereInput(ctx context.Co
 			if err != nil {
 				return it, err
 			}
+		case "hasRepositories":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositories"))
+			it.HasRepositories, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepositoriesWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositoriesWith"))
+			it.HasRepositoriesWith, err = ec.unmarshalORepositoryWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -9071,6 +10037,22 @@ func (ec *executionContext) unmarshalInputGithubOrganizationWhereInput(ctx conte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMembersWith"))
 			it.HasMembersWith, err = ec.unmarshalOGithubOrganizationMemberWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationMemberWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepositories":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositories"))
+			it.HasRepositories, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepositoriesWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositoriesWith"))
+			it.HasRepositoriesWith, err = ec.unmarshalORepositoryWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10002,6 +10984,422 @@ func (ec *executionContext) unmarshalInputProjectWhereInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
+		case "hasRepositories":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositories"))
+			it.HasRepositories, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepositoriesWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositoriesWith"))
+			it.HasRepositoriesWith, err = ec.unmarshalORepositoryWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputRepositoryOrder(ctx context.Context, obj interface{}) (ent.RepositoryOrder, error) {
+	var it ent.RepositoryOrder
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNOrderDirection2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			it.Field, err = ec.unmarshalORepositoryOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputRepositoryWhereInput(ctx context.Context, obj interface{}) (ent.RepositoryWhereInput, error) {
+	var it ent.RepositoryWhereInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "not":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			it.Not, err = ec.unmarshalORepositoryWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "and":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			it.And, err = ec.unmarshalORepositoryWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "or":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			it.Or, err = ec.unmarshalORepositoryWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNEQ"))
+			it.NameNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameIn"))
+			it.NameIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNotIn"))
+			it.NameNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGT"))
+			it.NameGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGTE"))
+			it.NameGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLT"))
+			it.NameLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLTE"))
+			it.NameLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContains"))
+			it.NameContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasPrefix"))
+			it.NameHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasSuffix"))
+			it.NameHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEqualFold"))
+			it.NameEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContainsFold"))
+			it.NameContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNEQ"))
+			it.DescriptionNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionIn"))
+			it.DescriptionIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNotIn"))
+			it.DescriptionNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionGT"))
+			it.DescriptionGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionGTE"))
+			it.DescriptionGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionLT"))
+			it.DescriptionLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionLTE"))
+			it.DescriptionLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionContains"))
+			it.DescriptionContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionHasPrefix"))
+			it.DescriptionHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionHasSuffix"))
+			it.DescriptionHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionIsNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionIsNil"))
+			it.DescriptionIsNil, err = ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionNotNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNotNil"))
+			it.DescriptionNotNil, err = ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionEqualFold"))
+			it.DescriptionEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "descriptionContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionContainsFold"))
+			it.DescriptionContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			it.IDNEQ, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			it.IDIn, err = ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			it.IDNotIn, err = ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			it.IDGT, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			it.IDGTE, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			it.IDLT, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			it.IDLTE, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasProject":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProject"))
+			it.HasProject, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasProjectWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProjectWith"))
+			it.HasProjectWith, err = ec.unmarshalOProjectWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasGithubAccount":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasGithubAccount"))
+			it.HasGithubAccount, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasGithubAccountWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasGithubAccountWith"))
+			it.HasGithubAccountWith, err = ec.unmarshalOGithubAccountWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubAccountWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasGithubOrganization":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasGithubOrganization"))
+			it.HasGithubOrganization, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasGithubOrganizationWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasGithubOrganizationWith"))
+			it.HasGithubOrganizationWith, err = ec.unmarshalOGithubOrganizationWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -10456,6 +11854,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._ProjectAssociation(ctx, sel, obj)
+	case *ent.Repository:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Repository(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -10662,6 +12065,17 @@ func (ec *executionContext) _GithubAccount(ctx context.Context, sel ast.Selectio
 				res = ec._GithubAccount_organizationMemberships(ctx, field, obj)
 				return res
 			})
+		case "repositories":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._GithubAccount_repositories(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10768,6 +12182,17 @@ func (ec *executionContext) _GithubOrganization(ctx context.Context, sel ast.Sel
 					}
 				}()
 				res = ec._GithubOrganization_members(ctx, field, obj)
+				return res
+			})
+		case "repositories":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._GithubOrganization_repositories(ctx, field, obj)
 				return res
 			})
 		default:
@@ -11022,6 +12447,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createRepository":
+			out.Values[i] = ec._Mutation_createRepository(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11130,6 +12560,17 @@ func (ec *executionContext) _Project(ctx context.Context, sel ast.SelectionSet, 
 					}
 				}()
 				res = ec._Project_childProjects(ctx, field, obj)
+				return res
+			})
+		case "repositories":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Project_repositories(ctx, field, obj)
 				return res
 			})
 		default:
@@ -11569,7 +13010,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_projectContributors(ctx, field)
 				return res
 			})
-		case "projectAssociation":
+		case "projectAssociations":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -11577,7 +13018,18 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_projectAssociation(ctx, field)
+				res = ec._Query_projectAssociations(ctx, field)
+				return res
+			})
+		case "repositories":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_repositories(ctx, field)
 				return res
 			})
 		case "availableAuthProviders":
@@ -11606,6 +13058,139 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
 			out.Values[i] = ec._Query___schema(ctx, field)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var repositoryImplementors = []string{"Repository", "Node"}
+
+func (ec *executionContext) _Repository(ctx context.Context, sel ast.SelectionSet, obj *ent.Repository) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, repositoryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Repository")
+		case "id":
+			out.Values[i] = ec._Repository_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._Repository_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "description":
+			out.Values[i] = ec._Repository_description(ctx, field, obj)
+		case "project":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Repository_project(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "githubAccount":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Repository_githubAccount(ctx, field, obj)
+				return res
+			})
+		case "githubOrganization":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Repository_githubOrganization(ctx, field, obj)
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var repositoryConnectionImplementors = []string{"RepositoryConnection"}
+
+func (ec *executionContext) _RepositoryConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.RepositoryConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, repositoryConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RepositoryConnection")
+		case "totalCount":
+			out.Values[i] = ec._RepositoryConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._RepositoryConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "edges":
+			out.Values[i] = ec._RepositoryConnection_edges(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var repositoryEdgeImplementors = []string{"RepositoryEdge"}
+
+func (ec *executionContext) _RepositoryEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.RepositoryEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, repositoryEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RepositoryEdge")
+		case "node":
+			out.Values[i] = ec._RepositoryEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._RepositoryEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12052,6 +13637,11 @@ func (ec *executionContext) unmarshalNCreateProjectInput2githubᚗcomᚋfogoᚑs
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateRepositoryInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateRepositoryInput(ctx context.Context, v interface{}) (ent.CreateRepositoryInput, error) {
+	res, err := ec.unmarshalInputCreateRepositoryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateUserInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateUserInput(ctx context.Context, v interface{}) (ent.CreateUserInput, error) {
 	res, err := ec.unmarshalInputCreateUserInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -12375,6 +13965,25 @@ func (ec *executionContext) unmarshalNProjectContributorWhereInput2ᚖgithubᚗc
 
 func (ec *executionContext) unmarshalNProjectWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectWhereInput(ctx context.Context, v interface{}) (*ent.ProjectWhereInput, error) {
 	res, err := ec.unmarshalInputProjectWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNRepository2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx context.Context, sel ast.SelectionSet, v ent.Repository) graphql.Marshaler {
+	return ec._Repository(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNRepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx context.Context, sel ast.SelectionSet, v *ent.Repository) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Repository(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNRepositoryWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInput(ctx context.Context, v interface{}) (*ent.RepositoryWhereInput, error) {
+	res, err := ec.unmarshalInputRepositoryWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -14072,6 +15681,163 @@ func (ec *executionContext) unmarshalOProjectWhereInput2ᚖgithubᚗcomᚋfogo�
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputProjectWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalORepository2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Repository) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNRepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalORepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx context.Context, sel ast.SelectionSet, v *ent.Repository) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Repository(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalORepositoryConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryConnection(ctx context.Context, sel ast.SelectionSet, v *ent.RepositoryConnection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._RepositoryConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalORepositoryEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.RepositoryEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalORepositoryEdge2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalORepositoryEdge2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryEdge(ctx context.Context, sel ast.SelectionSet, v *ent.RepositoryEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._RepositoryEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalORepositoryOrder2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryOrder(ctx context.Context, v interface{}) (*ent.RepositoryOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputRepositoryOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalORepositoryOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryOrderField(ctx context.Context, v interface{}) (*ent.RepositoryOrderField, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(ent.RepositoryOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalORepositoryOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.RepositoryOrderField) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalORepositoryWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.RepositoryWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*ent.RepositoryWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNRepositoryWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalORepositoryWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInput(ctx context.Context, v interface{}) (*ent.RepositoryWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputRepositoryWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

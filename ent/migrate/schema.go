@@ -157,6 +157,41 @@ var (
 			},
 		},
 	}
+	// RepositoriesColumns holds the columns for the "repositories" table.
+	RepositoriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "github_account_repositories", Type: field.TypeInt, Nullable: true},
+		{Name: "github_organization_repositories", Type: field.TypeInt, Nullable: true},
+		{Name: "project_repositories", Type: field.TypeInt, Nullable: true},
+	}
+	// RepositoriesTable holds the schema information for the "repositories" table.
+	RepositoriesTable = &schema.Table{
+		Name:       "repositories",
+		Columns:    RepositoriesColumns,
+		PrimaryKey: []*schema.Column{RepositoriesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "repositories_github_accounts_repositories",
+				Columns:    []*schema.Column{RepositoriesColumns[3]},
+				RefColumns: []*schema.Column{GithubAccountsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "repositories_github_organizations_repositories",
+				Columns:    []*schema.Column{RepositoriesColumns[4]},
+				RefColumns: []*schema.Column{GithubOrganizationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "repositories_projects_repositories",
+				Columns:    []*schema.Column{RepositoriesColumns[5]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -178,6 +213,7 @@ var (
 		ProjectsTable,
 		ProjectAssociationsTable,
 		ProjectContributorsTable,
+		RepositoriesTable,
 		UsersTable,
 	}
 )
@@ -191,4 +227,7 @@ func init() {
 	ProjectAssociationsTable.ForeignKeys[1].RefTable = ProjectsTable
 	ProjectContributorsTable.ForeignKeys[0].RefTable = ProjectsTable
 	ProjectContributorsTable.ForeignKeys[1].RefTable = UsersTable
+	RepositoriesTable.ForeignKeys[0].RefTable = GithubAccountsTable
+	RepositoriesTable.ForeignKeys[1].RefTable = GithubOrganizationsTable
+	RepositoriesTable.ForeignKeys[2].RefTable = ProjectsTable
 }

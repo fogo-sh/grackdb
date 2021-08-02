@@ -67,6 +67,13 @@ func (r *mutationResolver) CreateProjectAssociation(ctx context.Context, input e
 		Save(ctx)
 }
 
+func (r *mutationResolver) CreateRepository(ctx context.Context, input ent.CreateRepositoryInput) (*ent.Repository, error) {
+	return ent.FromContext(ctx).Repository.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
 	return r.client.Noder(ctx, id)
 }
@@ -131,11 +138,19 @@ func (r *queryResolver) ProjectContributors(ctx context.Context, after *ent.Curs
 		)
 }
 
-func (r *queryResolver) ProjectAssociation(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) (*ent.ProjectAssociationConnection, error) {
+func (r *queryResolver) ProjectAssociations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) (*ent.ProjectAssociationConnection, error) {
 	return r.client.ProjectAssociation.Query().
 		Paginate(ctx, after, first, before, last,
 			ent.WithProjectAssociationOrder(orderBy),
 			ent.WithProjectAssociationFilter(where.Filter),
+		)
+}
+
+func (r *queryResolver) Repositories(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryOrder, where *ent.RepositoryWhereInput) (*ent.RepositoryConnection, error) {
+	return r.client.Repository.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithRepositoryOrder(orderBy),
+			ent.WithRepositoryFilter(where.Filter),
 		)
 }
 

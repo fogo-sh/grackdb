@@ -47,6 +47,10 @@ func (ga *GithubAccountQuery) collectField(ctx *graphql.OperationContext, field 
 			ga = ga.WithOwner(func(query *UserQuery) {
 				query.collectField(ctx, field)
 			})
+		case "repositories":
+			ga = ga.WithRepositories(func(query *RepositoryQuery) {
+				query.collectField(ctx, field)
+			})
 		}
 	}
 	return ga
@@ -65,6 +69,10 @@ func (_go *GithubOrganizationQuery) collectField(ctx *graphql.OperationContext, 
 		switch field.Name {
 		case "members":
 			_go = _go.WithMembers(func(query *GithubOrganizationMemberQuery) {
+				query.collectField(ctx, field)
+			})
+		case "repositories":
+			_go = _go.WithRepositories(func(query *RepositoryQuery) {
 				query.collectField(ctx, field)
 			})
 		}
@@ -119,6 +127,10 @@ func (pr *ProjectQuery) collectField(ctx *graphql.OperationContext, field graphq
 			pr = pr.WithParentProjects(func(query *ProjectAssociationQuery) {
 				query.collectField(ctx, field)
 			})
+		case "repositories":
+			pr = pr.WithRepositories(func(query *RepositoryQuery) {
+				query.collectField(ctx, field)
+			})
 		}
 	}
 	return pr
@@ -170,6 +182,34 @@ func (pc *ProjectContributorQuery) collectField(ctx *graphql.OperationContext, f
 		}
 	}
 	return pc
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (r *RepositoryQuery) CollectFields(ctx context.Context, satisfies ...string) *RepositoryQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		r = r.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return r
+}
+
+func (r *RepositoryQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *RepositoryQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "githubAccount":
+			r = r.WithGithubAccount(func(query *GithubAccountQuery) {
+				query.collectField(ctx, field)
+			})
+		case "githubOrganization":
+			r = r.WithGithubOrganization(func(query *GithubOrganizationQuery) {
+				query.collectField(ctx, field)
+			})
+		case "project":
+			r = r.WithProject(func(query *ProjectQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
+	return r
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.

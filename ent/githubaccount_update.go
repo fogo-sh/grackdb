@@ -13,6 +13,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/predicate"
+	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -61,6 +62,21 @@ func (gau *GithubAccountUpdate) AddOrganizationMemberships(g ...*GithubOrganizat
 	return gau.AddOrganizationMembershipIDs(ids...)
 }
 
+// AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
+func (gau *GithubAccountUpdate) AddRepositoryIDs(ids ...int) *GithubAccountUpdate {
+	gau.mutation.AddRepositoryIDs(ids...)
+	return gau
+}
+
+// AddRepositories adds the "repositories" edges to the Repository entity.
+func (gau *GithubAccountUpdate) AddRepositories(r ...*Repository) *GithubAccountUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return gau.AddRepositoryIDs(ids...)
+}
+
 // Mutation returns the GithubAccountMutation object of the builder.
 func (gau *GithubAccountUpdate) Mutation() *GithubAccountMutation {
 	return gau.mutation
@@ -91,6 +107,27 @@ func (gau *GithubAccountUpdate) RemoveOrganizationMemberships(g ...*GithubOrgani
 		ids[i] = g[i].ID
 	}
 	return gau.RemoveOrganizationMembershipIDs(ids...)
+}
+
+// ClearRepositories clears all "repositories" edges to the Repository entity.
+func (gau *GithubAccountUpdate) ClearRepositories() *GithubAccountUpdate {
+	gau.mutation.ClearRepositories()
+	return gau
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to Repository entities by IDs.
+func (gau *GithubAccountUpdate) RemoveRepositoryIDs(ids ...int) *GithubAccountUpdate {
+	gau.mutation.RemoveRepositoryIDs(ids...)
+	return gau
+}
+
+// RemoveRepositories removes "repositories" edges to Repository entities.
+func (gau *GithubAccountUpdate) RemoveRepositories(r ...*Repository) *GithubAccountUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return gau.RemoveRepositoryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -277,6 +314,60 @@ func (gau *GithubAccountUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if gau.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubaccount.RepositoriesTable,
+			Columns: []string{githubaccount.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := gau.mutation.RemovedRepositoriesIDs(); len(nodes) > 0 && !gau.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubaccount.RepositoriesTable,
+			Columns: []string{githubaccount.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := gau.mutation.RepositoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubaccount.RepositoriesTable,
+			Columns: []string{githubaccount.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, gau.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{githubaccount.Label}
@@ -328,6 +419,21 @@ func (gauo *GithubAccountUpdateOne) AddOrganizationMemberships(g ...*GithubOrgan
 	return gauo.AddOrganizationMembershipIDs(ids...)
 }
 
+// AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
+func (gauo *GithubAccountUpdateOne) AddRepositoryIDs(ids ...int) *GithubAccountUpdateOne {
+	gauo.mutation.AddRepositoryIDs(ids...)
+	return gauo
+}
+
+// AddRepositories adds the "repositories" edges to the Repository entity.
+func (gauo *GithubAccountUpdateOne) AddRepositories(r ...*Repository) *GithubAccountUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return gauo.AddRepositoryIDs(ids...)
+}
+
 // Mutation returns the GithubAccountMutation object of the builder.
 func (gauo *GithubAccountUpdateOne) Mutation() *GithubAccountMutation {
 	return gauo.mutation
@@ -358,6 +464,27 @@ func (gauo *GithubAccountUpdateOne) RemoveOrganizationMemberships(g ...*GithubOr
 		ids[i] = g[i].ID
 	}
 	return gauo.RemoveOrganizationMembershipIDs(ids...)
+}
+
+// ClearRepositories clears all "repositories" edges to the Repository entity.
+func (gauo *GithubAccountUpdateOne) ClearRepositories() *GithubAccountUpdateOne {
+	gauo.mutation.ClearRepositories()
+	return gauo
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to Repository entities by IDs.
+func (gauo *GithubAccountUpdateOne) RemoveRepositoryIDs(ids ...int) *GithubAccountUpdateOne {
+	gauo.mutation.RemoveRepositoryIDs(ids...)
+	return gauo
+}
+
+// RemoveRepositories removes "repositories" edges to Repository entities.
+func (gauo *GithubAccountUpdateOne) RemoveRepositories(r ...*Repository) *GithubAccountUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return gauo.RemoveRepositoryIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -560,6 +687,60 @@ func (gauo *GithubAccountUpdateOne) sqlSave(ctx context.Context) (_node *GithubA
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: githuborganizationmember.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if gauo.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubaccount.RepositoriesTable,
+			Columns: []string{githubaccount.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := gauo.mutation.RemovedRepositoriesIDs(); len(nodes) > 0 && !gauo.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubaccount.RepositoriesTable,
+			Columns: []string{githubaccount.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := gauo.mutation.RepositoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubaccount.RepositoriesTable,
+			Columns: []string{githubaccount.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
 				},
 			},
 		}

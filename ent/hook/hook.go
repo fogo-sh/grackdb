@@ -100,6 +100,19 @@ func (f ProjectContributorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return f(ctx, mv)
 }
 
+// The RepositoryFunc type is an adapter to allow the use of ordinary
+// function as Repository mutator.
+type RepositoryFunc func(context.Context, *ent.RepositoryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RepositoryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.RepositoryMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RepositoryMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

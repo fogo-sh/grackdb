@@ -31,6 +31,7 @@ type hooks struct {
 	Project                  []ent.Hook
 	ProjectAssociation       []ent.Hook
 	ProjectContributor       []ent.Hook
+	Repository               []ent.Hook
 	User                     []ent.Hook
 }
 

@@ -16,6 +16,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/repository"
 )
 
 // ProjectQuery is the builder for querying Project entities.
@@ -31,6 +32,7 @@ type ProjectQuery struct {
 	withContributors   *ProjectContributorQuery
 	withParentProjects *ProjectAssociationQuery
 	withChildProjects  *ProjectAssociationQuery
+	withRepositories   *RepositoryQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -126,6 +128,28 @@ func (pq *ProjectQuery) QueryChildProjects() *ProjectAssociationQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(projectassociation.Table, projectassociation.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.ChildProjectsTable, project.ChildProjectsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRepositories chains the current query on the "repositories" edge.
+func (pq *ProjectQuery) QueryRepositories() *RepositoryQuery {
+	query := &RepositoryQuery{config: pq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(repository.Table, repository.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.RepositoriesTable, project.RepositoriesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -317,6 +341,7 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 		withContributors:   pq.withContributors.Clone(),
 		withParentProjects: pq.withParentProjects.Clone(),
 		withChildProjects:  pq.withChildProjects.Clone(),
+		withRepositories:   pq.withRepositories.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -353,6 +378,17 @@ func (pq *ProjectQuery) WithChildProjects(opts ...func(*ProjectAssociationQuery)
 		opt(query)
 	}
 	pq.withChildProjects = query
+	return pq
+}
+
+// WithRepositories tells the query-builder to eager-load the nodes that are connected to
+// the "repositories" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProjectQuery) WithRepositories(opts ...func(*RepositoryQuery)) *ProjectQuery {
+	query := &RepositoryQuery{config: pq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withRepositories = query
 	return pq
 }
 
@@ -427,10 +463,11 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context) ([]*Project, error) {
 	var (
 		nodes       = []*Project{}
 		_spec       = pq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			pq.withContributors != nil,
 			pq.withParentProjects != nil,
 			pq.withChildProjects != nil,
+			pq.withRepositories != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -537,6 +574,35 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context) ([]*Project, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "project_child_projects" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.ChildProjects = append(node.Edges.ChildProjects, n)
+		}
+	}
+
+	if query := pq.withRepositories; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Project)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Repositories = []*Repository{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Repository(func(s *sql.Selector) {
+			s.Where(sql.InValues(project.RepositoriesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.project_repositories
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "project_repositories" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "project_repositories" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Repositories = append(node.Edges.Repositories, n)
 		}
 	}
 

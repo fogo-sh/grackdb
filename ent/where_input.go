@@ -14,6 +14,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -350,6 +351,10 @@ type GithubAccountWhereInput struct {
 	// "organization_memberships" edge predicates.
 	HasOrganizationMemberships     *bool                                 `json:"hasOrganizationMemberships,omitempty"`
 	HasOrganizationMembershipsWith []*GithubOrganizationMemberWhereInput `json:"hasOrganizationMembershipsWith,omitempty"`
+
+	// "repositories" edge predicates.
+	HasRepositories     *bool                   `json:"hasRepositories,omitempty"`
+	HasRepositoriesWith []*RepositoryWhereInput `json:"hasRepositoriesWith,omitempty"`
 }
 
 // Filter applies the GithubAccountWhereInput filter on the GithubAccountQuery builder.
@@ -511,6 +516,24 @@ func (i *GithubAccountWhereInput) P() (predicate.GithubAccount, error) {
 		}
 		predicates = append(predicates, githubaccount.HasOrganizationMembershipsWith(with...))
 	}
+	if i.HasRepositories != nil {
+		p := githubaccount.HasRepositories()
+		if !*i.HasRepositories {
+			p = githubaccount.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasRepositoriesWith) > 0 {
+		with := make([]predicate.Repository, 0, len(i.HasRepositoriesWith))
+		for _, w := range i.HasRepositoriesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, githubaccount.HasRepositoriesWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate GithubAccountWhereInput")
@@ -572,6 +595,10 @@ type GithubOrganizationWhereInput struct {
 	// "members" edge predicates.
 	HasMembers     *bool                                 `json:"hasMembers,omitempty"`
 	HasMembersWith []*GithubOrganizationMemberWhereInput `json:"hasMembersWith,omitempty"`
+
+	// "repositories" edge predicates.
+	HasRepositories     *bool                   `json:"hasRepositories,omitempty"`
+	HasRepositoriesWith []*RepositoryWhereInput `json:"hasRepositoriesWith,omitempty"`
 }
 
 // Filter applies the GithubOrganizationWhereInput filter on the GithubOrganizationQuery builder.
@@ -759,6 +786,24 @@ func (i *GithubOrganizationWhereInput) P() (predicate.GithubOrganization, error)
 			with = append(with, p)
 		}
 		predicates = append(predicates, githuborganization.HasMembersWith(with...))
+	}
+	if i.HasRepositories != nil {
+		p := githuborganization.HasRepositories()
+		if !*i.HasRepositories {
+			p = githuborganization.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasRepositoriesWith) > 0 {
+		with := make([]predicate.Repository, 0, len(i.HasRepositoriesWith))
+		for _, w := range i.HasRepositoriesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, githuborganization.HasRepositoriesWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -1024,6 +1069,10 @@ type ProjectWhereInput struct {
 	// "child_projects" edge predicates.
 	HasChildProjects     *bool                           `json:"hasChildProjects,omitempty"`
 	HasChildProjectsWith []*ProjectAssociationWhereInput `json:"hasChildProjectsWith,omitempty"`
+
+	// "repositories" edge predicates.
+	HasRepositories     *bool                   `json:"hasRepositories,omitempty"`
+	HasRepositoriesWith []*RepositoryWhereInput `json:"hasRepositoriesWith,omitempty"`
 }
 
 // Filter applies the ProjectWhereInput filter on the ProjectQuery builder.
@@ -1301,6 +1350,24 @@ func (i *ProjectWhereInput) P() (predicate.Project, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, project.HasChildProjectsWith(with...))
+	}
+	if i.HasRepositories != nil {
+		p := project.HasRepositories()
+		if !*i.HasRepositories {
+			p = project.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasRepositoriesWith) > 0 {
+		with := make([]predicate.Repository, 0, len(i.HasRepositoriesWith))
+		for _, w := range i.HasRepositoriesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, project.HasRepositoriesWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -1655,6 +1722,299 @@ func (i *ProjectContributorWhereInput) P() (predicate.ProjectContributor, error)
 		return predicates[0], nil
 	default:
 		return projectcontributor.And(predicates...), nil
+	}
+}
+
+// RepositoryWhereInput represents a where input for filtering Repository queries.
+type RepositoryWhereInput struct {
+	Not *RepositoryWhereInput   `json:"not,omitempty"`
+	Or  []*RepositoryWhereInput `json:"or,omitempty"`
+	And []*RepositoryWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *int  `json:"id,omitempty"`
+	IDNEQ   *int  `json:"idNEQ,omitempty"`
+	IDIn    []int `json:"idIn,omitempty"`
+	IDNotIn []int `json:"idNotIn,omitempty"`
+	IDGT    *int  `json:"idGT,omitempty"`
+	IDGTE   *int  `json:"idGTE,omitempty"`
+	IDLT    *int  `json:"idLT,omitempty"`
+	IDLTE   *int  `json:"idLTE,omitempty"`
+
+	// "name" field predicates.
+	Name             *string  `json:"name,omitempty"`
+	NameNEQ          *string  `json:"nameNEQ,omitempty"`
+	NameIn           []string `json:"nameIn,omitempty"`
+	NameNotIn        []string `json:"nameNotIn,omitempty"`
+	NameGT           *string  `json:"nameGT,omitempty"`
+	NameGTE          *string  `json:"nameGTE,omitempty"`
+	NameLT           *string  `json:"nameLT,omitempty"`
+	NameLTE          *string  `json:"nameLTE,omitempty"`
+	NameContains     *string  `json:"nameContains,omitempty"`
+	NameHasPrefix    *string  `json:"nameHasPrefix,omitempty"`
+	NameHasSuffix    *string  `json:"nameHasSuffix,omitempty"`
+	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
+	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
+
+	// "description" field predicates.
+	Description             *string  `json:"description,omitempty"`
+	DescriptionNEQ          *string  `json:"descriptionNEQ,omitempty"`
+	DescriptionIn           []string `json:"descriptionIn,omitempty"`
+	DescriptionNotIn        []string `json:"descriptionNotIn,omitempty"`
+	DescriptionGT           *string  `json:"descriptionGT,omitempty"`
+	DescriptionGTE          *string  `json:"descriptionGTE,omitempty"`
+	DescriptionLT           *string  `json:"descriptionLT,omitempty"`
+	DescriptionLTE          *string  `json:"descriptionLTE,omitempty"`
+	DescriptionContains     *string  `json:"descriptionContains,omitempty"`
+	DescriptionHasPrefix    *string  `json:"descriptionHasPrefix,omitempty"`
+	DescriptionHasSuffix    *string  `json:"descriptionHasSuffix,omitempty"`
+	DescriptionIsNil        bool     `json:"descriptionIsNil,omitempty"`
+	DescriptionNotNil       bool     `json:"descriptionNotNil,omitempty"`
+	DescriptionEqualFold    *string  `json:"descriptionEqualFold,omitempty"`
+	DescriptionContainsFold *string  `json:"descriptionContainsFold,omitempty"`
+
+	// "project" edge predicates.
+	HasProject     *bool                `json:"hasProject,omitempty"`
+	HasProjectWith []*ProjectWhereInput `json:"hasProjectWith,omitempty"`
+
+	// "github_account" edge predicates.
+	HasGithubAccount     *bool                      `json:"hasGithubAccount,omitempty"`
+	HasGithubAccountWith []*GithubAccountWhereInput `json:"hasGithubAccountWith,omitempty"`
+
+	// "github_organization" edge predicates.
+	HasGithubOrganization     *bool                           `json:"hasGithubOrganization,omitempty"`
+	HasGithubOrganizationWith []*GithubOrganizationWhereInput `json:"hasGithubOrganizationWith,omitempty"`
+}
+
+// Filter applies the RepositoryWhereInput filter on the RepositoryQuery builder.
+func (i *RepositoryWhereInput) Filter(q *RepositoryQuery) (*RepositoryQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// P returns a predicate for filtering repositories.
+// An error is returned if the input is empty or invalid.
+func (i *RepositoryWhereInput) P() (predicate.Repository, error) {
+	var predicates []predicate.Repository
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, repository.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.Repository, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, repository.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.Repository, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, repository.And(and...))
+	}
+	if i.ID != nil {
+		predicates = append(predicates, repository.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, repository.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, repository.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, repository.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, repository.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, repository.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, repository.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, repository.IDLTE(*i.IDLTE))
+	}
+	if i.Name != nil {
+		predicates = append(predicates, repository.NameEQ(*i.Name))
+	}
+	if i.NameNEQ != nil {
+		predicates = append(predicates, repository.NameNEQ(*i.NameNEQ))
+	}
+	if len(i.NameIn) > 0 {
+		predicates = append(predicates, repository.NameIn(i.NameIn...))
+	}
+	if len(i.NameNotIn) > 0 {
+		predicates = append(predicates, repository.NameNotIn(i.NameNotIn...))
+	}
+	if i.NameGT != nil {
+		predicates = append(predicates, repository.NameGT(*i.NameGT))
+	}
+	if i.NameGTE != nil {
+		predicates = append(predicates, repository.NameGTE(*i.NameGTE))
+	}
+	if i.NameLT != nil {
+		predicates = append(predicates, repository.NameLT(*i.NameLT))
+	}
+	if i.NameLTE != nil {
+		predicates = append(predicates, repository.NameLTE(*i.NameLTE))
+	}
+	if i.NameContains != nil {
+		predicates = append(predicates, repository.NameContains(*i.NameContains))
+	}
+	if i.NameHasPrefix != nil {
+		predicates = append(predicates, repository.NameHasPrefix(*i.NameHasPrefix))
+	}
+	if i.NameHasSuffix != nil {
+		predicates = append(predicates, repository.NameHasSuffix(*i.NameHasSuffix))
+	}
+	if i.NameEqualFold != nil {
+		predicates = append(predicates, repository.NameEqualFold(*i.NameEqualFold))
+	}
+	if i.NameContainsFold != nil {
+		predicates = append(predicates, repository.NameContainsFold(*i.NameContainsFold))
+	}
+	if i.Description != nil {
+		predicates = append(predicates, repository.DescriptionEQ(*i.Description))
+	}
+	if i.DescriptionNEQ != nil {
+		predicates = append(predicates, repository.DescriptionNEQ(*i.DescriptionNEQ))
+	}
+	if len(i.DescriptionIn) > 0 {
+		predicates = append(predicates, repository.DescriptionIn(i.DescriptionIn...))
+	}
+	if len(i.DescriptionNotIn) > 0 {
+		predicates = append(predicates, repository.DescriptionNotIn(i.DescriptionNotIn...))
+	}
+	if i.DescriptionGT != nil {
+		predicates = append(predicates, repository.DescriptionGT(*i.DescriptionGT))
+	}
+	if i.DescriptionGTE != nil {
+		predicates = append(predicates, repository.DescriptionGTE(*i.DescriptionGTE))
+	}
+	if i.DescriptionLT != nil {
+		predicates = append(predicates, repository.DescriptionLT(*i.DescriptionLT))
+	}
+	if i.DescriptionLTE != nil {
+		predicates = append(predicates, repository.DescriptionLTE(*i.DescriptionLTE))
+	}
+	if i.DescriptionContains != nil {
+		predicates = append(predicates, repository.DescriptionContains(*i.DescriptionContains))
+	}
+	if i.DescriptionHasPrefix != nil {
+		predicates = append(predicates, repository.DescriptionHasPrefix(*i.DescriptionHasPrefix))
+	}
+	if i.DescriptionHasSuffix != nil {
+		predicates = append(predicates, repository.DescriptionHasSuffix(*i.DescriptionHasSuffix))
+	}
+	if i.DescriptionIsNil {
+		predicates = append(predicates, repository.DescriptionIsNil())
+	}
+	if i.DescriptionNotNil {
+		predicates = append(predicates, repository.DescriptionNotNil())
+	}
+	if i.DescriptionEqualFold != nil {
+		predicates = append(predicates, repository.DescriptionEqualFold(*i.DescriptionEqualFold))
+	}
+	if i.DescriptionContainsFold != nil {
+		predicates = append(predicates, repository.DescriptionContainsFold(*i.DescriptionContainsFold))
+	}
+
+	if i.HasProject != nil {
+		p := repository.HasProject()
+		if !*i.HasProject {
+			p = repository.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasProjectWith) > 0 {
+		with := make([]predicate.Project, 0, len(i.HasProjectWith))
+		for _, w := range i.HasProjectWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, repository.HasProjectWith(with...))
+	}
+	if i.HasGithubAccount != nil {
+		p := repository.HasGithubAccount()
+		if !*i.HasGithubAccount {
+			p = repository.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasGithubAccountWith) > 0 {
+		with := make([]predicate.GithubAccount, 0, len(i.HasGithubAccountWith))
+		for _, w := range i.HasGithubAccountWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, repository.HasGithubAccountWith(with...))
+	}
+	if i.HasGithubOrganization != nil {
+		p := repository.HasGithubOrganization()
+		if !*i.HasGithubOrganization {
+			p = repository.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasGithubOrganizationWith) > 0 {
+		with := make([]predicate.GithubOrganization, 0, len(i.HasGithubOrganizationWith))
+		for _, w := range i.HasGithubOrganizationWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, repository.HasGithubOrganizationWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate RepositoryWhereInput")
+	case 1:
+		return predicates[0], nil
+	default:
+		return repository.And(predicates...), nil
 	}
 }
 

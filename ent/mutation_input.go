@@ -73,6 +73,7 @@ type CreateGithubAccountInput struct {
 	Username                string
 	Owner                   int
 	OrganizationMemberships []int
+	Repositories            []int
 }
 
 // Mutate applies the CreateGithubAccountInput on the GithubAccountCreate builder.
@@ -81,6 +82,9 @@ func (i *CreateGithubAccountInput) Mutate(m *GithubAccountCreate) {
 	m.SetOwnerID(i.Owner)
 	if ids := i.OrganizationMemberships; len(ids) > 0 {
 		m.AddOrganizationMembershipIDs(ids...)
+	}
+	if ids := i.Repositories; len(ids) > 0 {
+		m.AddRepositoryIDs(ids...)
 	}
 }
 
@@ -97,6 +101,8 @@ type UpdateGithubAccountInput struct {
 	ClearOwner                      bool
 	AddOrganizationMembershipIDs    []int
 	RemoveOrganizationMembershipIDs []int
+	AddRepositoryIDs                []int
+	RemoveRepositoryIDs             []int
 }
 
 // Mutate applies the UpdateGithubAccountInput on the GithubAccountMutation.
@@ -116,6 +122,12 @@ func (i *UpdateGithubAccountInput) Mutate(m *GithubAccountMutation) {
 	if ids := i.RemoveOrganizationMembershipIDs; len(ids) > 0 {
 		m.RemoveOrganizationMembershipIDs(ids...)
 	}
+	if ids := i.AddRepositoryIDs; len(ids) > 0 {
+		m.AddRepositoryIDs(ids...)
+	}
+	if ids := i.RemoveRepositoryIDs; len(ids) > 0 {
+		m.RemoveRepositoryIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the UpdateGithubAccountInput on the update builder.
@@ -132,9 +144,10 @@ func (u *GithubAccountUpdateOne) SetInput(i UpdateGithubAccountInput) *GithubAcc
 
 // CreateGithubOrganizationInput represents a mutation input for creating githuborganizations.
 type CreateGithubOrganizationInput struct {
-	Name        string
-	DisplayName *string
-	Members     []int
+	Name         string
+	DisplayName  *string
+	Members      []int
+	Repositories []int
 }
 
 // Mutate applies the CreateGithubOrganizationInput on the GithubOrganizationCreate builder.
@@ -146,6 +159,9 @@ func (i *CreateGithubOrganizationInput) Mutate(m *GithubOrganizationCreate) {
 	if ids := i.Members; len(ids) > 0 {
 		m.AddMemberIDs(ids...)
 	}
+	if ids := i.Repositories; len(ids) > 0 {
+		m.AddRepositoryIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the CreateGithubOrganizationInput on the create builder.
@@ -156,11 +172,13 @@ func (c *GithubOrganizationCreate) SetInput(i CreateGithubOrganizationInput) *Gi
 
 // UpdateGithubOrganizationInput represents a mutation input for updating githuborganizations.
 type UpdateGithubOrganizationInput struct {
-	Name             *string
-	DisplayName      *string
-	ClearDisplayName bool
-	AddMemberIDs     []int
-	RemoveMemberIDs  []int
+	Name                *string
+	DisplayName         *string
+	ClearDisplayName    bool
+	AddMemberIDs        []int
+	RemoveMemberIDs     []int
+	AddRepositoryIDs    []int
+	RemoveRepositoryIDs []int
 }
 
 // Mutate applies the UpdateGithubOrganizationInput on the GithubOrganizationMutation.
@@ -179,6 +197,12 @@ func (i *UpdateGithubOrganizationInput) Mutate(m *GithubOrganizationMutation) {
 	}
 	if ids := i.RemoveMemberIDs; len(ids) > 0 {
 		m.RemoveMemberIDs(ids...)
+	}
+	if ids := i.AddRepositoryIDs; len(ids) > 0 {
+		m.AddRepositoryIDs(ids...)
+	}
+	if ids := i.RemoveRepositoryIDs; len(ids) > 0 {
+		m.RemoveRepositoryIDs(ids...)
 	}
 }
 
@@ -269,6 +293,7 @@ type CreateProjectInput struct {
 	Contributors   []int
 	ParentProjects []int
 	ChildProjects  []int
+	Repositories   []int
 }
 
 // Mutate applies the CreateProjectInput on the ProjectCreate builder.
@@ -289,6 +314,9 @@ func (i *CreateProjectInput) Mutate(m *ProjectCreate) {
 	}
 	if ids := i.ChildProjects; len(ids) > 0 {
 		m.AddChildProjectIDs(ids...)
+	}
+	if ids := i.Repositories; len(ids) > 0 {
+		m.AddRepositoryIDs(ids...)
 	}
 }
 
@@ -312,6 +340,8 @@ type UpdateProjectInput struct {
 	RemoveParentProjectIDs []int
 	AddChildProjectIDs     []int
 	RemoveChildProjectIDs  []int
+	AddRepositoryIDs       []int
+	RemoveRepositoryIDs    []int
 }
 
 // Mutate applies the UpdateProjectInput on the ProjectMutation.
@@ -351,6 +381,12 @@ func (i *UpdateProjectInput) Mutate(m *ProjectMutation) {
 	}
 	if ids := i.RemoveChildProjectIDs; len(ids) > 0 {
 		m.RemoveChildProjectIDs(ids...)
+	}
+	if ids := i.AddRepositoryIDs; len(ids) > 0 {
+		m.AddRepositoryIDs(ids...)
+	}
+	if ids := i.RemoveRepositoryIDs; len(ids) > 0 {
+		m.RemoveRepositoryIDs(ids...)
 	}
 }
 
@@ -490,6 +526,94 @@ func (u *ProjectContributorUpdate) SetInput(i UpdateProjectContributorInput) *Pr
 
 // SetInput applies the change-set in the UpdateProjectContributorInput on the update-one builder.
 func (u *ProjectContributorUpdateOne) SetInput(i UpdateProjectContributorInput) *ProjectContributorUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// CreateRepositoryInput represents a mutation input for creating repositories.
+type CreateRepositoryInput struct {
+	Name               string
+	Description        *string
+	Project            *int
+	GithubAccount      *int
+	GithubOrganization *int
+}
+
+// Mutate applies the CreateRepositoryInput on the RepositoryCreate builder.
+func (i *CreateRepositoryInput) Mutate(m *RepositoryCreate) {
+	m.SetName(i.Name)
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
+	if v := i.Project; v != nil {
+		m.SetProjectID(*v)
+	}
+	if v := i.GithubAccount; v != nil {
+		m.SetGithubAccountID(*v)
+	}
+	if v := i.GithubOrganization; v != nil {
+		m.SetGithubOrganizationID(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateRepositoryInput on the create builder.
+func (c *RepositoryCreate) SetInput(i CreateRepositoryInput) *RepositoryCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateRepositoryInput represents a mutation input for updating repositories.
+type UpdateRepositoryInput struct {
+	Name                    *string
+	Description             *string
+	ClearDescription        bool
+	Project                 *int
+	ClearProject            bool
+	GithubAccount           *int
+	ClearGithubAccount      bool
+	GithubOrganization      *int
+	ClearGithubOrganization bool
+}
+
+// Mutate applies the UpdateRepositoryInput on the RepositoryMutation.
+func (i *UpdateRepositoryInput) Mutate(m *RepositoryMutation) {
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if i.ClearDescription {
+		m.ClearDescription()
+	}
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
+	if i.ClearProject {
+		m.ClearProject()
+	}
+	if v := i.Project; v != nil {
+		m.SetProjectID(*v)
+	}
+	if i.ClearGithubAccount {
+		m.ClearGithubAccount()
+	}
+	if v := i.GithubAccount; v != nil {
+		m.SetGithubAccountID(*v)
+	}
+	if i.ClearGithubOrganization {
+		m.ClearGithubOrganization()
+	}
+	if v := i.GithubOrganization; v != nil {
+		m.SetGithubOrganizationID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateRepositoryInput on the update builder.
+func (u *RepositoryUpdate) SetInput(i UpdateRepositoryInput) *RepositoryUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateRepositoryInput on the update-one builder.
+func (u *RepositoryUpdateOne) SetInput(i UpdateRepositoryInput) *RepositoryUpdateOne {
 	i.Mutate(u.Mutation())
 	return u
 }

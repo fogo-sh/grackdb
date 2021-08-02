@@ -12,6 +12,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/schema"
 	"github.com/fogo-sh/grackdb/ent/user"
 
@@ -130,6 +131,21 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	repository.Policy = privacy.NewPolicies(schema.Repository{})
+	repository.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := repository.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	repositoryFields := schema.Repository{}.Fields()
+	_ = repositoryFields
+	// repositoryDescName is the schema descriptor for name field.
+	repositoryDescName := repositoryFields[0].Descriptor()
+	// repository.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	repository.NameValidator = repositoryDescName.Validators[0].(func(string) error)
 	user.Policy = privacy.NewPolicies(schema.User{})
 	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {

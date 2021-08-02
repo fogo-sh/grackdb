@@ -131,6 +131,16 @@ func main() {
 		log.Fatalf("failed creating test project contributor: %v", err)
 	}
 
+	_, err = client.Repository.Create().
+		SetName("borik").
+		SetDescription("a discord bot, written using discordgo, for ✨ breaking images ✨").
+		SetProject(borik).
+		SetGithubOrganization(fogoSh).
+		Save(ctx)
+	if err != nil {
+		log.Fatalf("failed creating test repository: %v", err)
+	}
+
 	grackDb, err := client.Project.Create().
 		SetName("GrackDB").
 		SetStartDate(time.Date(2021, time.July, 30, 0, 0, 0, 0, time.UTC)).
@@ -155,5 +165,14 @@ func main() {
 		Save(ctx)
 	if err != nil {
 		log.Fatalf("failed creating test project contributor: %v", err)
+	}
+
+	_, err = client.Repository.Create().
+		SetName("grackdb").
+		SetProject(grackDb).
+		SetGithubOrganization(fogoSh).
+		Save(ctx)
+	if err != nil {
+		log.Fatalf("failed creating test repository: %v", err)
 	}
 }

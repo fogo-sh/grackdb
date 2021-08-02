@@ -37,9 +37,11 @@ type ProjectEdges struct {
 	ParentProjects []*ProjectAssociation `json:"parent_projects,omitempty"`
 	// ChildProjects holds the value of the child_projects edge.
 	ChildProjects []*ProjectAssociation `json:"child_projects,omitempty"`
+	// Repositories holds the value of the repositories edge.
+	Repositories []*Repository `json:"repositories,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // ContributorsOrErr returns the Contributors value or an error if the edge
@@ -67,6 +69,15 @@ func (e ProjectEdges) ChildProjectsOrErr() ([]*ProjectAssociation, error) {
 		return e.ChildProjects, nil
 	}
 	return nil, &NotLoadedError{edge: "child_projects"}
+}
+
+// RepositoriesOrErr returns the Repositories value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) RepositoriesOrErr() ([]*Repository, error) {
+	if e.loadedTypes[3] {
+		return e.Repositories, nil
+	}
+	return nil, &NotLoadedError{edge: "repositories"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -145,6 +156,11 @@ func (pr *Project) QueryParentProjects() *ProjectAssociationQuery {
 // QueryChildProjects queries the "child_projects" edge of the Project entity.
 func (pr *Project) QueryChildProjects() *ProjectAssociationQuery {
 	return (&ProjectClient{config: pr.config}).QueryChildProjects(pr)
+}
+
+// QueryRepositories queries the "repositories" edge of the Project entity.
+func (pr *Project) QueryRepositories() *RepositoryQuery {
+	return (&ProjectClient{config: pr.config}).QueryRepositories(pr)
 }
 
 // Update returns a builder for updating this Project.

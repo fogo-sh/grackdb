@@ -28,9 +28,11 @@ type GithubOrganization struct {
 type GithubOrganizationEdges struct {
 	// Members holds the value of the members edge.
 	Members []*GithubOrganizationMember `json:"members,omitempty"`
+	// Repositories holds the value of the repositories edge.
+	Repositories []*Repository `json:"repositories,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // MembersOrErr returns the Members value or an error if the edge
@@ -40,6 +42,15 @@ func (e GithubOrganizationEdges) MembersOrErr() ([]*GithubOrganizationMember, er
 		return e.Members, nil
 	}
 	return nil, &NotLoadedError{edge: "members"}
+}
+
+// RepositoriesOrErr returns the Repositories value or an error if the edge
+// was not loaded in eager-loading.
+func (e GithubOrganizationEdges) RepositoriesOrErr() ([]*Repository, error) {
+	if e.loadedTypes[1] {
+		return e.Repositories, nil
+	}
+	return nil, &NotLoadedError{edge: "repositories"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -92,6 +103,11 @@ func (_go *GithubOrganization) assignValues(columns []string, values []interface
 // QueryMembers queries the "members" edge of the GithubOrganization entity.
 func (_go *GithubOrganization) QueryMembers() *GithubOrganizationMemberQuery {
 	return (&GithubOrganizationClient{config: _go.config}).QueryMembers(_go)
+}
+
+// QueryRepositories queries the "repositories" edge of the GithubOrganization entity.
+func (_go *GithubOrganization) QueryRepositories() *RepositoryQuery {
+	return (&GithubOrganizationClient{config: _go.config}).QueryRepositories(_go)
 }
 
 // Update returns a builder for updating this GithubOrganization.

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
+	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -51,6 +52,21 @@ func (gac *GithubAccountCreate) AddOrganizationMemberships(g ...*GithubOrganizat
 		ids[i] = g[i].ID
 	}
 	return gac.AddOrganizationMembershipIDs(ids...)
+}
+
+// AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
+func (gac *GithubAccountCreate) AddRepositoryIDs(ids ...int) *GithubAccountCreate {
+	gac.mutation.AddRepositoryIDs(ids...)
+	return gac
+}
+
+// AddRepositories adds the "repositories" edges to the Repository entity.
+func (gac *GithubAccountCreate) AddRepositories(r ...*Repository) *GithubAccountCreate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return gac.AddRepositoryIDs(ids...)
 }
 
 // Mutation returns the GithubAccountMutation object of the builder.
@@ -184,6 +200,25 @@ func (gac *GithubAccountCreate) createSpec() (*GithubAccount, *sqlgraph.CreateSp
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: githuborganizationmember.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := gac.mutation.RepositoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   githubaccount.RepositoriesTable,
+			Columns: []string{githubaccount.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repository.FieldID,
 				},
 			},
 		}

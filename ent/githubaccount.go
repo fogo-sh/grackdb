@@ -30,9 +30,11 @@ type GithubAccountEdges struct {
 	Owner *User `json:"owner,omitempty"`
 	// OrganizationMemberships holds the value of the organization_memberships edge.
 	OrganizationMemberships []*GithubOrganizationMember `json:"organization_memberships,omitempty"`
+	// Repositories holds the value of the repositories edge.
+	Repositories []*Repository `json:"repositories,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
@@ -56,6 +58,15 @@ func (e GithubAccountEdges) OrganizationMembershipsOrErr() ([]*GithubOrganizatio
 		return e.OrganizationMemberships, nil
 	}
 	return nil, &NotLoadedError{edge: "organization_memberships"}
+}
+
+// RepositoriesOrErr returns the Repositories value or an error if the edge
+// was not loaded in eager-loading.
+func (e GithubAccountEdges) RepositoriesOrErr() ([]*Repository, error) {
+	if e.loadedTypes[2] {
+		return e.Repositories, nil
+	}
+	return nil, &NotLoadedError{edge: "repositories"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -116,6 +127,11 @@ func (ga *GithubAccount) QueryOwner() *UserQuery {
 // QueryOrganizationMemberships queries the "organization_memberships" edge of the GithubAccount entity.
 func (ga *GithubAccount) QueryOrganizationMemberships() *GithubOrganizationMemberQuery {
 	return (&GithubAccountClient{config: ga.config}).QueryOrganizationMemberships(ga)
+}
+
+// QueryRepositories queries the "repositories" edge of the GithubAccount entity.
+func (ga *GithubAccount) QueryRepositories() *RepositoryQuery {
+	return (&GithubAccountClient{config: ga.config}).QueryRepositories(ga)
 }
 
 // Update returns a builder for updating this GithubAccount.

@@ -16,6 +16,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/user"
 
 	"entgo.io/ent"
@@ -37,6 +38,7 @@ const (
 	TypeProject                  = "Project"
 	TypeProjectAssociation       = "ProjectAssociation"
 	TypeProjectContributor       = "ProjectContributor"
+	TypeRepository               = "Repository"
 	TypeUser                     = "User"
 )
 
@@ -517,6 +519,9 @@ type GithubAccountMutation struct {
 	organization_memberships        map[int]struct{}
 	removedorganization_memberships map[int]struct{}
 	clearedorganization_memberships bool
+	repositories                    map[int]struct{}
+	removedrepositories             map[int]struct{}
+	clearedrepositories             bool
 	done                            bool
 	oldValue                        func(context.Context) (*GithubAccount, error)
 	predicates                      []predicate.GithubAccount
@@ -730,6 +735,60 @@ func (m *GithubAccountMutation) ResetOrganizationMemberships() {
 	m.removedorganization_memberships = nil
 }
 
+// AddRepositoryIDs adds the "repositories" edge to the Repository entity by ids.
+func (m *GithubAccountMutation) AddRepositoryIDs(ids ...int) {
+	if m.repositories == nil {
+		m.repositories = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.repositories[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRepositories clears the "repositories" edge to the Repository entity.
+func (m *GithubAccountMutation) ClearRepositories() {
+	m.clearedrepositories = true
+}
+
+// RepositoriesCleared reports if the "repositories" edge to the Repository entity was cleared.
+func (m *GithubAccountMutation) RepositoriesCleared() bool {
+	return m.clearedrepositories
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to the Repository entity by IDs.
+func (m *GithubAccountMutation) RemoveRepositoryIDs(ids ...int) {
+	if m.removedrepositories == nil {
+		m.removedrepositories = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.repositories, ids[i])
+		m.removedrepositories[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRepositories returns the removed IDs of the "repositories" edge to the Repository entity.
+func (m *GithubAccountMutation) RemovedRepositoriesIDs() (ids []int) {
+	for id := range m.removedrepositories {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RepositoriesIDs returns the "repositories" edge IDs in the mutation.
+func (m *GithubAccountMutation) RepositoriesIDs() (ids []int) {
+	for id := range m.repositories {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRepositories resets all changes to the "repositories" edge.
+func (m *GithubAccountMutation) ResetRepositories() {
+	m.repositories = nil
+	m.clearedrepositories = false
+	m.removedrepositories = nil
+}
+
 // Op returns the operation name.
 func (m *GithubAccountMutation) Op() Op {
 	return m.op
@@ -843,12 +902,15 @@ func (m *GithubAccountMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GithubAccountMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.owner != nil {
 		edges = append(edges, githubaccount.EdgeOwner)
 	}
 	if m.organization_memberships != nil {
 		edges = append(edges, githubaccount.EdgeOrganizationMemberships)
+	}
+	if m.repositories != nil {
+		edges = append(edges, githubaccount.EdgeRepositories)
 	}
 	return edges
 }
@@ -867,15 +929,24 @@ func (m *GithubAccountMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case githubaccount.EdgeRepositories:
+		ids := make([]ent.Value, 0, len(m.repositories))
+		for id := range m.repositories {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GithubAccountMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedorganization_memberships != nil {
 		edges = append(edges, githubaccount.EdgeOrganizationMemberships)
+	}
+	if m.removedrepositories != nil {
+		edges = append(edges, githubaccount.EdgeRepositories)
 	}
 	return edges
 }
@@ -890,18 +961,27 @@ func (m *GithubAccountMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case githubaccount.EdgeRepositories:
+		ids := make([]ent.Value, 0, len(m.removedrepositories))
+		for id := range m.removedrepositories {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GithubAccountMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedowner {
 		edges = append(edges, githubaccount.EdgeOwner)
 	}
 	if m.clearedorganization_memberships {
 		edges = append(edges, githubaccount.EdgeOrganizationMemberships)
+	}
+	if m.clearedrepositories {
+		edges = append(edges, githubaccount.EdgeRepositories)
 	}
 	return edges
 }
@@ -914,6 +994,8 @@ func (m *GithubAccountMutation) EdgeCleared(name string) bool {
 		return m.clearedowner
 	case githubaccount.EdgeOrganizationMemberships:
 		return m.clearedorganization_memberships
+	case githubaccount.EdgeRepositories:
+		return m.clearedrepositories
 	}
 	return false
 }
@@ -939,6 +1021,9 @@ func (m *GithubAccountMutation) ResetEdge(name string) error {
 	case githubaccount.EdgeOrganizationMemberships:
 		m.ResetOrganizationMemberships()
 		return nil
+	case githubaccount.EdgeRepositories:
+		m.ResetRepositories()
+		return nil
 	}
 	return fmt.Errorf("unknown GithubAccount edge %s", name)
 }
@@ -946,18 +1031,21 @@ func (m *GithubAccountMutation) ResetEdge(name string) error {
 // GithubOrganizationMutation represents an operation that mutates the GithubOrganization nodes in the graph.
 type GithubOrganizationMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *int
-	name           *string
-	display_name   *string
-	clearedFields  map[string]struct{}
-	members        map[int]struct{}
-	removedmembers map[int]struct{}
-	clearedmembers bool
-	done           bool
-	oldValue       func(context.Context) (*GithubOrganization, error)
-	predicates     []predicate.GithubOrganization
+	op                  Op
+	typ                 string
+	id                  *int
+	name                *string
+	display_name        *string
+	clearedFields       map[string]struct{}
+	members             map[int]struct{}
+	removedmembers      map[int]struct{}
+	clearedmembers      bool
+	repositories        map[int]struct{}
+	removedrepositories map[int]struct{}
+	clearedrepositories bool
+	done                bool
+	oldValue            func(context.Context) (*GithubOrganization, error)
+	predicates          []predicate.GithubOrganization
 }
 
 var _ ent.Mutation = (*GithubOrganizationMutation)(nil)
@@ -1178,6 +1266,60 @@ func (m *GithubOrganizationMutation) ResetMembers() {
 	m.removedmembers = nil
 }
 
+// AddRepositoryIDs adds the "repositories" edge to the Repository entity by ids.
+func (m *GithubOrganizationMutation) AddRepositoryIDs(ids ...int) {
+	if m.repositories == nil {
+		m.repositories = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.repositories[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRepositories clears the "repositories" edge to the Repository entity.
+func (m *GithubOrganizationMutation) ClearRepositories() {
+	m.clearedrepositories = true
+}
+
+// RepositoriesCleared reports if the "repositories" edge to the Repository entity was cleared.
+func (m *GithubOrganizationMutation) RepositoriesCleared() bool {
+	return m.clearedrepositories
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to the Repository entity by IDs.
+func (m *GithubOrganizationMutation) RemoveRepositoryIDs(ids ...int) {
+	if m.removedrepositories == nil {
+		m.removedrepositories = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.repositories, ids[i])
+		m.removedrepositories[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRepositories returns the removed IDs of the "repositories" edge to the Repository entity.
+func (m *GithubOrganizationMutation) RemovedRepositoriesIDs() (ids []int) {
+	for id := range m.removedrepositories {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RepositoriesIDs returns the "repositories" edge IDs in the mutation.
+func (m *GithubOrganizationMutation) RepositoriesIDs() (ids []int) {
+	for id := range m.repositories {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRepositories resets all changes to the "repositories" edge.
+func (m *GithubOrganizationMutation) ResetRepositories() {
+	m.repositories = nil
+	m.clearedrepositories = false
+	m.removedrepositories = nil
+}
+
 // Op returns the operation name.
 func (m *GithubOrganizationMutation) Op() Op {
 	return m.op
@@ -1317,9 +1459,12 @@ func (m *GithubOrganizationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GithubOrganizationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.members != nil {
 		edges = append(edges, githuborganization.EdgeMembers)
+	}
+	if m.repositories != nil {
+		edges = append(edges, githuborganization.EdgeRepositories)
 	}
 	return edges
 }
@@ -1334,15 +1479,24 @@ func (m *GithubOrganizationMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case githuborganization.EdgeRepositories:
+		ids := make([]ent.Value, 0, len(m.repositories))
+		for id := range m.repositories {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GithubOrganizationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedmembers != nil {
 		edges = append(edges, githuborganization.EdgeMembers)
+	}
+	if m.removedrepositories != nil {
+		edges = append(edges, githuborganization.EdgeRepositories)
 	}
 	return edges
 }
@@ -1357,15 +1511,24 @@ func (m *GithubOrganizationMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case githuborganization.EdgeRepositories:
+		ids := make([]ent.Value, 0, len(m.removedrepositories))
+		for id := range m.removedrepositories {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GithubOrganizationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedmembers {
 		edges = append(edges, githuborganization.EdgeMembers)
+	}
+	if m.clearedrepositories {
+		edges = append(edges, githuborganization.EdgeRepositories)
 	}
 	return edges
 }
@@ -1376,6 +1539,8 @@ func (m *GithubOrganizationMutation) EdgeCleared(name string) bool {
 	switch name {
 	case githuborganization.EdgeMembers:
 		return m.clearedmembers
+	case githuborganization.EdgeRepositories:
+		return m.clearedrepositories
 	}
 	return false
 }
@@ -1394,6 +1559,9 @@ func (m *GithubOrganizationMutation) ResetEdge(name string) error {
 	switch name {
 	case githuborganization.EdgeMembers:
 		m.ResetMembers()
+		return nil
+	case githuborganization.EdgeRepositories:
+		m.ResetRepositories()
 		return nil
 	}
 	return fmt.Errorf("unknown GithubOrganization edge %s", name)
@@ -1834,6 +2002,9 @@ type ProjectMutation struct {
 	child_projects         map[int]struct{}
 	removedchild_projects  map[int]struct{}
 	clearedchild_projects  bool
+	repositories           map[int]struct{}
+	removedrepositories    map[int]struct{}
+	clearedrepositories    bool
 	done                   bool
 	oldValue               func(context.Context) (*Project, error)
 	predicates             []predicate.Project
@@ -2250,6 +2421,60 @@ func (m *ProjectMutation) ResetChildProjects() {
 	m.removedchild_projects = nil
 }
 
+// AddRepositoryIDs adds the "repositories" edge to the Repository entity by ids.
+func (m *ProjectMutation) AddRepositoryIDs(ids ...int) {
+	if m.repositories == nil {
+		m.repositories = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.repositories[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRepositories clears the "repositories" edge to the Repository entity.
+func (m *ProjectMutation) ClearRepositories() {
+	m.clearedrepositories = true
+}
+
+// RepositoriesCleared reports if the "repositories" edge to the Repository entity was cleared.
+func (m *ProjectMutation) RepositoriesCleared() bool {
+	return m.clearedrepositories
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to the Repository entity by IDs.
+func (m *ProjectMutation) RemoveRepositoryIDs(ids ...int) {
+	if m.removedrepositories == nil {
+		m.removedrepositories = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.repositories, ids[i])
+		m.removedrepositories[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRepositories returns the removed IDs of the "repositories" edge to the Repository entity.
+func (m *ProjectMutation) RemovedRepositoriesIDs() (ids []int) {
+	for id := range m.removedrepositories {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RepositoriesIDs returns the "repositories" edge IDs in the mutation.
+func (m *ProjectMutation) RepositoriesIDs() (ids []int) {
+	for id := range m.repositories {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRepositories resets all changes to the "repositories" edge.
+func (m *ProjectMutation) ResetRepositories() {
+	m.repositories = nil
+	m.clearedrepositories = false
+	m.removedrepositories = nil
+}
+
 // Op returns the operation name.
 func (m *ProjectMutation) Op() Op {
 	return m.op
@@ -2429,7 +2654,7 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.contributors != nil {
 		edges = append(edges, project.EdgeContributors)
 	}
@@ -2438,6 +2663,9 @@ func (m *ProjectMutation) AddedEdges() []string {
 	}
 	if m.child_projects != nil {
 		edges = append(edges, project.EdgeChildProjects)
+	}
+	if m.repositories != nil {
+		edges = append(edges, project.EdgeRepositories)
 	}
 	return edges
 }
@@ -2464,13 +2692,19 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeRepositories:
+		ids := make([]ent.Value, 0, len(m.repositories))
+		for id := range m.repositories {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedcontributors != nil {
 		edges = append(edges, project.EdgeContributors)
 	}
@@ -2479,6 +2713,9 @@ func (m *ProjectMutation) RemovedEdges() []string {
 	}
 	if m.removedchild_projects != nil {
 		edges = append(edges, project.EdgeChildProjects)
+	}
+	if m.removedrepositories != nil {
+		edges = append(edges, project.EdgeRepositories)
 	}
 	return edges
 }
@@ -2505,13 +2742,19 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeRepositories:
+		ids := make([]ent.Value, 0, len(m.removedrepositories))
+		for id := range m.removedrepositories {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedcontributors {
 		edges = append(edges, project.EdgeContributors)
 	}
@@ -2520,6 +2763,9 @@ func (m *ProjectMutation) ClearedEdges() []string {
 	}
 	if m.clearedchild_projects {
 		edges = append(edges, project.EdgeChildProjects)
+	}
+	if m.clearedrepositories {
+		edges = append(edges, project.EdgeRepositories)
 	}
 	return edges
 }
@@ -2534,6 +2780,8 @@ func (m *ProjectMutation) EdgeCleared(name string) bool {
 		return m.clearedparent_projects
 	case project.EdgeChildProjects:
 		return m.clearedchild_projects
+	case project.EdgeRepositories:
+		return m.clearedrepositories
 	}
 	return false
 }
@@ -2558,6 +2806,9 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 		return nil
 	case project.EdgeChildProjects:
 		m.ResetChildProjects()
+		return nil
+	case project.EdgeRepositories:
+		m.ResetRepositories()
 		return nil
 	}
 	return fmt.Errorf("unknown Project edge %s", name)
@@ -3391,6 +3642,556 @@ func (m *ProjectContributorMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown ProjectContributor edge %s", name)
+}
+
+// RepositoryMutation represents an operation that mutates the Repository nodes in the graph.
+type RepositoryMutation struct {
+	config
+	op                         Op
+	typ                        string
+	id                         *int
+	name                       *string
+	description                *string
+	clearedFields              map[string]struct{}
+	project                    *int
+	clearedproject             bool
+	github_account             *int
+	clearedgithub_account      bool
+	github_organization        *int
+	clearedgithub_organization bool
+	done                       bool
+	oldValue                   func(context.Context) (*Repository, error)
+	predicates                 []predicate.Repository
+}
+
+var _ ent.Mutation = (*RepositoryMutation)(nil)
+
+// repositoryOption allows management of the mutation configuration using functional options.
+type repositoryOption func(*RepositoryMutation)
+
+// newRepositoryMutation creates new mutation for the Repository entity.
+func newRepositoryMutation(c config, op Op, opts ...repositoryOption) *RepositoryMutation {
+	m := &RepositoryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRepository,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRepositoryID sets the ID field of the mutation.
+func withRepositoryID(id int) repositoryOption {
+	return func(m *RepositoryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Repository
+		)
+		m.oldValue = func(ctx context.Context) (*Repository, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Repository.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRepository sets the old Repository of the mutation.
+func withRepository(node *Repository) repositoryOption {
+	return func(m *RepositoryMutation) {
+		m.oldValue = func(context.Context) (*Repository, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RepositoryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RepositoryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RepositoryMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetName sets the "name" field.
+func (m *RepositoryMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *RepositoryMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *RepositoryMutation) ResetName() {
+	m.name = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *RepositoryMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *RepositoryMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldDescription(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *RepositoryMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[repository.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *RepositoryMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[repository.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *RepositoryMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, repository.FieldDescription)
+}
+
+// SetProjectID sets the "project" edge to the Project entity by id.
+func (m *RepositoryMutation) SetProjectID(id int) {
+	m.project = &id
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (m *RepositoryMutation) ClearProject() {
+	m.clearedproject = true
+}
+
+// ProjectCleared reports if the "project" edge to the Project entity was cleared.
+func (m *RepositoryMutation) ProjectCleared() bool {
+	return m.clearedproject
+}
+
+// ProjectID returns the "project" edge ID in the mutation.
+func (m *RepositoryMutation) ProjectID() (id int, exists bool) {
+	if m.project != nil {
+		return *m.project, true
+	}
+	return
+}
+
+// ProjectIDs returns the "project" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProjectID instead. It exists only for internal usage by the builders.
+func (m *RepositoryMutation) ProjectIDs() (ids []int) {
+	if id := m.project; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProject resets all changes to the "project" edge.
+func (m *RepositoryMutation) ResetProject() {
+	m.project = nil
+	m.clearedproject = false
+}
+
+// SetGithubAccountID sets the "github_account" edge to the GithubAccount entity by id.
+func (m *RepositoryMutation) SetGithubAccountID(id int) {
+	m.github_account = &id
+}
+
+// ClearGithubAccount clears the "github_account" edge to the GithubAccount entity.
+func (m *RepositoryMutation) ClearGithubAccount() {
+	m.clearedgithub_account = true
+}
+
+// GithubAccountCleared reports if the "github_account" edge to the GithubAccount entity was cleared.
+func (m *RepositoryMutation) GithubAccountCleared() bool {
+	return m.clearedgithub_account
+}
+
+// GithubAccountID returns the "github_account" edge ID in the mutation.
+func (m *RepositoryMutation) GithubAccountID() (id int, exists bool) {
+	if m.github_account != nil {
+		return *m.github_account, true
+	}
+	return
+}
+
+// GithubAccountIDs returns the "github_account" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GithubAccountID instead. It exists only for internal usage by the builders.
+func (m *RepositoryMutation) GithubAccountIDs() (ids []int) {
+	if id := m.github_account; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGithubAccount resets all changes to the "github_account" edge.
+func (m *RepositoryMutation) ResetGithubAccount() {
+	m.github_account = nil
+	m.clearedgithub_account = false
+}
+
+// SetGithubOrganizationID sets the "github_organization" edge to the GithubOrganization entity by id.
+func (m *RepositoryMutation) SetGithubOrganizationID(id int) {
+	m.github_organization = &id
+}
+
+// ClearGithubOrganization clears the "github_organization" edge to the GithubOrganization entity.
+func (m *RepositoryMutation) ClearGithubOrganization() {
+	m.clearedgithub_organization = true
+}
+
+// GithubOrganizationCleared reports if the "github_organization" edge to the GithubOrganization entity was cleared.
+func (m *RepositoryMutation) GithubOrganizationCleared() bool {
+	return m.clearedgithub_organization
+}
+
+// GithubOrganizationID returns the "github_organization" edge ID in the mutation.
+func (m *RepositoryMutation) GithubOrganizationID() (id int, exists bool) {
+	if m.github_organization != nil {
+		return *m.github_organization, true
+	}
+	return
+}
+
+// GithubOrganizationIDs returns the "github_organization" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GithubOrganizationID instead. It exists only for internal usage by the builders.
+func (m *RepositoryMutation) GithubOrganizationIDs() (ids []int) {
+	if id := m.github_organization; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGithubOrganization resets all changes to the "github_organization" edge.
+func (m *RepositoryMutation) ResetGithubOrganization() {
+	m.github_organization = nil
+	m.clearedgithub_organization = false
+}
+
+// Op returns the operation name.
+func (m *RepositoryMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Repository).
+func (m *RepositoryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RepositoryMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.name != nil {
+		fields = append(fields, repository.FieldName)
+	}
+	if m.description != nil {
+		fields = append(fields, repository.FieldDescription)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RepositoryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case repository.FieldName:
+		return m.Name()
+	case repository.FieldDescription:
+		return m.Description()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RepositoryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case repository.FieldName:
+		return m.OldName(ctx)
+	case repository.FieldDescription:
+		return m.OldDescription(ctx)
+	}
+	return nil, fmt.Errorf("unknown Repository field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RepositoryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case repository.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case repository.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Repository field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RepositoryMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RepositoryMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RepositoryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Repository numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RepositoryMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(repository.FieldDescription) {
+		fields = append(fields, repository.FieldDescription)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RepositoryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RepositoryMutation) ClearField(name string) error {
+	switch name {
+	case repository.FieldDescription:
+		m.ClearDescription()
+		return nil
+	}
+	return fmt.Errorf("unknown Repository nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RepositoryMutation) ResetField(name string) error {
+	switch name {
+	case repository.FieldName:
+		m.ResetName()
+		return nil
+	case repository.FieldDescription:
+		m.ResetDescription()
+		return nil
+	}
+	return fmt.Errorf("unknown Repository field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RepositoryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.project != nil {
+		edges = append(edges, repository.EdgeProject)
+	}
+	if m.github_account != nil {
+		edges = append(edges, repository.EdgeGithubAccount)
+	}
+	if m.github_organization != nil {
+		edges = append(edges, repository.EdgeGithubOrganization)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RepositoryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case repository.EdgeProject:
+		if id := m.project; id != nil {
+			return []ent.Value{*id}
+		}
+	case repository.EdgeGithubAccount:
+		if id := m.github_account; id != nil {
+			return []ent.Value{*id}
+		}
+	case repository.EdgeGithubOrganization:
+		if id := m.github_organization; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RepositoryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RepositoryMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RepositoryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedproject {
+		edges = append(edges, repository.EdgeProject)
+	}
+	if m.clearedgithub_account {
+		edges = append(edges, repository.EdgeGithubAccount)
+	}
+	if m.clearedgithub_organization {
+		edges = append(edges, repository.EdgeGithubOrganization)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RepositoryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case repository.EdgeProject:
+		return m.clearedproject
+	case repository.EdgeGithubAccount:
+		return m.clearedgithub_account
+	case repository.EdgeGithubOrganization:
+		return m.clearedgithub_organization
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RepositoryMutation) ClearEdge(name string) error {
+	switch name {
+	case repository.EdgeProject:
+		m.ClearProject()
+		return nil
+	case repository.EdgeGithubAccount:
+		m.ClearGithubAccount()
+		return nil
+	case repository.EdgeGithubOrganization:
+		m.ClearGithubOrganization()
+		return nil
+	}
+	return fmt.Errorf("unknown Repository unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RepositoryMutation) ResetEdge(name string) error {
+	switch name {
+	case repository.EdgeProject:
+		m.ResetProject()
+		return nil
+	case repository.EdgeGithubAccount:
+		m.ResetGithubAccount()
+		return nil
+	case repository.EdgeGithubOrganization:
+		m.ResetGithubOrganization()
+		return nil
+	}
+	return fmt.Errorf("unknown Repository edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.

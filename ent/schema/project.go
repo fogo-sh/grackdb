@@ -42,6 +42,8 @@ func (Project) Edges() []ent.Edge {
 			Annotations(entgql.MapsTo("parentProjects")),
 		edge.To("child_projects", ProjectAssociation.Type).
 			Annotations(entgql.MapsTo("childProjects")),
+		edge.To("repositories", Repository.Type).
+			Annotations(entgql.Bind()),
 	}
 }
 

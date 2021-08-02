@@ -25,6 +25,8 @@ const (
 	EdgeParentProjects = "parent_projects"
 	// EdgeChildProjects holds the string denoting the child_projects edge name in mutations.
 	EdgeChildProjects = "child_projects"
+	// EdgeRepositories holds the string denoting the repositories edge name in mutations.
+	EdgeRepositories = "repositories"
 	// Table holds the table name of the project in the database.
 	Table = "projects"
 	// ContributorsTable is the table the holds the contributors relation/edge.
@@ -48,6 +50,13 @@ const (
 	ChildProjectsInverseTable = "project_associations"
 	// ChildProjectsColumn is the table column denoting the child_projects relation/edge.
 	ChildProjectsColumn = "project_child_projects"
+	// RepositoriesTable is the table the holds the repositories relation/edge.
+	RepositoriesTable = "repositories"
+	// RepositoriesInverseTable is the table name for the Repository entity.
+	// It exists in this package in order to avoid circular dependency with the "repository" package.
+	RepositoriesInverseTable = "repositories"
+	// RepositoriesColumn is the table column denoting the repositories relation/edge.
+	RepositoriesColumn = "project_repositories"
 )
 
 // Columns holds all SQL columns for project fields.

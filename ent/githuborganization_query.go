@@ -15,6 +15,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/predicate"
+	"github.com/fogo-sh/grackdb/ent/repository"
 )
 
 // GithubOrganizationQuery is the builder for querying GithubOrganization entities.
@@ -27,7 +28,8 @@ type GithubOrganizationQuery struct {
 	fields     []string
 	predicates []predicate.GithubOrganization
 	// eager-loading edges.
-	withMembers *GithubOrganizationMemberQuery
+	withMembers      *GithubOrganizationMemberQuery
+	withRepositories *RepositoryQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,6 +81,28 @@ func (goq *GithubOrganizationQuery) QueryMembers() *GithubOrganizationMemberQuer
 			sqlgraph.From(githuborganization.Table, githuborganization.FieldID, selector),
 			sqlgraph.To(githuborganizationmember.Table, githuborganizationmember.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, githuborganization.MembersTable, githuborganization.MembersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(goq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRepositories chains the current query on the "repositories" edge.
+func (goq *GithubOrganizationQuery) QueryRepositories() *RepositoryQuery {
+	query := &RepositoryQuery{config: goq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := goq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := goq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(githuborganization.Table, githuborganization.FieldID, selector),
+			sqlgraph.To(repository.Table, repository.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, githuborganization.RepositoriesTable, githuborganization.RepositoriesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(goq.driver.Dialect(), step)
 		return fromU, nil
@@ -262,12 +286,13 @@ func (goq *GithubOrganizationQuery) Clone() *GithubOrganizationQuery {
 		return nil
 	}
 	return &GithubOrganizationQuery{
-		config:      goq.config,
-		limit:       goq.limit,
-		offset:      goq.offset,
-		order:       append([]OrderFunc{}, goq.order...),
-		predicates:  append([]predicate.GithubOrganization{}, goq.predicates...),
-		withMembers: goq.withMembers.Clone(),
+		config:           goq.config,
+		limit:            goq.limit,
+		offset:           goq.offset,
+		order:            append([]OrderFunc{}, goq.order...),
+		predicates:       append([]predicate.GithubOrganization{}, goq.predicates...),
+		withMembers:      goq.withMembers.Clone(),
+		withRepositories: goq.withRepositories.Clone(),
 		// clone intermediate query.
 		sql:  goq.sql.Clone(),
 		path: goq.path,
@@ -282,6 +307,17 @@ func (goq *GithubOrganizationQuery) WithMembers(opts ...func(*GithubOrganization
 		opt(query)
 	}
 	goq.withMembers = query
+	return goq
+}
+
+// WithRepositories tells the query-builder to eager-load the nodes that are connected to
+// the "repositories" edge. The optional arguments are used to configure the query builder of the edge.
+func (goq *GithubOrganizationQuery) WithRepositories(opts ...func(*RepositoryQuery)) *GithubOrganizationQuery {
+	query := &RepositoryQuery{config: goq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	goq.withRepositories = query
 	return goq
 }
 
@@ -356,8 +392,9 @@ func (goq *GithubOrganizationQuery) sqlAll(ctx context.Context) ([]*GithubOrgani
 	var (
 		nodes       = []*GithubOrganization{}
 		_spec       = goq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			goq.withMembers != nil,
+			goq.withRepositories != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -406,6 +443,35 @@ func (goq *GithubOrganizationQuery) sqlAll(ctx context.Context) ([]*GithubOrgani
 				return nil, fmt.Errorf(`unexpected foreign-key "github_organization_members" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Members = append(node.Edges.Members, n)
+		}
+	}
+
+	if query := goq.withRepositories; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*GithubOrganization)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Repositories = []*Repository{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Repository(func(s *sql.Selector) {
+			s.Where(sql.InValues(githuborganization.RepositoriesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.github_organization_repositories
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "github_organization_repositories" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "github_organization_repositories" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Repositories = append(node.Edges.Repositories, n)
 		}
 	}
 
