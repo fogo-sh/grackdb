@@ -103,6 +103,33 @@ var (
 		Columns:    ProjectsColumns,
 		PrimaryKey: []*schema.Column{ProjectsColumns[0]},
 	}
+	// ProjectAssociationsColumns holds the columns for the "project_associations" table.
+	ProjectAssociationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"BASED_OFF", "REPLACES", "INSPIRED_BY", "RELATED"}},
+		{Name: "project_parent_projects", Type: field.TypeInt, Nullable: true},
+		{Name: "project_child_projects", Type: field.TypeInt, Nullable: true},
+	}
+	// ProjectAssociationsTable holds the schema information for the "project_associations" table.
+	ProjectAssociationsTable = &schema.Table{
+		Name:       "project_associations",
+		Columns:    ProjectAssociationsColumns,
+		PrimaryKey: []*schema.Column{ProjectAssociationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "project_associations_projects_parent_projects",
+				Columns:    []*schema.Column{ProjectAssociationsColumns[2]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "project_associations_projects_child_projects",
+				Columns:    []*schema.Column{ProjectAssociationsColumns[3]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// ProjectContributorsColumns holds the columns for the "project_contributors" table.
 	ProjectContributorsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -149,6 +176,7 @@ var (
 		GithubOrganizationsTable,
 		GithubOrganizationMembersTable,
 		ProjectsTable,
+		ProjectAssociationsTable,
 		ProjectContributorsTable,
 		UsersTable,
 	}
@@ -159,6 +187,8 @@ func init() {
 	GithubAccountsTable.ForeignKeys[0].RefTable = UsersTable
 	GithubOrganizationMembersTable.ForeignKeys[0].RefTable = GithubAccountsTable
 	GithubOrganizationMembersTable.ForeignKeys[1].RefTable = GithubOrganizationsTable
+	ProjectAssociationsTable.ForeignKeys[0].RefTable = ProjectsTable
+	ProjectAssociationsTable.ForeignKeys[1].RefTable = ProjectsTable
 	ProjectContributorsTable.ForeignKeys[0].RefTable = ProjectsTable
 	ProjectContributorsTable.ForeignKeys[1].RefTable = UsersTable
 }

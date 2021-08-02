@@ -19,6 +19,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/project"
+	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/user"
 	"github.com/hashicorp/go-multierror"
@@ -217,7 +218,7 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		ID:     pr.ID,
 		Type:   "Project",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 1),
+		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(pr.Name); err != nil {
@@ -258,6 +259,65 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[0].IDs, err = pr.QueryContributors().
 		Select(projectcontributor.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "ProjectAssociation",
+		Name: "parent_projects",
+	}
+	node.Edges[1].IDs, err = pr.QueryParentProjects().
+		Select(projectassociation.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "ProjectAssociation",
+		Name: "child_projects",
+	}
+	node.Edges[2].IDs, err = pr.QueryChildProjects().
+		Select(projectassociation.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (pa *ProjectAssociation) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     pa.ID,
+		Type:   "ProjectAssociation",
+		Fields: make([]*Field, 1),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(pa.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "projectassociation.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Project",
+		Name: "parent",
+	}
+	node.Edges[0].IDs, err = pa.QueryParent().
+		Select(project.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Project",
+		Name: "child",
+	}
+	node.Edges[1].IDs, err = pa.QueryChild().
+		Select(project.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -473,6 +533,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
+	case projectassociation.Table:
+		n, err := c.ProjectAssociation.Query().
+			Where(projectassociation.ID(id)).
+			CollectFields(ctx, "ProjectAssociation").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case projectcontributor.Table:
 		n, err := c.ProjectContributor.Query().
 			Where(projectcontributor.ID(id)).
@@ -620,6 +689,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.Project.Query().
 			Where(project.IDIn(ids...)).
 			CollectFields(ctx, "Project").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case projectassociation.Table:
+		nodes, err := c.ProjectAssociation.Query().
+			Where(projectassociation.IDIn(ids...)).
+			CollectFields(ctx, "ProjectAssociation").
 			All(ctx)
 		if err != nil {
 			return nil, err

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/project"
+	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 )
 
@@ -74,6 +75,36 @@ func (pc *ProjectCreate) AddContributors(p ...*ProjectContributor) *ProjectCreat
 		ids[i] = p[i].ID
 	}
 	return pc.AddContributorIDs(ids...)
+}
+
+// AddParentProjectIDs adds the "parent_projects" edge to the ProjectAssociation entity by IDs.
+func (pc *ProjectCreate) AddParentProjectIDs(ids ...int) *ProjectCreate {
+	pc.mutation.AddParentProjectIDs(ids...)
+	return pc
+}
+
+// AddParentProjects adds the "parent_projects" edges to the ProjectAssociation entity.
+func (pc *ProjectCreate) AddParentProjects(p ...*ProjectAssociation) *ProjectCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pc.AddParentProjectIDs(ids...)
+}
+
+// AddChildProjectIDs adds the "child_projects" edge to the ProjectAssociation entity by IDs.
+func (pc *ProjectCreate) AddChildProjectIDs(ids ...int) *ProjectCreate {
+	pc.mutation.AddChildProjectIDs(ids...)
+	return pc
+}
+
+// AddChildProjects adds the "child_projects" edges to the ProjectAssociation entity.
+func (pc *ProjectCreate) AddChildProjects(p ...*ProjectAssociation) *ProjectCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pc.AddChildProjectIDs(ids...)
 }
 
 // Mutation returns the ProjectMutation object of the builder.
@@ -211,6 +242,44 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: projectcontributor.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.ParentProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ParentProjectsTable,
+			Columns: []string{project.ParentProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.ChildProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ChildProjectsTable,
+			Columns: []string{project.ChildProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
 				},
 			},
 		}

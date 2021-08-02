@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
+	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 )
 
@@ -261,11 +262,13 @@ func (u *GithubOrganizationMemberUpdateOne) SetInput(i UpdateGithubOrganizationM
 
 // CreateProjectInput represents a mutation input for creating projects.
 type CreateProjectInput struct {
-	Name         string
-	Description  *string
-	StartDate    time.Time
-	EndDate      *time.Time
-	Contributors []int
+	Name           string
+	Description    *string
+	StartDate      time.Time
+	EndDate        *time.Time
+	Contributors   []int
+	ParentProjects []int
+	ChildProjects  []int
 }
 
 // Mutate applies the CreateProjectInput on the ProjectCreate builder.
@@ -281,6 +284,12 @@ func (i *CreateProjectInput) Mutate(m *ProjectCreate) {
 	if ids := i.Contributors; len(ids) > 0 {
 		m.AddContributorIDs(ids...)
 	}
+	if ids := i.ParentProjects; len(ids) > 0 {
+		m.AddParentProjectIDs(ids...)
+	}
+	if ids := i.ChildProjects; len(ids) > 0 {
+		m.AddChildProjectIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the CreateProjectInput on the create builder.
@@ -291,14 +300,18 @@ func (c *ProjectCreate) SetInput(i CreateProjectInput) *ProjectCreate {
 
 // UpdateProjectInput represents a mutation input for updating projects.
 type UpdateProjectInput struct {
-	Name                 *string
-	Description          *string
-	ClearDescription     bool
-	StartDate            *time.Time
-	EndDate              *time.Time
-	ClearEndDate         bool
-	AddContributorIDs    []int
-	RemoveContributorIDs []int
+	Name                   *string
+	Description            *string
+	ClearDescription       bool
+	StartDate              *time.Time
+	EndDate                *time.Time
+	ClearEndDate           bool
+	AddContributorIDs      []int
+	RemoveContributorIDs   []int
+	AddParentProjectIDs    []int
+	RemoveParentProjectIDs []int
+	AddChildProjectIDs     []int
+	RemoveChildProjectIDs  []int
 }
 
 // Mutate applies the UpdateProjectInput on the ProjectMutation.
@@ -327,6 +340,18 @@ func (i *UpdateProjectInput) Mutate(m *ProjectMutation) {
 	if ids := i.RemoveContributorIDs; len(ids) > 0 {
 		m.RemoveContributorIDs(ids...)
 	}
+	if ids := i.AddParentProjectIDs; len(ids) > 0 {
+		m.AddParentProjectIDs(ids...)
+	}
+	if ids := i.RemoveParentProjectIDs; len(ids) > 0 {
+		m.RemoveParentProjectIDs(ids...)
+	}
+	if ids := i.AddChildProjectIDs; len(ids) > 0 {
+		m.AddChildProjectIDs(ids...)
+	}
+	if ids := i.RemoveChildProjectIDs; len(ids) > 0 {
+		m.RemoveChildProjectIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the UpdateProjectInput on the update builder.
@@ -337,6 +362,70 @@ func (u *ProjectUpdate) SetInput(i UpdateProjectInput) *ProjectUpdate {
 
 // SetInput applies the change-set in the UpdateProjectInput on the update-one builder.
 func (u *ProjectUpdateOne) SetInput(i UpdateProjectInput) *ProjectUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// CreateProjectAssociationInput represents a mutation input for creating projectassociations.
+type CreateProjectAssociationInput struct {
+	Type   projectassociation.Type
+	Parent *int
+	Child  *int
+}
+
+// Mutate applies the CreateProjectAssociationInput on the ProjectAssociationCreate builder.
+func (i *CreateProjectAssociationInput) Mutate(m *ProjectAssociationCreate) {
+	m.SetType(i.Type)
+	if v := i.Parent; v != nil {
+		m.SetParentID(*v)
+	}
+	if v := i.Child; v != nil {
+		m.SetChildID(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateProjectAssociationInput on the create builder.
+func (c *ProjectAssociationCreate) SetInput(i CreateProjectAssociationInput) *ProjectAssociationCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateProjectAssociationInput represents a mutation input for updating projectassociations.
+type UpdateProjectAssociationInput struct {
+	Type        *projectassociation.Type
+	Parent      *int
+	ClearParent bool
+	Child       *int
+	ClearChild  bool
+}
+
+// Mutate applies the UpdateProjectAssociationInput on the ProjectAssociationMutation.
+func (i *UpdateProjectAssociationInput) Mutate(m *ProjectAssociationMutation) {
+	if v := i.Type; v != nil {
+		m.SetType(*v)
+	}
+	if i.ClearParent {
+		m.ClearParent()
+	}
+	if v := i.Parent; v != nil {
+		m.SetParentID(*v)
+	}
+	if i.ClearChild {
+		m.ClearChild()
+	}
+	if v := i.Child; v != nil {
+		m.SetChildID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateProjectAssociationInput on the update builder.
+func (u *ProjectAssociationUpdate) SetInput(i UpdateProjectAssociationInput) *ProjectAssociationUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateProjectAssociationInput on the update-one builder.
+func (u *ProjectAssociationUpdateOne) SetInput(i UpdateProjectAssociationInput) *ProjectAssociationUpdateOne {
 	i.Mutate(u.Mutation())
 	return u
 }

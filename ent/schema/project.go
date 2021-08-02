@@ -38,6 +38,10 @@ func (Project) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("contributors", ProjectContributor.Type).
 			Annotations(entgql.Bind()),
+		edge.To("parent_projects", ProjectAssociation.Type).
+			Annotations(entgql.MapsTo("parentProjects")),
+		edge.To("child_projects", ProjectAssociation.Type).
+			Annotations(entgql.MapsTo("childProjects")),
 	}
 }
 

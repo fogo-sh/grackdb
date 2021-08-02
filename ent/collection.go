@@ -107,13 +107,45 @@ func (pr *ProjectQuery) CollectFields(ctx context.Context, satisfies ...string) 
 func (pr *ProjectQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *ProjectQuery {
 	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
 		switch field.Name {
+		case "childProjects":
+			pr = pr.WithChildProjects(func(query *ProjectAssociationQuery) {
+				query.collectField(ctx, field)
+			})
 		case "contributors":
 			pr = pr.WithContributors(func(query *ProjectContributorQuery) {
+				query.collectField(ctx, field)
+			})
+		case "parentProjects":
+			pr = pr.WithParentProjects(func(query *ProjectAssociationQuery) {
 				query.collectField(ctx, field)
 			})
 		}
 	}
 	return pr
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (pa *ProjectAssociationQuery) CollectFields(ctx context.Context, satisfies ...string) *ProjectAssociationQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		pa = pa.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return pa
+}
+
+func (pa *ProjectAssociationQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *ProjectAssociationQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "child":
+			pa = pa.WithChild(func(query *ProjectQuery) {
+				query.collectField(ctx, field)
+			})
+		case "parent":
+			pa = pa.WithParent(func(query *ProjectQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
+	return pa
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.

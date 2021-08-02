@@ -14,6 +14,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/project"
+	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/user"
 
@@ -37,6 +38,8 @@ type Client struct {
 	GithubOrganizationMember *GithubOrganizationMemberClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
+	// ProjectAssociation is the client for interacting with the ProjectAssociation builders.
+	ProjectAssociation *ProjectAssociationClient
 	// ProjectContributor is the client for interacting with the ProjectContributor builders.
 	ProjectContributor *ProjectContributorClient
 	// User is the client for interacting with the User builders.
@@ -61,6 +64,7 @@ func (c *Client) init() {
 	c.GithubOrganization = NewGithubOrganizationClient(c.config)
 	c.GithubOrganizationMember = NewGithubOrganizationMemberClient(c.config)
 	c.Project = NewProjectClient(c.config)
+	c.ProjectAssociation = NewProjectAssociationClient(c.config)
 	c.ProjectContributor = NewProjectContributorClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -101,6 +105,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		GithubOrganization:       NewGithubOrganizationClient(cfg),
 		GithubOrganizationMember: NewGithubOrganizationMemberClient(cfg),
 		Project:                  NewProjectClient(cfg),
+		ProjectAssociation:       NewProjectAssociationClient(cfg),
 		ProjectContributor:       NewProjectContributorClient(cfg),
 		User:                     NewUserClient(cfg),
 	}, nil
@@ -126,6 +131,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		GithubOrganization:       NewGithubOrganizationClient(cfg),
 		GithubOrganizationMember: NewGithubOrganizationMemberClient(cfg),
 		Project:                  NewProjectClient(cfg),
+		ProjectAssociation:       NewProjectAssociationClient(cfg),
 		ProjectContributor:       NewProjectContributorClient(cfg),
 		User:                     NewUserClient(cfg),
 	}, nil
@@ -162,6 +168,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.GithubOrganization.Use(hooks...)
 	c.GithubOrganizationMember.Use(hooks...)
 	c.Project.Use(hooks...)
+	c.ProjectAssociation.Use(hooks...)
 	c.ProjectContributor.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -727,10 +734,165 @@ func (c *ProjectClient) QueryContributors(pr *Project) *ProjectContributorQuery 
 	return query
 }
 
+// QueryParentProjects queries the parent_projects edge of a Project.
+func (c *ProjectClient) QueryParentProjects(pr *Project) *ProjectAssociationQuery {
+	query := &ProjectAssociationQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(projectassociation.Table, projectassociation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.ParentProjectsTable, project.ParentProjectsColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChildProjects queries the child_projects edge of a Project.
+func (c *ProjectClient) QueryChildProjects(pr *Project) *ProjectAssociationQuery {
+	query := &ProjectAssociationQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(projectassociation.Table, projectassociation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.ChildProjectsTable, project.ChildProjectsColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProjectClient) Hooks() []Hook {
 	hooks := c.hooks.Project
 	return append(hooks[:len(hooks):len(hooks)], project.Hooks[:]...)
+}
+
+// ProjectAssociationClient is a client for the ProjectAssociation schema.
+type ProjectAssociationClient struct {
+	config
+}
+
+// NewProjectAssociationClient returns a client for the ProjectAssociation from the given config.
+func NewProjectAssociationClient(c config) *ProjectAssociationClient {
+	return &ProjectAssociationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `projectassociation.Hooks(f(g(h())))`.
+func (c *ProjectAssociationClient) Use(hooks ...Hook) {
+	c.hooks.ProjectAssociation = append(c.hooks.ProjectAssociation, hooks...)
+}
+
+// Create returns a create builder for ProjectAssociation.
+func (c *ProjectAssociationClient) Create() *ProjectAssociationCreate {
+	mutation := newProjectAssociationMutation(c.config, OpCreate)
+	return &ProjectAssociationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProjectAssociation entities.
+func (c *ProjectAssociationClient) CreateBulk(builders ...*ProjectAssociationCreate) *ProjectAssociationCreateBulk {
+	return &ProjectAssociationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProjectAssociation.
+func (c *ProjectAssociationClient) Update() *ProjectAssociationUpdate {
+	mutation := newProjectAssociationMutation(c.config, OpUpdate)
+	return &ProjectAssociationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectAssociationClient) UpdateOne(pa *ProjectAssociation) *ProjectAssociationUpdateOne {
+	mutation := newProjectAssociationMutation(c.config, OpUpdateOne, withProjectAssociation(pa))
+	return &ProjectAssociationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectAssociationClient) UpdateOneID(id int) *ProjectAssociationUpdateOne {
+	mutation := newProjectAssociationMutation(c.config, OpUpdateOne, withProjectAssociationID(id))
+	return &ProjectAssociationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProjectAssociation.
+func (c *ProjectAssociationClient) Delete() *ProjectAssociationDelete {
+	mutation := newProjectAssociationMutation(c.config, OpDelete)
+	return &ProjectAssociationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ProjectAssociationClient) DeleteOne(pa *ProjectAssociation) *ProjectAssociationDeleteOne {
+	return c.DeleteOneID(pa.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ProjectAssociationClient) DeleteOneID(id int) *ProjectAssociationDeleteOne {
+	builder := c.Delete().Where(projectassociation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectAssociationDeleteOne{builder}
+}
+
+// Query returns a query builder for ProjectAssociation.
+func (c *ProjectAssociationClient) Query() *ProjectAssociationQuery {
+	return &ProjectAssociationQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ProjectAssociation entity by its id.
+func (c *ProjectAssociationClient) Get(ctx context.Context, id int) (*ProjectAssociation, error) {
+	return c.Query().Where(projectassociation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectAssociationClient) GetX(ctx context.Context, id int) *ProjectAssociation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryParent queries the parent edge of a ProjectAssociation.
+func (c *ProjectAssociationClient) QueryParent(pa *ProjectAssociation) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectassociation.Table, projectassociation.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectassociation.ParentTable, projectassociation.ParentColumn),
+		)
+		fromV = sqlgraph.Neighbors(pa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChild queries the child edge of a ProjectAssociation.
+func (c *ProjectAssociationClient) QueryChild(pa *ProjectAssociation) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectassociation.Table, projectassociation.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectassociation.ChildTable, projectassociation.ChildColumn),
+		)
+		fromV = sqlgraph.Neighbors(pa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectAssociationClient) Hooks() []Hook {
+	hooks := c.hooks.ProjectAssociation
+	return append(hooks[:len(hooks):len(hooks)], projectassociation.Hooks[:]...)
 }
 
 // ProjectContributorClient is a client for the ProjectContributor schema.

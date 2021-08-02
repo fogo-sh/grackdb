@@ -21,6 +21,10 @@ const (
 	FieldEndDate = "end_date"
 	// EdgeContributors holds the string denoting the contributors edge name in mutations.
 	EdgeContributors = "contributors"
+	// EdgeParentProjects holds the string denoting the parent_projects edge name in mutations.
+	EdgeParentProjects = "parent_projects"
+	// EdgeChildProjects holds the string denoting the child_projects edge name in mutations.
+	EdgeChildProjects = "child_projects"
 	// Table holds the table name of the project in the database.
 	Table = "projects"
 	// ContributorsTable is the table the holds the contributors relation/edge.
@@ -30,6 +34,20 @@ const (
 	ContributorsInverseTable = "project_contributors"
 	// ContributorsColumn is the table column denoting the contributors relation/edge.
 	ContributorsColumn = "project_contributors"
+	// ParentProjectsTable is the table the holds the parent_projects relation/edge.
+	ParentProjectsTable = "project_associations"
+	// ParentProjectsInverseTable is the table name for the ProjectAssociation entity.
+	// It exists in this package in order to avoid circular dependency with the "projectassociation" package.
+	ParentProjectsInverseTable = "project_associations"
+	// ParentProjectsColumn is the table column denoting the parent_projects relation/edge.
+	ParentProjectsColumn = "project_parent_projects"
+	// ChildProjectsTable is the table the holds the child_projects relation/edge.
+	ChildProjectsTable = "project_associations"
+	// ChildProjectsInverseTable is the table name for the ProjectAssociation entity.
+	// It exists in this package in order to avoid circular dependency with the "projectassociation" package.
+	ChildProjectsInverseTable = "project_associations"
+	// ChildProjectsColumn is the table column denoting the child_projects relation/edge.
+	ChildProjectsColumn = "project_child_projects"
 )
 
 // Columns holds all SQL columns for project fields.

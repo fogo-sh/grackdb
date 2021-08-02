@@ -74,6 +74,19 @@ func (f ProjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return f(ctx, mv)
 }
 
+// The ProjectAssociationFunc type is an adapter to allow the use of ordinary
+// function as ProjectAssociation mutator.
+type ProjectAssociationFunc func(context.Context, *ent.ProjectAssociationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectAssociationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ProjectAssociationMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectAssociationMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The ProjectContributorFunc type is an adapter to allow the use of ordinary
 // function as ProjectContributor mutator.
 type ProjectContributorFunc func(context.Context, *ent.ProjectContributorMutation) (ent.Value, error)

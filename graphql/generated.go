@@ -16,6 +16,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/fogo-sh/grackdb/ent"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
+	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -131,6 +132,7 @@ type ComplexityRoot struct {
 		CreateGithubOrganization       func(childComplexity int, input ent.CreateGithubOrganizationInput) int
 		CreateGithubOrganizationMember func(childComplexity int, input ent.CreateGithubOrganizationMemberInput) int
 		CreateProject                  func(childComplexity int, input ent.CreateProjectInput) int
+		CreateProjectAssociation       func(childComplexity int, input ent.CreateProjectAssociationInput) int
 		CreateProjectContributor       func(childComplexity int, input ent.CreateProjectContributorInput) int
 		CreateUser                     func(childComplexity int, input ent.CreateUserInput) int
 	}
@@ -143,12 +145,32 @@ type ComplexityRoot struct {
 	}
 
 	Project struct {
-		Contributors func(childComplexity int) int
-		Description  func(childComplexity int) int
-		EndDate      func(childComplexity int) int
-		ID           func(childComplexity int) int
-		Name         func(childComplexity int) int
-		StartDate    func(childComplexity int) int
+		ChildProjects  func(childComplexity int) int
+		Contributors   func(childComplexity int) int
+		Description    func(childComplexity int) int
+		EndDate        func(childComplexity int) int
+		ID             func(childComplexity int) int
+		Name           func(childComplexity int) int
+		ParentProjects func(childComplexity int) int
+		StartDate      func(childComplexity int) int
+	}
+
+	ProjectAssociation struct {
+		Child  func(childComplexity int) int
+		ID     func(childComplexity int) int
+		Parent func(childComplexity int) int
+		Type   func(childComplexity int) int
+	}
+
+	ProjectAssociationConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	ProjectAssociationEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	ProjectConnection struct {
@@ -189,6 +211,7 @@ type ComplexityRoot struct {
 		GithubOrganizations       func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationOrder, where *ent.GithubOrganizationWhereInput) int
 		Node                      func(childComplexity int, id int) int
 		Nodes                     func(childComplexity int, ids []int) int
+		ProjectAssociation        func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) int
 		ProjectContributors       func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectContributorOrder, where *ent.ProjectContributorWhereInput) int
 		Projects                  func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectOrder, where *ent.ProjectWhereInput) int
 		Users                     func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) int
@@ -223,6 +246,7 @@ type MutationResolver interface {
 	CreateGithubOrganizationMember(ctx context.Context, input ent.CreateGithubOrganizationMemberInput) (*ent.GithubOrganizationMember, error)
 	CreateProject(ctx context.Context, input ent.CreateProjectInput) (*ent.Project, error)
 	CreateProjectContributor(ctx context.Context, input ent.CreateProjectContributorInput) (*ent.ProjectContributor, error)
+	CreateProjectAssociation(ctx context.Context, input ent.CreateProjectAssociationInput) (*ent.ProjectAssociation, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
@@ -234,6 +258,7 @@ type QueryResolver interface {
 	GithubOrganizations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationOrder, where *ent.GithubOrganizationWhereInput) (*ent.GithubOrganizationConnection, error)
 	Projects(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectOrder, where *ent.ProjectWhereInput) (*ent.ProjectConnection, error)
 	ProjectContributors(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectContributorOrder, where *ent.ProjectContributorWhereInput) (*ent.ProjectContributorConnection, error)
+	ProjectAssociation(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) (*ent.ProjectAssociationConnection, error)
 	AvailableAuthProviders(ctx context.Context) ([]*AuthProvider, error)
 	CurrentUser(ctx context.Context) (*ent.User, error)
 }
@@ -586,6 +611,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateProject(childComplexity, args["input"].(ent.CreateProjectInput)), true
 
+	case "Mutation.createProjectAssociation":
+		if e.complexity.Mutation.CreateProjectAssociation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createProjectAssociation_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateProjectAssociation(childComplexity, args["input"].(ent.CreateProjectAssociationInput)), true
+
 	case "Mutation.createProjectContributor":
 		if e.complexity.Mutation.CreateProjectContributor == nil {
 			break
@@ -638,6 +675,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
 
+	case "Project.childProjects":
+		if e.complexity.Project.ChildProjects == nil {
+			break
+		}
+
+		return e.complexity.Project.ChildProjects(childComplexity), true
+
 	case "Project.contributors":
 		if e.complexity.Project.Contributors == nil {
 			break
@@ -673,12 +717,82 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Project.Name(childComplexity), true
 
+	case "Project.parentProjects":
+		if e.complexity.Project.ParentProjects == nil {
+			break
+		}
+
+		return e.complexity.Project.ParentProjects(childComplexity), true
+
 	case "Project.startDate":
 		if e.complexity.Project.StartDate == nil {
 			break
 		}
 
 		return e.complexity.Project.StartDate(childComplexity), true
+
+	case "ProjectAssociation.child":
+		if e.complexity.ProjectAssociation.Child == nil {
+			break
+		}
+
+		return e.complexity.ProjectAssociation.Child(childComplexity), true
+
+	case "ProjectAssociation.id":
+		if e.complexity.ProjectAssociation.ID == nil {
+			break
+		}
+
+		return e.complexity.ProjectAssociation.ID(childComplexity), true
+
+	case "ProjectAssociation.parent":
+		if e.complexity.ProjectAssociation.Parent == nil {
+			break
+		}
+
+		return e.complexity.ProjectAssociation.Parent(childComplexity), true
+
+	case "ProjectAssociation.type":
+		if e.complexity.ProjectAssociation.Type == nil {
+			break
+		}
+
+		return e.complexity.ProjectAssociation.Type(childComplexity), true
+
+	case "ProjectAssociationConnection.edges":
+		if e.complexity.ProjectAssociationConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.ProjectAssociationConnection.Edges(childComplexity), true
+
+	case "ProjectAssociationConnection.pageInfo":
+		if e.complexity.ProjectAssociationConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.ProjectAssociationConnection.PageInfo(childComplexity), true
+
+	case "ProjectAssociationConnection.totalCount":
+		if e.complexity.ProjectAssociationConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.ProjectAssociationConnection.TotalCount(childComplexity), true
+
+	case "ProjectAssociationEdge.cursor":
+		if e.complexity.ProjectAssociationEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.ProjectAssociationEdge.Cursor(childComplexity), true
+
+	case "ProjectAssociationEdge.node":
+		if e.complexity.ProjectAssociationEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.ProjectAssociationEdge.Node(childComplexity), true
 
 	case "ProjectConnection.edges":
 		if e.complexity.ProjectConnection.Edges == nil {
@@ -863,6 +977,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Nodes(childComplexity, args["ids"].([]int)), true
+
+	case "Query.projectAssociation":
+		if e.complexity.Query.ProjectAssociation == nil {
+			break
+		}
+
+		args, err := ec.field_Query_projectAssociation_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ProjectAssociation(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.ProjectAssociationOrder), args["where"].(*ent.ProjectAssociationWhereInput)), true
 
 	case "Query.projectContributors":
 		if e.complexity.Query.ProjectContributors == nil {
@@ -1246,6 +1372,8 @@ type Project implements Node {
     startDate: Time!
     endDate: Time
     contributors: [ProjectContributor!]
+    parentProjects: [ProjectAssociation!]
+    childProjects: [ProjectAssociation!]
 }
 
 enum ProjectContributorRole {
@@ -1278,6 +1406,40 @@ type ProjectContributor implements Node {
     role: ProjectContributorRole!
     project: Project!
     user: User!
+}
+
+enum ProjectAssociationType {
+    BASED_OFF
+    REPLACES
+    INSPIRED_BY
+    RELATED
+}
+
+type ProjectAssociationConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [ProjectAssociationEdge]
+}
+
+type ProjectAssociationEdge {
+    node: ProjectAssociation
+    cursor: Cursor!
+}
+
+enum ProjectAssociationOrderField {
+    TYPE
+}
+
+input ProjectAssociationOrder {
+    direction: OrderDirection!
+    field: ProjectAssociationOrderField
+}
+
+type ProjectAssociation implements Node {
+    id: ID!
+    type: ProjectAssociationType!
+    parent: Project!
+    child: Project!
 }
 
 type Query {
@@ -1341,6 +1503,14 @@ type Query {
         orderBy: ProjectContributorOrder
         where: ProjectContributorWhereInput
     ): ProjectContributorConnection
+    projectAssociation(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: ProjectAssociationOrder
+        where: ProjectAssociationWhereInput
+    ): ProjectAssociationConnection
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
@@ -1387,6 +1557,12 @@ input CreateProjectContributorInput {
     user: Int!
 }
 
+input CreateProjectAssociationInput {
+    type: ProjectAssociationType!
+    parent: Int!
+    child: Int!
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
@@ -1395,6 +1571,7 @@ type Mutation {
     createGithubOrganizationMember(input: CreateGithubOrganizationMemberInput!): GithubOrganizationMember!
     createProject(input: CreateProjectInput!): Project!
     createProjectContributor(input: CreateProjectContributorInput!): ProjectContributor!
+    createProjectAssociation(input: CreateProjectAssociationInput!): ProjectAssociation!
 }
 `, BuiltIn: false},
 	{Name: "ent.graphql", Input: `"""
@@ -1739,6 +1916,14 @@ input ProjectWhereInput {
   """contributors edge predicates"""
   hasContributors: Boolean
   hasContributorsWith: [ProjectContributorWhereInput!]
+  
+  """parent_projects edge predicates"""
+  hasParentProjects: Boolean
+  hasParentProjectsWith: [ProjectAssociationWhereInput!]
+  
+  """child_projects edge predicates"""
+  hasChildProjects: Boolean
+  hasChildProjectsWith: [ProjectAssociationWhereInput!]
 }
 
 """
@@ -1773,6 +1958,40 @@ input ProjectContributorWhereInput {
   """user edge predicates"""
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
+}
+
+"""
+ProjectAssociationWhereInput is used for filtering ProjectAssociation objects.
+Input was generated by ent.
+"""
+input ProjectAssociationWhereInput {
+  not: ProjectAssociationWhereInput
+  and: [ProjectAssociationWhereInput!]
+  or: [ProjectAssociationWhereInput!]
+  
+  """type field predicates"""
+  type: ProjectAssociationType
+  typeNEQ: ProjectAssociationType
+  typeIn: [ProjectAssociationType!]
+  typeNotIn: [ProjectAssociationType!]
+  
+  """id field predicates"""
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
+  
+  """parent edge predicates"""
+  hasParent: Boolean
+  hasParentWith: [ProjectWhereInput!]
+  
+  """child edge predicates"""
+  hasChild: Boolean
+  hasChildWith: [ProjectWhereInput!]
 }
 `, BuiltIn: false},
 }
@@ -1834,6 +2053,21 @@ func (ec *executionContext) field_Mutation_createGithubOrganization_args(ctx con
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateGithubOrganizationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateGithubOrganizationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createProjectAssociation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateProjectAssociationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateProjectAssociationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateProjectAssociationInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2169,6 +2403,66 @@ func (ec *executionContext) field_Query_nodes_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["ids"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_projectAssociation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.Cursor
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *ent.Cursor
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.ProjectAssociationOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOProjectAssociationOrder2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *ent.ProjectAssociationWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOProjectAssociationWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
 	return args, nil
 }
 
@@ -4016,6 +4310,48 @@ func (ec *executionContext) _Mutation_createProjectContributor(ctx context.Conte
 	return ec.marshalNProjectContributor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectContributor(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createProjectAssociation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createProjectAssociation_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateProjectAssociation(rctx, args["input"].(ent.CreateProjectAssociationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ProjectAssociation)
+	fc.Result = res
+	return ec.marshalNProjectAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociation(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4349,6 +4685,379 @@ func (ec *executionContext) _Project_contributors(ctx context.Context, field gra
 	res := resTmp.([]*ent.ProjectContributor)
 	fc.Result = res
 	return ec.marshalOProjectContributor2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectContributorᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_parentProjects(ctx context.Context, field graphql.CollectedField, obj *ent.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ParentProjects(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.ProjectAssociation)
+	fc.Result = res
+	return ec.marshalOProjectAssociation2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_childProjects(ctx context.Context, field graphql.CollectedField, obj *ent.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ChildProjects(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.ProjectAssociation)
+	fc.Result = res
+	return ec.marshalOProjectAssociation2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectAssociation_id(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectAssociation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectAssociation_type(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectAssociation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(projectassociation.Type)
+	fc.Result = res
+	return ec.marshalNProjectAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectAssociation_parent(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectAssociation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Parent(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Project)
+	fc.Result = res
+	return ec.marshalNProject2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectAssociation_child(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectAssociation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Child(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Project)
+	fc.Result = res
+	return ec.marshalNProject2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectAssociationConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociationConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectAssociationConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectAssociationConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociationConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectAssociationConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectAssociationConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociationConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectAssociationConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.ProjectAssociationEdge)
+	fc.Result = res
+	return ec.marshalOProjectAssociationEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectAssociationEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociationEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectAssociationEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ProjectAssociation)
+	fc.Result = res
+	return ec.marshalOProjectAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectAssociationEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociationEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectAssociationEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.Cursor)
+	fc.Result = res
+	return ec.marshalNCursor2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ProjectConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectConnection) (ret graphql.Marshaler) {
@@ -5181,6 +5890,45 @@ func (ec *executionContext) _Query_projectContributors(ctx context.Context, fiel
 	res := resTmp.(*ent.ProjectContributorConnection)
 	fc.Result = res
 	return ec.marshalOProjectContributorConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectContributorConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_projectAssociation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_projectAssociation_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ProjectAssociation(rctx, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.ProjectAssociationOrder), args["where"].(*ent.ProjectAssociationWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ProjectAssociationConnection)
+	fc.Result = res
+	return ec.marshalOProjectAssociationConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_availableAuthProviders(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6908,6 +7656,42 @@ func (ec *executionContext) unmarshalInputCreateGithubOrganizationMemberInput(ct
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateProjectAssociationInput(ctx context.Context, obj interface{}) (ent.CreateProjectAssociationInput, error) {
+	var it ent.CreateProjectAssociationInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalNProjectAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "parent":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent"))
+			it.Parent, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "child":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("child"))
+			it.Child, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateProjectContributorInput(ctx context.Context, obj interface{}) (ent.CreateProjectContributorInput, error) {
 	var it ent.CreateProjectContributorInput
 	var asMap = obj.(map[string]interface{})
@@ -8296,6 +9080,198 @@ func (ec *executionContext) unmarshalInputGithubOrganizationWhereInput(ctx conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputProjectAssociationOrder(ctx context.Context, obj interface{}) (ent.ProjectAssociationOrder, error) {
+	var it ent.ProjectAssociationOrder
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNOrderDirection2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			it.Field, err = ec.unmarshalOProjectAssociationOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputProjectAssociationWhereInput(ctx context.Context, obj interface{}) (ent.ProjectAssociationWhereInput, error) {
+	var it ent.ProjectAssociationWhereInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "not":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			it.Not, err = ec.unmarshalOProjectAssociationWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "and":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			it.And, err = ec.unmarshalOProjectAssociationWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "or":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			it.Or, err = ec.unmarshalOProjectAssociationWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalOProjectAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "typeNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNEQ"))
+			it.TypeNEQ, err = ec.unmarshalOProjectAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "typeIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeIn"))
+			it.TypeIn, err = ec.unmarshalOProjectAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐTypeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "typeNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNotIn"))
+			it.TypeNotIn, err = ec.unmarshalOProjectAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐTypeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			it.IDNEQ, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			it.IDIn, err = ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			it.IDNotIn, err = ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			it.IDGT, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			it.IDGTE, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			it.IDLT, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			it.IDLTE, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasParent":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasParent"))
+			it.HasParent, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasParentWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasParentWith"))
+			it.HasParentWith, err = ec.unmarshalOProjectWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasChild":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasChild"))
+			it.HasChild, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasChildWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasChildWith"))
+			it.HasChildWith, err = ec.unmarshalOProjectWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputProjectContributorOrder(ctx context.Context, obj interface{}) (ent.ProjectContributorOrder, error) {
 	var it ent.ProjectContributorOrder
 	var asMap = obj.(map[string]interface{})
@@ -8994,6 +9970,38 @@ func (ec *executionContext) unmarshalInputProjectWhereInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
+		case "hasParentProjects":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasParentProjects"))
+			it.HasParentProjects, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasParentProjectsWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasParentProjectsWith"))
+			it.HasParentProjectsWith, err = ec.unmarshalOProjectAssociationWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasChildProjects":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasChildProjects"))
+			it.HasChildProjects, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasChildProjectsWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasChildProjectsWith"))
+			it.HasChildProjectsWith, err = ec.unmarshalOProjectAssociationWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -9443,6 +10451,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._ProjectContributor(ctx, sel, obj)
+	case *ent.ProjectAssociation:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._ProjectAssociation(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -10004,6 +11017,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createProjectAssociation":
+			out.Values[i] = ec._Mutation_createProjectAssociation(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10092,6 +11110,151 @@ func (ec *executionContext) _Project(ctx context.Context, sel ast.SelectionSet, 
 				res = ec._Project_contributors(ctx, field, obj)
 				return res
 			})
+		case "parentProjects":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Project_parentProjects(ctx, field, obj)
+				return res
+			})
+		case "childProjects":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Project_childProjects(ctx, field, obj)
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var projectAssociationImplementors = []string{"ProjectAssociation", "Node"}
+
+func (ec *executionContext) _ProjectAssociation(ctx context.Context, sel ast.SelectionSet, obj *ent.ProjectAssociation) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, projectAssociationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ProjectAssociation")
+		case "id":
+			out.Values[i] = ec._ProjectAssociation_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "type":
+			out.Values[i] = ec._ProjectAssociation_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "parent":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ProjectAssociation_parent(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "child":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ProjectAssociation_child(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var projectAssociationConnectionImplementors = []string{"ProjectAssociationConnection"}
+
+func (ec *executionContext) _ProjectAssociationConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.ProjectAssociationConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, projectAssociationConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ProjectAssociationConnection")
+		case "totalCount":
+			out.Values[i] = ec._ProjectAssociationConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._ProjectAssociationConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "edges":
+			out.Values[i] = ec._ProjectAssociationConnection_edges(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var projectAssociationEdgeImplementors = []string{"ProjectAssociationEdge"}
+
+func (ec *executionContext) _ProjectAssociationEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.ProjectAssociationEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, projectAssociationEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ProjectAssociationEdge")
+		case "node":
+			out.Values[i] = ec._ProjectAssociationEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._ProjectAssociationEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10404,6 +11567,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_projectContributors(ctx, field)
+				return res
+			})
+		case "projectAssociation":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_projectAssociation(ctx, field)
 				return res
 			})
 		case "availableAuthProviders":
@@ -10863,6 +12037,11 @@ func (ec *executionContext) unmarshalNCreateGithubOrganizationMemberInput2github
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateProjectAssociationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateProjectAssociationInput(ctx context.Context, v interface{}) (ent.CreateProjectAssociationInput, error) {
+	res, err := ec.unmarshalInputCreateProjectAssociationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateProjectContributorInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateProjectContributorInput(ctx context.Context, v interface{}) (ent.CreateProjectContributorInput, error) {
 	res, err := ec.unmarshalInputCreateProjectContributorInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -11134,6 +12313,35 @@ func (ec *executionContext) marshalNProject2ᚖgithubᚗcomᚋfogoᚑshᚋgrackd
 		return graphql.Null
 	}
 	return ec._Project(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNProjectAssociation2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociation(ctx context.Context, sel ast.SelectionSet, v ent.ProjectAssociation) graphql.Marshaler {
+	return ec._ProjectAssociation(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNProjectAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociation(ctx context.Context, sel ast.SelectionSet, v *ent.ProjectAssociation) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._ProjectAssociation(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNProjectAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx context.Context, v interface{}) (projectassociation.Type, error) {
+	var res projectassociation.Type
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNProjectAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx context.Context, sel ast.SelectionSet, v projectassociation.Type) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNProjectAssociationWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationWhereInput(ctx context.Context, v interface{}) (*ent.ProjectAssociationWhereInput, error) {
+	res, err := ec.unmarshalInputProjectAssociationWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNProjectContributor2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectContributor(ctx context.Context, sel ast.SelectionSet, v ent.ProjectContributor) graphql.Marshaler {
@@ -12281,6 +13489,243 @@ func (ec *executionContext) marshalOProject2ᚖgithubᚗcomᚋfogoᚑshᚋgrackd
 		return graphql.Null
 	}
 	return ec._Project(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOProjectAssociation2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.ProjectAssociation) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNProjectAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociation(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOProjectAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociation(ctx context.Context, sel ast.SelectionSet, v *ent.ProjectAssociation) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ProjectAssociation(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOProjectAssociationConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationConnection(ctx context.Context, sel ast.SelectionSet, v *ent.ProjectAssociationConnection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ProjectAssociationConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOProjectAssociationEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.ProjectAssociationEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOProjectAssociationEdge2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOProjectAssociationEdge2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationEdge(ctx context.Context, sel ast.SelectionSet, v *ent.ProjectAssociationEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ProjectAssociationEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOProjectAssociationOrder2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationOrder(ctx context.Context, v interface{}) (*ent.ProjectAssociationOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputProjectAssociationOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOProjectAssociationOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationOrderField(ctx context.Context, v interface{}) (*ent.ProjectAssociationOrderField, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(ent.ProjectAssociationOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOProjectAssociationOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.ProjectAssociationOrderField) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOProjectAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐTypeᚄ(ctx context.Context, v interface{}) ([]projectassociation.Type, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]projectassociation.Type, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNProjectAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOProjectAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []projectassociation.Type) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNProjectAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) unmarshalOProjectAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx context.Context, v interface{}) (*projectassociation.Type, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(projectassociation.Type)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOProjectAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx context.Context, sel ast.SelectionSet, v *projectassociation.Type) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOProjectAssociationWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.ProjectAssociationWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*ent.ProjectAssociationWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNProjectAssociationWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOProjectAssociationWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociationWhereInput(ctx context.Context, v interface{}) (*ent.ProjectAssociationWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputProjectAssociationWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOProjectConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectConnection(ctx context.Context, sel ast.SelectionSet, v *ent.ProjectConnection) graphql.Marshaler {

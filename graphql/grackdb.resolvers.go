@@ -60,6 +60,13 @@ func (r *mutationResolver) CreateProjectContributor(ctx context.Context, input e
 		Save(ctx)
 }
 
+func (r *mutationResolver) CreateProjectAssociation(ctx context.Context, input ent.CreateProjectAssociationInput) (*ent.ProjectAssociation, error) {
+	return ent.FromContext(ctx).ProjectAssociation.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
 	return r.client.Noder(ctx, id)
 }
@@ -121,6 +128,14 @@ func (r *queryResolver) ProjectContributors(ctx context.Context, after *ent.Curs
 		Paginate(ctx, after, first, before, last,
 			ent.WithProjectContributorOrder(orderBy),
 			ent.WithProjectContributorFilter(where.Filter),
+		)
+}
+
+func (r *queryResolver) ProjectAssociation(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) (*ent.ProjectAssociationConnection, error) {
+	return r.client.ProjectAssociation.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithProjectAssociationOrder(orderBy),
+			ent.WithProjectAssociationFilter(where.Filter),
 		)
 }
 

@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/project"
+	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 )
 
@@ -27,7 +28,9 @@ type ProjectQuery struct {
 	fields     []string
 	predicates []predicate.Project
 	// eager-loading edges.
-	withContributors *ProjectContributorQuery
+	withContributors   *ProjectContributorQuery
+	withParentProjects *ProjectAssociationQuery
+	withChildProjects  *ProjectAssociationQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,6 +82,50 @@ func (pq *ProjectQuery) QueryContributors() *ProjectContributorQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(projectcontributor.Table, projectcontributor.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.ContributorsTable, project.ContributorsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryParentProjects chains the current query on the "parent_projects" edge.
+func (pq *ProjectQuery) QueryParentProjects() *ProjectAssociationQuery {
+	query := &ProjectAssociationQuery{config: pq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(projectassociation.Table, projectassociation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.ParentProjectsTable, project.ParentProjectsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryChildProjects chains the current query on the "child_projects" edge.
+func (pq *ProjectQuery) QueryChildProjects() *ProjectAssociationQuery {
+	query := &ProjectAssociationQuery{config: pq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(projectassociation.Table, projectassociation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.ChildProjectsTable, project.ChildProjectsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -262,12 +309,14 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 		return nil
 	}
 	return &ProjectQuery{
-		config:           pq.config,
-		limit:            pq.limit,
-		offset:           pq.offset,
-		order:            append([]OrderFunc{}, pq.order...),
-		predicates:       append([]predicate.Project{}, pq.predicates...),
-		withContributors: pq.withContributors.Clone(),
+		config:             pq.config,
+		limit:              pq.limit,
+		offset:             pq.offset,
+		order:              append([]OrderFunc{}, pq.order...),
+		predicates:         append([]predicate.Project{}, pq.predicates...),
+		withContributors:   pq.withContributors.Clone(),
+		withParentProjects: pq.withParentProjects.Clone(),
+		withChildProjects:  pq.withChildProjects.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -282,6 +331,28 @@ func (pq *ProjectQuery) WithContributors(opts ...func(*ProjectContributorQuery))
 		opt(query)
 	}
 	pq.withContributors = query
+	return pq
+}
+
+// WithParentProjects tells the query-builder to eager-load the nodes that are connected to
+// the "parent_projects" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProjectQuery) WithParentProjects(opts ...func(*ProjectAssociationQuery)) *ProjectQuery {
+	query := &ProjectAssociationQuery{config: pq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withParentProjects = query
+	return pq
+}
+
+// WithChildProjects tells the query-builder to eager-load the nodes that are connected to
+// the "child_projects" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProjectQuery) WithChildProjects(opts ...func(*ProjectAssociationQuery)) *ProjectQuery {
+	query := &ProjectAssociationQuery{config: pq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withChildProjects = query
 	return pq
 }
 
@@ -356,8 +427,10 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context) ([]*Project, error) {
 	var (
 		nodes       = []*Project{}
 		_spec       = pq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			pq.withContributors != nil,
+			pq.withParentProjects != nil,
+			pq.withChildProjects != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -406,6 +479,64 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context) ([]*Project, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "project_contributors" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Contributors = append(node.Edges.Contributors, n)
+		}
+	}
+
+	if query := pq.withParentProjects; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Project)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ParentProjects = []*ProjectAssociation{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ProjectAssociation(func(s *sql.Selector) {
+			s.Where(sql.InValues(project.ParentProjectsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.project_parent_projects
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "project_parent_projects" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "project_parent_projects" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.ParentProjects = append(node.Edges.ParentProjects, n)
+		}
+	}
+
+	if query := pq.withChildProjects; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Project)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ChildProjects = []*ProjectAssociation{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ProjectAssociation(func(s *sql.Selector) {
+			s.Where(sql.InValues(project.ChildProjectsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.project_child_projects
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "project_child_projects" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "project_child_projects" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.ChildProjects = append(node.Edges.ChildProjects, n)
 		}
 	}
 

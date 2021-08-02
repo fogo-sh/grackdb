@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/project"
+	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 )
 
@@ -95,6 +96,36 @@ func (pu *ProjectUpdate) AddContributors(p ...*ProjectContributor) *ProjectUpdat
 	return pu.AddContributorIDs(ids...)
 }
 
+// AddParentProjectIDs adds the "parent_projects" edge to the ProjectAssociation entity by IDs.
+func (pu *ProjectUpdate) AddParentProjectIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.AddParentProjectIDs(ids...)
+	return pu
+}
+
+// AddParentProjects adds the "parent_projects" edges to the ProjectAssociation entity.
+func (pu *ProjectUpdate) AddParentProjects(p ...*ProjectAssociation) *ProjectUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.AddParentProjectIDs(ids...)
+}
+
+// AddChildProjectIDs adds the "child_projects" edge to the ProjectAssociation entity by IDs.
+func (pu *ProjectUpdate) AddChildProjectIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.AddChildProjectIDs(ids...)
+	return pu
+}
+
+// AddChildProjects adds the "child_projects" edges to the ProjectAssociation entity.
+func (pu *ProjectUpdate) AddChildProjects(p ...*ProjectAssociation) *ProjectUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.AddChildProjectIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -119,6 +150,48 @@ func (pu *ProjectUpdate) RemoveContributors(p ...*ProjectContributor) *ProjectUp
 		ids[i] = p[i].ID
 	}
 	return pu.RemoveContributorIDs(ids...)
+}
+
+// ClearParentProjects clears all "parent_projects" edges to the ProjectAssociation entity.
+func (pu *ProjectUpdate) ClearParentProjects() *ProjectUpdate {
+	pu.mutation.ClearParentProjects()
+	return pu
+}
+
+// RemoveParentProjectIDs removes the "parent_projects" edge to ProjectAssociation entities by IDs.
+func (pu *ProjectUpdate) RemoveParentProjectIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.RemoveParentProjectIDs(ids...)
+	return pu
+}
+
+// RemoveParentProjects removes "parent_projects" edges to ProjectAssociation entities.
+func (pu *ProjectUpdate) RemoveParentProjects(p ...*ProjectAssociation) *ProjectUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.RemoveParentProjectIDs(ids...)
+}
+
+// ClearChildProjects clears all "child_projects" edges to the ProjectAssociation entity.
+func (pu *ProjectUpdate) ClearChildProjects() *ProjectUpdate {
+	pu.mutation.ClearChildProjects()
+	return pu
+}
+
+// RemoveChildProjectIDs removes the "child_projects" edge to ProjectAssociation entities by IDs.
+func (pu *ProjectUpdate) RemoveChildProjectIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.RemoveChildProjectIDs(ids...)
+	return pu
+}
+
+// RemoveChildProjects removes "child_projects" edges to ProjectAssociation entities.
+func (pu *ProjectUpdate) RemoveChildProjects(p ...*ProjectAssociation) *ProjectUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.RemoveChildProjectIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -300,6 +373,114 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.ParentProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ParentProjectsTable,
+			Columns: []string{project.ParentProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedParentProjectsIDs(); len(nodes) > 0 && !pu.mutation.ParentProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ParentProjectsTable,
+			Columns: []string{project.ParentProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.ParentProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ParentProjectsTable,
+			Columns: []string{project.ParentProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.ChildProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ChildProjectsTable,
+			Columns: []string{project.ChildProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedChildProjectsIDs(); len(nodes) > 0 && !pu.mutation.ChildProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ChildProjectsTable,
+			Columns: []string{project.ChildProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.ChildProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ChildProjectsTable,
+			Columns: []string{project.ChildProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{project.Label}
@@ -386,6 +567,36 @@ func (puo *ProjectUpdateOne) AddContributors(p ...*ProjectContributor) *ProjectU
 	return puo.AddContributorIDs(ids...)
 }
 
+// AddParentProjectIDs adds the "parent_projects" edge to the ProjectAssociation entity by IDs.
+func (puo *ProjectUpdateOne) AddParentProjectIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.AddParentProjectIDs(ids...)
+	return puo
+}
+
+// AddParentProjects adds the "parent_projects" edges to the ProjectAssociation entity.
+func (puo *ProjectUpdateOne) AddParentProjects(p ...*ProjectAssociation) *ProjectUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.AddParentProjectIDs(ids...)
+}
+
+// AddChildProjectIDs adds the "child_projects" edge to the ProjectAssociation entity by IDs.
+func (puo *ProjectUpdateOne) AddChildProjectIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.AddChildProjectIDs(ids...)
+	return puo
+}
+
+// AddChildProjects adds the "child_projects" edges to the ProjectAssociation entity.
+func (puo *ProjectUpdateOne) AddChildProjects(p ...*ProjectAssociation) *ProjectUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.AddChildProjectIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -410,6 +621,48 @@ func (puo *ProjectUpdateOne) RemoveContributors(p ...*ProjectContributor) *Proje
 		ids[i] = p[i].ID
 	}
 	return puo.RemoveContributorIDs(ids...)
+}
+
+// ClearParentProjects clears all "parent_projects" edges to the ProjectAssociation entity.
+func (puo *ProjectUpdateOne) ClearParentProjects() *ProjectUpdateOne {
+	puo.mutation.ClearParentProjects()
+	return puo
+}
+
+// RemoveParentProjectIDs removes the "parent_projects" edge to ProjectAssociation entities by IDs.
+func (puo *ProjectUpdateOne) RemoveParentProjectIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.RemoveParentProjectIDs(ids...)
+	return puo
+}
+
+// RemoveParentProjects removes "parent_projects" edges to ProjectAssociation entities.
+func (puo *ProjectUpdateOne) RemoveParentProjects(p ...*ProjectAssociation) *ProjectUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.RemoveParentProjectIDs(ids...)
+}
+
+// ClearChildProjects clears all "child_projects" edges to the ProjectAssociation entity.
+func (puo *ProjectUpdateOne) ClearChildProjects() *ProjectUpdateOne {
+	puo.mutation.ClearChildProjects()
+	return puo
+}
+
+// RemoveChildProjectIDs removes the "child_projects" edge to ProjectAssociation entities by IDs.
+func (puo *ProjectUpdateOne) RemoveChildProjectIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.RemoveChildProjectIDs(ids...)
+	return puo
+}
+
+// RemoveChildProjects removes "child_projects" edges to ProjectAssociation entities.
+func (puo *ProjectUpdateOne) RemoveChildProjects(p ...*ProjectAssociation) *ProjectUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.RemoveChildProjectIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -607,6 +860,114 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: projectcontributor.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.ParentProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ParentProjectsTable,
+			Columns: []string{project.ParentProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedParentProjectsIDs(); len(nodes) > 0 && !puo.mutation.ParentProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ParentProjectsTable,
+			Columns: []string{project.ParentProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.ParentProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ParentProjectsTable,
+			Columns: []string{project.ParentProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.ChildProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ChildProjectsTable,
+			Columns: []string{project.ChildProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedChildProjectsIDs(); len(nodes) > 0 && !puo.mutation.ChildProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ChildProjectsTable,
+			Columns: []string{project.ChildProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.ChildProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ChildProjectsTable,
+			Columns: []string{project.ChildProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectassociation.FieldID,
 				},
 			},
 		}

@@ -551,6 +551,62 @@ func HasContributorsWith(preds ...predicate.ProjectContributor) predicate.Projec
 	})
 }
 
+// HasParentProjects applies the HasEdge predicate on the "parent_projects" edge.
+func HasParentProjects() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ParentProjectsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ParentProjectsTable, ParentProjectsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasParentProjectsWith applies the HasEdge predicate on the "parent_projects" edge with a given conditions (other predicates).
+func HasParentProjectsWith(preds ...predicate.ProjectAssociation) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ParentProjectsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ParentProjectsTable, ParentProjectsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasChildProjects applies the HasEdge predicate on the "child_projects" edge.
+func HasChildProjects() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ChildProjectsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ChildProjectsTable, ChildProjectsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasChildProjectsWith applies the HasEdge predicate on the "child_projects" edge with a given conditions (other predicates).
+func HasChildProjectsWith(preds ...predicate.ProjectAssociation) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ChildProjectsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ChildProjectsTable, ChildProjectsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Project) predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {

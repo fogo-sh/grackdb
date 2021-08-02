@@ -60,6 +60,38 @@ func (pr *Project) Contributors(ctx context.Context) ([]*ProjectContributor, err
 	return result, err
 }
 
+func (pr *Project) ParentProjects(ctx context.Context) ([]*ProjectAssociation, error) {
+	result, err := pr.Edges.ParentProjectsOrErr()
+	if IsNotLoaded(err) {
+		result, err = pr.QueryParentProjects().All(ctx)
+	}
+	return result, err
+}
+
+func (pr *Project) ChildProjects(ctx context.Context) ([]*ProjectAssociation, error) {
+	result, err := pr.Edges.ChildProjectsOrErr()
+	if IsNotLoaded(err) {
+		result, err = pr.QueryChildProjects().All(ctx)
+	}
+	return result, err
+}
+
+func (pa *ProjectAssociation) Parent(ctx context.Context) (*Project, error) {
+	result, err := pa.Edges.ParentOrErr()
+	if IsNotLoaded(err) {
+		result, err = pa.QueryParent().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (pa *ProjectAssociation) Child(ctx context.Context) (*Project, error) {
+	result, err := pa.Edges.ChildOrErr()
+	if IsNotLoaded(err) {
+		result, err = pa.QueryChild().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (pc *ProjectContributor) Project(ctx context.Context) (*Project, error) {
 	result, err := pc.Edges.ProjectOrErr()
 	if IsNotLoaded(err) {

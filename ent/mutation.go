@@ -14,6 +14,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/project"
+	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/user"
 
@@ -34,6 +35,7 @@ const (
 	TypeGithubOrganization       = "GithubOrganization"
 	TypeGithubOrganizationMember = "GithubOrganizationMember"
 	TypeProject                  = "Project"
+	TypeProjectAssociation       = "ProjectAssociation"
 	TypeProjectContributor       = "ProjectContributor"
 	TypeUser                     = "User"
 )
@@ -1815,20 +1817,26 @@ func (m *GithubOrganizationMemberMutation) ResetEdge(name string) error {
 // ProjectMutation represents an operation that mutates the Project nodes in the graph.
 type ProjectMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *int
-	name                *string
-	description         *string
-	start_date          *time.Time
-	end_date            *time.Time
-	clearedFields       map[string]struct{}
-	contributors        map[int]struct{}
-	removedcontributors map[int]struct{}
-	clearedcontributors bool
-	done                bool
-	oldValue            func(context.Context) (*Project, error)
-	predicates          []predicate.Project
+	op                     Op
+	typ                    string
+	id                     *int
+	name                   *string
+	description            *string
+	start_date             *time.Time
+	end_date               *time.Time
+	clearedFields          map[string]struct{}
+	contributors           map[int]struct{}
+	removedcontributors    map[int]struct{}
+	clearedcontributors    bool
+	parent_projects        map[int]struct{}
+	removedparent_projects map[int]struct{}
+	clearedparent_projects bool
+	child_projects         map[int]struct{}
+	removedchild_projects  map[int]struct{}
+	clearedchild_projects  bool
+	done                   bool
+	oldValue               func(context.Context) (*Project, error)
+	predicates             []predicate.Project
 }
 
 var _ ent.Mutation = (*ProjectMutation)(nil)
@@ -2134,6 +2142,114 @@ func (m *ProjectMutation) ResetContributors() {
 	m.removedcontributors = nil
 }
 
+// AddParentProjectIDs adds the "parent_projects" edge to the ProjectAssociation entity by ids.
+func (m *ProjectMutation) AddParentProjectIDs(ids ...int) {
+	if m.parent_projects == nil {
+		m.parent_projects = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.parent_projects[ids[i]] = struct{}{}
+	}
+}
+
+// ClearParentProjects clears the "parent_projects" edge to the ProjectAssociation entity.
+func (m *ProjectMutation) ClearParentProjects() {
+	m.clearedparent_projects = true
+}
+
+// ParentProjectsCleared reports if the "parent_projects" edge to the ProjectAssociation entity was cleared.
+func (m *ProjectMutation) ParentProjectsCleared() bool {
+	return m.clearedparent_projects
+}
+
+// RemoveParentProjectIDs removes the "parent_projects" edge to the ProjectAssociation entity by IDs.
+func (m *ProjectMutation) RemoveParentProjectIDs(ids ...int) {
+	if m.removedparent_projects == nil {
+		m.removedparent_projects = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.parent_projects, ids[i])
+		m.removedparent_projects[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedParentProjects returns the removed IDs of the "parent_projects" edge to the ProjectAssociation entity.
+func (m *ProjectMutation) RemovedParentProjectsIDs() (ids []int) {
+	for id := range m.removedparent_projects {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ParentProjectsIDs returns the "parent_projects" edge IDs in the mutation.
+func (m *ProjectMutation) ParentProjectsIDs() (ids []int) {
+	for id := range m.parent_projects {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetParentProjects resets all changes to the "parent_projects" edge.
+func (m *ProjectMutation) ResetParentProjects() {
+	m.parent_projects = nil
+	m.clearedparent_projects = false
+	m.removedparent_projects = nil
+}
+
+// AddChildProjectIDs adds the "child_projects" edge to the ProjectAssociation entity by ids.
+func (m *ProjectMutation) AddChildProjectIDs(ids ...int) {
+	if m.child_projects == nil {
+		m.child_projects = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.child_projects[ids[i]] = struct{}{}
+	}
+}
+
+// ClearChildProjects clears the "child_projects" edge to the ProjectAssociation entity.
+func (m *ProjectMutation) ClearChildProjects() {
+	m.clearedchild_projects = true
+}
+
+// ChildProjectsCleared reports if the "child_projects" edge to the ProjectAssociation entity was cleared.
+func (m *ProjectMutation) ChildProjectsCleared() bool {
+	return m.clearedchild_projects
+}
+
+// RemoveChildProjectIDs removes the "child_projects" edge to the ProjectAssociation entity by IDs.
+func (m *ProjectMutation) RemoveChildProjectIDs(ids ...int) {
+	if m.removedchild_projects == nil {
+		m.removedchild_projects = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.child_projects, ids[i])
+		m.removedchild_projects[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedChildProjects returns the removed IDs of the "child_projects" edge to the ProjectAssociation entity.
+func (m *ProjectMutation) RemovedChildProjectsIDs() (ids []int) {
+	for id := range m.removedchild_projects {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ChildProjectsIDs returns the "child_projects" edge IDs in the mutation.
+func (m *ProjectMutation) ChildProjectsIDs() (ids []int) {
+	for id := range m.child_projects {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetChildProjects resets all changes to the "child_projects" edge.
+func (m *ProjectMutation) ResetChildProjects() {
+	m.child_projects = nil
+	m.clearedchild_projects = false
+	m.removedchild_projects = nil
+}
+
 // Op returns the operation name.
 func (m *ProjectMutation) Op() Op {
 	return m.op
@@ -2313,9 +2429,15 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.contributors != nil {
 		edges = append(edges, project.EdgeContributors)
+	}
+	if m.parent_projects != nil {
+		edges = append(edges, project.EdgeParentProjects)
+	}
+	if m.child_projects != nil {
+		edges = append(edges, project.EdgeChildProjects)
 	}
 	return edges
 }
@@ -2330,15 +2452,33 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeParentProjects:
+		ids := make([]ent.Value, 0, len(m.parent_projects))
+		for id := range m.parent_projects {
+			ids = append(ids, id)
+		}
+		return ids
+	case project.EdgeChildProjects:
+		ids := make([]ent.Value, 0, len(m.child_projects))
+		for id := range m.child_projects {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.removedcontributors != nil {
 		edges = append(edges, project.EdgeContributors)
+	}
+	if m.removedparent_projects != nil {
+		edges = append(edges, project.EdgeParentProjects)
+	}
+	if m.removedchild_projects != nil {
+		edges = append(edges, project.EdgeChildProjects)
 	}
 	return edges
 }
@@ -2353,15 +2493,33 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeParentProjects:
+		ids := make([]ent.Value, 0, len(m.removedparent_projects))
+		for id := range m.removedparent_projects {
+			ids = append(ids, id)
+		}
+		return ids
+	case project.EdgeChildProjects:
+		ids := make([]ent.Value, 0, len(m.removedchild_projects))
+		for id := range m.removedchild_projects {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.clearedcontributors {
 		edges = append(edges, project.EdgeContributors)
+	}
+	if m.clearedparent_projects {
+		edges = append(edges, project.EdgeParentProjects)
+	}
+	if m.clearedchild_projects {
+		edges = append(edges, project.EdgeChildProjects)
 	}
 	return edges
 }
@@ -2372,6 +2530,10 @@ func (m *ProjectMutation) EdgeCleared(name string) bool {
 	switch name {
 	case project.EdgeContributors:
 		return m.clearedcontributors
+	case project.EdgeParentProjects:
+		return m.clearedparent_projects
+	case project.EdgeChildProjects:
+		return m.clearedchild_projects
 	}
 	return false
 }
@@ -2391,8 +2553,429 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 	case project.EdgeContributors:
 		m.ResetContributors()
 		return nil
+	case project.EdgeParentProjects:
+		m.ResetParentProjects()
+		return nil
+	case project.EdgeChildProjects:
+		m.ResetChildProjects()
+		return nil
 	}
 	return fmt.Errorf("unknown Project edge %s", name)
+}
+
+// ProjectAssociationMutation represents an operation that mutates the ProjectAssociation nodes in the graph.
+type ProjectAssociationMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	_type         *projectassociation.Type
+	clearedFields map[string]struct{}
+	parent        *int
+	clearedparent bool
+	child         *int
+	clearedchild  bool
+	done          bool
+	oldValue      func(context.Context) (*ProjectAssociation, error)
+	predicates    []predicate.ProjectAssociation
+}
+
+var _ ent.Mutation = (*ProjectAssociationMutation)(nil)
+
+// projectassociationOption allows management of the mutation configuration using functional options.
+type projectassociationOption func(*ProjectAssociationMutation)
+
+// newProjectAssociationMutation creates new mutation for the ProjectAssociation entity.
+func newProjectAssociationMutation(c config, op Op, opts ...projectassociationOption) *ProjectAssociationMutation {
+	m := &ProjectAssociationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeProjectAssociation,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withProjectAssociationID sets the ID field of the mutation.
+func withProjectAssociationID(id int) projectassociationOption {
+	return func(m *ProjectAssociationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ProjectAssociation
+		)
+		m.oldValue = func(ctx context.Context) (*ProjectAssociation, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ProjectAssociation.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withProjectAssociation sets the old ProjectAssociation of the mutation.
+func withProjectAssociation(node *ProjectAssociation) projectassociationOption {
+	return func(m *ProjectAssociationMutation) {
+		m.oldValue = func(context.Context) (*ProjectAssociation, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ProjectAssociationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ProjectAssociationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ProjectAssociationMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetType sets the "type" field.
+func (m *ProjectAssociationMutation) SetType(pr projectassociation.Type) {
+	m._type = &pr
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *ProjectAssociationMutation) GetType() (r projectassociation.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the ProjectAssociation entity.
+// If the ProjectAssociation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectAssociationMutation) OldType(ctx context.Context) (v projectassociation.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *ProjectAssociationMutation) ResetType() {
+	m._type = nil
+}
+
+// SetParentID sets the "parent" edge to the Project entity by id.
+func (m *ProjectAssociationMutation) SetParentID(id int) {
+	m.parent = &id
+}
+
+// ClearParent clears the "parent" edge to the Project entity.
+func (m *ProjectAssociationMutation) ClearParent() {
+	m.clearedparent = true
+}
+
+// ParentCleared reports if the "parent" edge to the Project entity was cleared.
+func (m *ProjectAssociationMutation) ParentCleared() bool {
+	return m.clearedparent
+}
+
+// ParentID returns the "parent" edge ID in the mutation.
+func (m *ProjectAssociationMutation) ParentID() (id int, exists bool) {
+	if m.parent != nil {
+		return *m.parent, true
+	}
+	return
+}
+
+// ParentIDs returns the "parent" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ParentID instead. It exists only for internal usage by the builders.
+func (m *ProjectAssociationMutation) ParentIDs() (ids []int) {
+	if id := m.parent; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetParent resets all changes to the "parent" edge.
+func (m *ProjectAssociationMutation) ResetParent() {
+	m.parent = nil
+	m.clearedparent = false
+}
+
+// SetChildID sets the "child" edge to the Project entity by id.
+func (m *ProjectAssociationMutation) SetChildID(id int) {
+	m.child = &id
+}
+
+// ClearChild clears the "child" edge to the Project entity.
+func (m *ProjectAssociationMutation) ClearChild() {
+	m.clearedchild = true
+}
+
+// ChildCleared reports if the "child" edge to the Project entity was cleared.
+func (m *ProjectAssociationMutation) ChildCleared() bool {
+	return m.clearedchild
+}
+
+// ChildID returns the "child" edge ID in the mutation.
+func (m *ProjectAssociationMutation) ChildID() (id int, exists bool) {
+	if m.child != nil {
+		return *m.child, true
+	}
+	return
+}
+
+// ChildIDs returns the "child" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ChildID instead. It exists only for internal usage by the builders.
+func (m *ProjectAssociationMutation) ChildIDs() (ids []int) {
+	if id := m.child; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetChild resets all changes to the "child" edge.
+func (m *ProjectAssociationMutation) ResetChild() {
+	m.child = nil
+	m.clearedchild = false
+}
+
+// Op returns the operation name.
+func (m *ProjectAssociationMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (ProjectAssociation).
+func (m *ProjectAssociationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ProjectAssociationMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m._type != nil {
+		fields = append(fields, projectassociation.FieldType)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ProjectAssociationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case projectassociation.FieldType:
+		return m.GetType()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ProjectAssociationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case projectassociation.FieldType:
+		return m.OldType(ctx)
+	}
+	return nil, fmt.Errorf("unknown ProjectAssociation field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProjectAssociationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case projectassociation.FieldType:
+		v, ok := value.(projectassociation.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectAssociation field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ProjectAssociationMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ProjectAssociationMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProjectAssociationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ProjectAssociation numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ProjectAssociationMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ProjectAssociationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ProjectAssociationMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ProjectAssociation nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ProjectAssociationMutation) ResetField(name string) error {
+	switch name {
+	case projectassociation.FieldType:
+		m.ResetType()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectAssociation field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ProjectAssociationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.parent != nil {
+		edges = append(edges, projectassociation.EdgeParent)
+	}
+	if m.child != nil {
+		edges = append(edges, projectassociation.EdgeChild)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ProjectAssociationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case projectassociation.EdgeParent:
+		if id := m.parent; id != nil {
+			return []ent.Value{*id}
+		}
+	case projectassociation.EdgeChild:
+		if id := m.child; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ProjectAssociationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ProjectAssociationMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ProjectAssociationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedparent {
+		edges = append(edges, projectassociation.EdgeParent)
+	}
+	if m.clearedchild {
+		edges = append(edges, projectassociation.EdgeChild)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ProjectAssociationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case projectassociation.EdgeParent:
+		return m.clearedparent
+	case projectassociation.EdgeChild:
+		return m.clearedchild
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ProjectAssociationMutation) ClearEdge(name string) error {
+	switch name {
+	case projectassociation.EdgeParent:
+		m.ClearParent()
+		return nil
+	case projectassociation.EdgeChild:
+		m.ClearChild()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectAssociation unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ProjectAssociationMutation) ResetEdge(name string) error {
+	switch name {
+	case projectassociation.EdgeParent:
+		m.ResetParent()
+		return nil
+	case projectassociation.EdgeChild:
+		m.ResetChild()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectAssociation edge %s", name)
 }
 
 // ProjectContributorMutation represents an operation that mutates the ProjectContributor nodes in the graph.

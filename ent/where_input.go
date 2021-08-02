@@ -12,6 +12,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/project"
+	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
@@ -1015,6 +1016,14 @@ type ProjectWhereInput struct {
 	// "contributors" edge predicates.
 	HasContributors     *bool                           `json:"hasContributors,omitempty"`
 	HasContributorsWith []*ProjectContributorWhereInput `json:"hasContributorsWith,omitempty"`
+
+	// "parent_projects" edge predicates.
+	HasParentProjects     *bool                           `json:"hasParentProjects,omitempty"`
+	HasParentProjectsWith []*ProjectAssociationWhereInput `json:"hasParentProjectsWith,omitempty"`
+
+	// "child_projects" edge predicates.
+	HasChildProjects     *bool                           `json:"hasChildProjects,omitempty"`
+	HasChildProjectsWith []*ProjectAssociationWhereInput `json:"hasChildProjectsWith,omitempty"`
 }
 
 // Filter applies the ProjectWhereInput filter on the ProjectQuery builder.
@@ -1257,6 +1266,42 @@ func (i *ProjectWhereInput) P() (predicate.Project, error) {
 		}
 		predicates = append(predicates, project.HasContributorsWith(with...))
 	}
+	if i.HasParentProjects != nil {
+		p := project.HasParentProjects()
+		if !*i.HasParentProjects {
+			p = project.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasParentProjectsWith) > 0 {
+		with := make([]predicate.ProjectAssociation, 0, len(i.HasParentProjectsWith))
+		for _, w := range i.HasParentProjectsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, project.HasParentProjectsWith(with...))
+	}
+	if i.HasChildProjects != nil {
+		p := project.HasChildProjects()
+		if !*i.HasChildProjects {
+			p = project.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasChildProjectsWith) > 0 {
+		with := make([]predicate.ProjectAssociation, 0, len(i.HasChildProjectsWith))
+		for _, w := range i.HasChildProjectsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, project.HasChildProjectsWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate ProjectWhereInput")
@@ -1264,6 +1309,179 @@ func (i *ProjectWhereInput) P() (predicate.Project, error) {
 		return predicates[0], nil
 	default:
 		return project.And(predicates...), nil
+	}
+}
+
+// ProjectAssociationWhereInput represents a where input for filtering ProjectAssociation queries.
+type ProjectAssociationWhereInput struct {
+	Not *ProjectAssociationWhereInput   `json:"not,omitempty"`
+	Or  []*ProjectAssociationWhereInput `json:"or,omitempty"`
+	And []*ProjectAssociationWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *int  `json:"id,omitempty"`
+	IDNEQ   *int  `json:"idNEQ,omitempty"`
+	IDIn    []int `json:"idIn,omitempty"`
+	IDNotIn []int `json:"idNotIn,omitempty"`
+	IDGT    *int  `json:"idGT,omitempty"`
+	IDGTE   *int  `json:"idGTE,omitempty"`
+	IDLT    *int  `json:"idLT,omitempty"`
+	IDLTE   *int  `json:"idLTE,omitempty"`
+
+	// "type" field predicates.
+	Type      *projectassociation.Type  `json:"type,omitempty"`
+	TypeNEQ   *projectassociation.Type  `json:"typeNEQ,omitempty"`
+	TypeIn    []projectassociation.Type `json:"typeIn,omitempty"`
+	TypeNotIn []projectassociation.Type `json:"typeNotIn,omitempty"`
+
+	// "parent" edge predicates.
+	HasParent     *bool                `json:"hasParent,omitempty"`
+	HasParentWith []*ProjectWhereInput `json:"hasParentWith,omitempty"`
+
+	// "child" edge predicates.
+	HasChild     *bool                `json:"hasChild,omitempty"`
+	HasChildWith []*ProjectWhereInput `json:"hasChildWith,omitempty"`
+}
+
+// Filter applies the ProjectAssociationWhereInput filter on the ProjectAssociationQuery builder.
+func (i *ProjectAssociationWhereInput) Filter(q *ProjectAssociationQuery) (*ProjectAssociationQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// P returns a predicate for filtering projectassociations.
+// An error is returned if the input is empty or invalid.
+func (i *ProjectAssociationWhereInput) P() (predicate.ProjectAssociation, error) {
+	var predicates []predicate.ProjectAssociation
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, projectassociation.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.ProjectAssociation, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, projectassociation.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.ProjectAssociation, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, projectassociation.And(and...))
+	}
+	if i.ID != nil {
+		predicates = append(predicates, projectassociation.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, projectassociation.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, projectassociation.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, projectassociation.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, projectassociation.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, projectassociation.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, projectassociation.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, projectassociation.IDLTE(*i.IDLTE))
+	}
+	if i.Type != nil {
+		predicates = append(predicates, projectassociation.TypeEQ(*i.Type))
+	}
+	if i.TypeNEQ != nil {
+		predicates = append(predicates, projectassociation.TypeNEQ(*i.TypeNEQ))
+	}
+	if len(i.TypeIn) > 0 {
+		predicates = append(predicates, projectassociation.TypeIn(i.TypeIn...))
+	}
+	if len(i.TypeNotIn) > 0 {
+		predicates = append(predicates, projectassociation.TypeNotIn(i.TypeNotIn...))
+	}
+
+	if i.HasParent != nil {
+		p := projectassociation.HasParent()
+		if !*i.HasParent {
+			p = projectassociation.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasParentWith) > 0 {
+		with := make([]predicate.Project, 0, len(i.HasParentWith))
+		for _, w := range i.HasParentWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, projectassociation.HasParentWith(with...))
+	}
+	if i.HasChild != nil {
+		p := projectassociation.HasChild()
+		if !*i.HasChild {
+			p = projectassociation.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasChildWith) > 0 {
+		with := make([]predicate.Project, 0, len(i.HasChildWith))
+		for _, w := range i.HasChildWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, projectassociation.HasChildWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate ProjectAssociationWhereInput")
+	case 1:
+		return predicates[0], nil
+	default:
+		return projectassociation.And(predicates...), nil
 	}
 }
 

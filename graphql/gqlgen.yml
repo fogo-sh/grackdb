@@ -22,3 +22,6 @@ models:
   ProjectContributorRole:
     model:
       - github.com/fogo-sh/grackdb/ent/projectcontributor.Role
+  ProjectAssociationType:
+    model:
+      - github.com/fogo-sh/grackdb/ent/projectassociation.Type

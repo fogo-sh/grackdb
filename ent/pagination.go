@@ -19,6 +19,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/project"
+	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/user"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -1669,6 +1670,276 @@ func (pr *Project) ToEdge(order *ProjectOrder) *ProjectEdge {
 	return &ProjectEdge{
 		Node:   pr,
 		Cursor: order.Field.toCursor(pr),
+	}
+}
+
+// ProjectAssociationEdge is the edge representation of ProjectAssociation.
+type ProjectAssociationEdge struct {
+	Node   *ProjectAssociation `json:"node"`
+	Cursor Cursor              `json:"cursor"`
+}
+
+// ProjectAssociationConnection is the connection containing edges to ProjectAssociation.
+type ProjectAssociationConnection struct {
+	Edges      []*ProjectAssociationEdge `json:"edges"`
+	PageInfo   PageInfo                  `json:"pageInfo"`
+	TotalCount int                       `json:"totalCount"`
+}
+
+// ProjectAssociationPaginateOption enables pagination customization.
+type ProjectAssociationPaginateOption func(*projectAssociationPager) error
+
+// WithProjectAssociationOrder configures pagination ordering.
+func WithProjectAssociationOrder(order *ProjectAssociationOrder) ProjectAssociationPaginateOption {
+	if order == nil {
+		order = DefaultProjectAssociationOrder
+	}
+	o := *order
+	return func(pager *projectAssociationPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultProjectAssociationOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithProjectAssociationFilter configures pagination filter.
+func WithProjectAssociationFilter(filter func(*ProjectAssociationQuery) (*ProjectAssociationQuery, error)) ProjectAssociationPaginateOption {
+	return func(pager *projectAssociationPager) error {
+		if filter == nil {
+			return errors.New("ProjectAssociationQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type projectAssociationPager struct {
+	order  *ProjectAssociationOrder
+	filter func(*ProjectAssociationQuery) (*ProjectAssociationQuery, error)
+}
+
+func newProjectAssociationPager(opts []ProjectAssociationPaginateOption) (*projectAssociationPager, error) {
+	pager := &projectAssociationPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultProjectAssociationOrder
+	}
+	return pager, nil
+}
+
+func (p *projectAssociationPager) applyFilter(query *ProjectAssociationQuery) (*ProjectAssociationQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *projectAssociationPager) toCursor(pa *ProjectAssociation) Cursor {
+	return p.order.Field.toCursor(pa)
+}
+
+func (p *projectAssociationPager) applyCursors(query *ProjectAssociationQuery, after, before *Cursor) *ProjectAssociationQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultProjectAssociationOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *projectAssociationPager) applyOrder(query *ProjectAssociationQuery, reverse bool) *ProjectAssociationQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultProjectAssociationOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultProjectAssociationOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to ProjectAssociation.
+func (pa *ProjectAssociationQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ProjectAssociationPaginateOption,
+) (*ProjectAssociationConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newProjectAssociationPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if pa, err = pager.applyFilter(pa); err != nil {
+		return nil, err
+	}
+
+	conn := &ProjectAssociationConnection{Edges: []*ProjectAssociationEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := pa.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := pa.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	pa = pager.applyCursors(pa, after, before)
+	pa = pager.applyOrder(pa, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		pa = pa.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		pa = pa.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := pa.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *ProjectAssociation
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *ProjectAssociation {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *ProjectAssociation {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*ProjectAssociationEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &ProjectAssociationEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// ProjectAssociationOrderFieldType orders ProjectAssociation by type.
+	ProjectAssociationOrderFieldType = &ProjectAssociationOrderField{
+		field: projectassociation.FieldType,
+		toCursor: func(pa *ProjectAssociation) Cursor {
+			return Cursor{
+				ID:    pa.ID,
+				Value: pa.Type,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f ProjectAssociationOrderField) String() string {
+	var str string
+	switch f.field {
+	case projectassociation.FieldType:
+		str = "TYPE"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f ProjectAssociationOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *ProjectAssociationOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("ProjectAssociationOrderField %T must be a string", v)
+	}
+	switch str {
+	case "TYPE":
+		*f = *ProjectAssociationOrderFieldType
+	default:
+		return fmt.Errorf("%s is not a valid ProjectAssociationOrderField", str)
+	}
+	return nil
+}
+
+// ProjectAssociationOrderField defines the ordering field of ProjectAssociation.
+type ProjectAssociationOrderField struct {
+	field    string
+	toCursor func(*ProjectAssociation) Cursor
+}
+
+// ProjectAssociationOrder defines the ordering of ProjectAssociation.
+type ProjectAssociationOrder struct {
+	Direction OrderDirection                `json:"direction"`
+	Field     *ProjectAssociationOrderField `json:"field"`
+}
+
+// DefaultProjectAssociationOrder is the default ordering of ProjectAssociation.
+var DefaultProjectAssociationOrder = &ProjectAssociationOrder{
+	Direction: OrderDirectionAsc,
+	Field: &ProjectAssociationOrderField{
+		field: projectassociation.FieldID,
+		toCursor: func(pa *ProjectAssociation) Cursor {
+			return Cursor{ID: pa.ID}
+		},
+	},
+}
+
+// ToEdge converts ProjectAssociation into ProjectAssociationEdge.
+func (pa *ProjectAssociation) ToEdge(order *ProjectAssociationOrder) *ProjectAssociationEdge {
+	if order == nil {
+		order = DefaultProjectAssociationOrder
+	}
+	return &ProjectAssociationEdge{
+		Node:   pa,
+		Cursor: order.Field.toCursor(pa),
 	}
 }
 

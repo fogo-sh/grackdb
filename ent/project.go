@@ -33,9 +33,13 @@ type Project struct {
 type ProjectEdges struct {
 	// Contributors holds the value of the contributors edge.
 	Contributors []*ProjectContributor `json:"contributors,omitempty"`
+	// ParentProjects holds the value of the parent_projects edge.
+	ParentProjects []*ProjectAssociation `json:"parent_projects,omitempty"`
+	// ChildProjects holds the value of the child_projects edge.
+	ChildProjects []*ProjectAssociation `json:"child_projects,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
 // ContributorsOrErr returns the Contributors value or an error if the edge
@@ -45,6 +49,24 @@ func (e ProjectEdges) ContributorsOrErr() ([]*ProjectContributor, error) {
 		return e.Contributors, nil
 	}
 	return nil, &NotLoadedError{edge: "contributors"}
+}
+
+// ParentProjectsOrErr returns the ParentProjects value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) ParentProjectsOrErr() ([]*ProjectAssociation, error) {
+	if e.loadedTypes[1] {
+		return e.ParentProjects, nil
+	}
+	return nil, &NotLoadedError{edge: "parent_projects"}
+}
+
+// ChildProjectsOrErr returns the ChildProjects value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) ChildProjectsOrErr() ([]*ProjectAssociation, error) {
+	if e.loadedTypes[2] {
+		return e.ChildProjects, nil
+	}
+	return nil, &NotLoadedError{edge: "child_projects"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -113,6 +135,16 @@ func (pr *Project) assignValues(columns []string, values []interface{}) error {
 // QueryContributors queries the "contributors" edge of the Project entity.
 func (pr *Project) QueryContributors() *ProjectContributorQuery {
 	return (&ProjectClient{config: pr.config}).QueryContributors(pr)
+}
+
+// QueryParentProjects queries the "parent_projects" edge of the Project entity.
+func (pr *Project) QueryParentProjects() *ProjectAssociationQuery {
+	return (&ProjectClient{config: pr.config}).QueryParentProjects(pr)
+}
+
+// QueryChildProjects queries the "child_projects" edge of the Project entity.
+func (pr *Project) QueryChildProjects() *ProjectAssociationQuery {
+	return (&ProjectClient{config: pr.config}).QueryChildProjects(pr)
 }
 
 // Update returns a builder for updating this Project.

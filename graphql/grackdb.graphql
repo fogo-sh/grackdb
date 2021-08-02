@@ -203,6 +203,8 @@ type Project implements Node {
     startDate: Time!
     endDate: Time
     contributors: [ProjectContributor!]
+    parentProjects: [ProjectAssociation!]
+    childProjects: [ProjectAssociation!]
 }
 
 enum ProjectContributorRole {
@@ -235,6 +237,40 @@ type ProjectContributor implements Node {
     role: ProjectContributorRole!
     project: Project!
     user: User!
+}
+
+enum ProjectAssociationType {
+    BASED_OFF
+    REPLACES
+    INSPIRED_BY
+    RELATED
+}
+
+type ProjectAssociationConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [ProjectAssociationEdge]
+}
+
+type ProjectAssociationEdge {
+    node: ProjectAssociation
+    cursor: Cursor!
+}
+
+enum ProjectAssociationOrderField {
+    TYPE
+}
+
+input ProjectAssociationOrder {
+    direction: OrderDirection!
+    field: ProjectAssociationOrderField
+}
+
+type ProjectAssociation implements Node {
+    id: ID!
+    type: ProjectAssociationType!
+    parent: Project!
+    child: Project!
 }
 
 type Query {
@@ -298,6 +334,14 @@ type Query {
         orderBy: ProjectContributorOrder
         where: ProjectContributorWhereInput
     ): ProjectContributorConnection
+    projectAssociation(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: ProjectAssociationOrder
+        where: ProjectAssociationWhereInput
+    ): ProjectAssociationConnection
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
@@ -344,6 +388,12 @@ input CreateProjectContributorInput {
     user: Int!
 }
 
+input CreateProjectAssociationInput {
+    type: ProjectAssociationType!
+    parent: Int!
+    child: Int!
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
@@ -352,4 +402,5 @@ type Mutation {
     createGithubOrganizationMember(input: CreateGithubOrganizationMemberInput!): GithubOrganizationMember!
     createProject(input: CreateProjectInput!): Project!
     createProjectContributor(input: CreateProjectContributorInput!): ProjectContributor!
+    createProjectAssociation(input: CreateProjectAssociationInput!): ProjectAssociation!
 }
