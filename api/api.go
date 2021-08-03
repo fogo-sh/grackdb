@@ -7,11 +7,11 @@ import (
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect"
+	"github.com/99designs/gqlgen/graphql/executor"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
-	"github.com/fogo-sh/grackdb/ent/migrate"
 	"github.com/fogo-sh/grackdb/graphql"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -115,16 +115,15 @@ func StartApi() error {
 	if err != nil {
 		return fmt.Errorf("error opening ent client: %w", err)
 	}
-	if err := entClient.Schema.Create(
-		context.Background(),
-		migrate.WithGlobalUniqueID(true),
-	); err != nil {
+	if err = entClient.Schema.Create(context.Background()); err != nil {
 		return fmt.Errorf("error migrating database: %w", err)
 	}
 
 	app := gin.Default()
 	app.Use(jwtAuthMiddleware(entClient))
 	app.Use(ginContextToContextMiddleware())
+
+	executor.New(graphql.NewSchema(entClient))
 
 	srv := handler.NewDefaultServer(graphql.NewSchema(entClient))
 	srv.Use(entgql.Transactioner{TxOpener: entClient})
