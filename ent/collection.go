@@ -293,7 +293,43 @@ func (t *TechnologyQuery) CollectFields(ctx context.Context, satisfies ...string
 }
 
 func (t *TechnologyQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *TechnologyQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "childTechnologies":
+			t = t.WithChildTechnologies(func(query *TechnologyAssociationQuery) {
+				query.collectField(ctx, field)
+			})
+		case "parentTechnologies":
+			t = t.WithParentTechnologies(func(query *TechnologyAssociationQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
 	return t
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (ta *TechnologyAssociationQuery) CollectFields(ctx context.Context, satisfies ...string) *TechnologyAssociationQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		ta = ta.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return ta
+}
+
+func (ta *TechnologyAssociationQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *TechnologyAssociationQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "child":
+			ta = ta.WithChild(func(query *TechnologyQuery) {
+				query.collectField(ctx, field)
+			})
+		case "parent":
+			ta = ta.WithParent(func(query *TechnologyQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
+	return ta
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.

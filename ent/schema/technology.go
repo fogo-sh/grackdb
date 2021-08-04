@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/privacy"
 	"github.com/fogo-sh/grackdb/ent/rules"
@@ -43,7 +44,12 @@ func (Technology) Fields() []ent.Field {
 
 // Edges of the Technology.
 func (Technology) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("parent_technologies", TechnologyAssociation.Type).
+			Annotations(entgql.MapsTo("parentTechnologies")),
+		edge.To("child_technologies", TechnologyAssociation.Type).
+			Annotations(entgql.MapsTo("childTechnologies")),
+	}
 }
 
 func (Technology) Policy() ent.Policy {

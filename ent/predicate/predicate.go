@@ -39,5 +39,8 @@ type Site func(*sql.Selector)
 // Technology is the predicate function for technology builders.
 type Technology func(*sql.Selector)
 
+// TechnologyAssociation is the predicate function for technologyassociation builders.
+type TechnologyAssociation func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

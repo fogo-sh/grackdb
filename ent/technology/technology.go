@@ -23,8 +23,26 @@ const (
 	FieldColour = "colour"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
+	// EdgeParentTechnologies holds the string denoting the parent_technologies edge name in mutations.
+	EdgeParentTechnologies = "parent_technologies"
+	// EdgeChildTechnologies holds the string denoting the child_technologies edge name in mutations.
+	EdgeChildTechnologies = "child_technologies"
 	// Table holds the table name of the technology in the database.
 	Table = "technologies"
+	// ParentTechnologiesTable is the table the holds the parent_technologies relation/edge.
+	ParentTechnologiesTable = "technology_associations"
+	// ParentTechnologiesInverseTable is the table name for the TechnologyAssociation entity.
+	// It exists in this package in order to avoid circular dependency with the "technologyassociation" package.
+	ParentTechnologiesInverseTable = "technology_associations"
+	// ParentTechnologiesColumn is the table column denoting the parent_technologies relation/edge.
+	ParentTechnologiesColumn = "technology_parent_technologies"
+	// ChildTechnologiesTable is the table the holds the child_technologies relation/edge.
+	ChildTechnologiesTable = "technology_associations"
+	// ChildTechnologiesInverseTable is the table name for the TechnologyAssociation entity.
+	// It exists in this package in order to avoid circular dependency with the "technologyassociation" package.
+	ChildTechnologiesInverseTable = "technology_associations"
+	// ChildTechnologiesColumn is the table column denoting the child_technologies relation/edge.
+	ChildTechnologiesColumn = "technology_child_technologies"
 )
 
 // Columns holds all SQL columns for technology fields.

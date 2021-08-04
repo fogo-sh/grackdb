@@ -88,6 +88,20 @@ func (r *mutationResolver) CreateSite(ctx context.Context, input ent.CreateSiteI
 		Save(ctx)
 }
 
+func (r *mutationResolver) CreateTechnology(ctx context.Context, input ent.CreateTechnologyInput) (*ent.Technology, error) {
+	return ent.FromContext(ctx).Technology.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
+func (r *mutationResolver) CreateTechnologyAssociation(ctx context.Context, input ent.CreateTechnologyAssociationInput) (*ent.TechnologyAssociation, error) {
+	return ent.FromContext(ctx).TechnologyAssociation.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
 func (r *queryResolver) Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error) {
 	return r.client.User.Query().
 		Paginate(ctx, after, first, before, last,
@@ -180,6 +194,14 @@ func (r *queryResolver) Technologies(ctx context.Context, after *ent.Cursor, fir
 		Paginate(ctx, after, first, before, last,
 			ent.WithTechnologyOrder(orderBy),
 			ent.WithTechnologyFilter(where.Filter),
+		)
+}
+
+func (r *queryResolver) TechnologyAssociations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.TechnologyAssociationOrder, where *ent.TechnologyAssociationWhereInput) (*ent.TechnologyAssociationConnection, error) {
+	return r.client.TechnologyAssociation.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithTechnologyAssociationOrder(orderBy),
+			ent.WithTechnologyAssociationFilter(where.Filter),
 		)
 }
 

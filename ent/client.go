@@ -20,6 +20,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
+	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 	"github.com/fogo-sh/grackdb/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -54,6 +55,8 @@ type Client struct {
 	Site *SiteClient
 	// Technology is the client for interacting with the Technology builders.
 	Technology *TechnologyClient
+	// TechnologyAssociation is the client for interacting with the TechnologyAssociation builders.
+	TechnologyAssociation *TechnologyAssociationClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// additional fields for node api
@@ -82,6 +85,7 @@ func (c *Client) init() {
 	c.Repository = NewRepositoryClient(c.config)
 	c.Site = NewSiteClient(c.config)
 	c.Technology = NewTechnologyClient(c.config)
+	c.TechnologyAssociation = NewTechnologyAssociationClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -127,6 +131,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Repository:               NewRepositoryClient(cfg),
 		Site:                     NewSiteClient(cfg),
 		Technology:               NewTechnologyClient(cfg),
+		TechnologyAssociation:    NewTechnologyAssociationClient(cfg),
 		User:                     NewUserClient(cfg),
 	}, nil
 }
@@ -157,6 +162,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Repository:               NewRepositoryClient(cfg),
 		Site:                     NewSiteClient(cfg),
 		Technology:               NewTechnologyClient(cfg),
+		TechnologyAssociation:    NewTechnologyAssociationClient(cfg),
 		User:                     NewUserClient(cfg),
 	}, nil
 }
@@ -198,6 +204,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Repository.Use(hooks...)
 	c.Site.Use(hooks...)
 	c.Technology.Use(hooks...)
+	c.TechnologyAssociation.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -1660,10 +1667,165 @@ func (c *TechnologyClient) GetX(ctx context.Context, id int) *Technology {
 	return obj
 }
 
+// QueryParentTechnologies queries the parent_technologies edge of a Technology.
+func (c *TechnologyClient) QueryParentTechnologies(t *Technology) *TechnologyAssociationQuery {
+	query := &TechnologyAssociationQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(technology.Table, technology.FieldID, id),
+			sqlgraph.To(technologyassociation.Table, technologyassociation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, technology.ParentTechnologiesTable, technology.ParentTechnologiesColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChildTechnologies queries the child_technologies edge of a Technology.
+func (c *TechnologyClient) QueryChildTechnologies(t *Technology) *TechnologyAssociationQuery {
+	query := &TechnologyAssociationQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(technology.Table, technology.FieldID, id),
+			sqlgraph.To(technologyassociation.Table, technologyassociation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, technology.ChildTechnologiesTable, technology.ChildTechnologiesColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *TechnologyClient) Hooks() []Hook {
 	hooks := c.hooks.Technology
 	return append(hooks[:len(hooks):len(hooks)], technology.Hooks[:]...)
+}
+
+// TechnologyAssociationClient is a client for the TechnologyAssociation schema.
+type TechnologyAssociationClient struct {
+	config
+}
+
+// NewTechnologyAssociationClient returns a client for the TechnologyAssociation from the given config.
+func NewTechnologyAssociationClient(c config) *TechnologyAssociationClient {
+	return &TechnologyAssociationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `technologyassociation.Hooks(f(g(h())))`.
+func (c *TechnologyAssociationClient) Use(hooks ...Hook) {
+	c.hooks.TechnologyAssociation = append(c.hooks.TechnologyAssociation, hooks...)
+}
+
+// Create returns a create builder for TechnologyAssociation.
+func (c *TechnologyAssociationClient) Create() *TechnologyAssociationCreate {
+	mutation := newTechnologyAssociationMutation(c.config, OpCreate)
+	return &TechnologyAssociationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TechnologyAssociation entities.
+func (c *TechnologyAssociationClient) CreateBulk(builders ...*TechnologyAssociationCreate) *TechnologyAssociationCreateBulk {
+	return &TechnologyAssociationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TechnologyAssociation.
+func (c *TechnologyAssociationClient) Update() *TechnologyAssociationUpdate {
+	mutation := newTechnologyAssociationMutation(c.config, OpUpdate)
+	return &TechnologyAssociationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TechnologyAssociationClient) UpdateOne(ta *TechnologyAssociation) *TechnologyAssociationUpdateOne {
+	mutation := newTechnologyAssociationMutation(c.config, OpUpdateOne, withTechnologyAssociation(ta))
+	return &TechnologyAssociationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TechnologyAssociationClient) UpdateOneID(id int) *TechnologyAssociationUpdateOne {
+	mutation := newTechnologyAssociationMutation(c.config, OpUpdateOne, withTechnologyAssociationID(id))
+	return &TechnologyAssociationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TechnologyAssociation.
+func (c *TechnologyAssociationClient) Delete() *TechnologyAssociationDelete {
+	mutation := newTechnologyAssociationMutation(c.config, OpDelete)
+	return &TechnologyAssociationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *TechnologyAssociationClient) DeleteOne(ta *TechnologyAssociation) *TechnologyAssociationDeleteOne {
+	return c.DeleteOneID(ta.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *TechnologyAssociationClient) DeleteOneID(id int) *TechnologyAssociationDeleteOne {
+	builder := c.Delete().Where(technologyassociation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TechnologyAssociationDeleteOne{builder}
+}
+
+// Query returns a query builder for TechnologyAssociation.
+func (c *TechnologyAssociationClient) Query() *TechnologyAssociationQuery {
+	return &TechnologyAssociationQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a TechnologyAssociation entity by its id.
+func (c *TechnologyAssociationClient) Get(ctx context.Context, id int) (*TechnologyAssociation, error) {
+	return c.Query().Where(technologyassociation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TechnologyAssociationClient) GetX(ctx context.Context, id int) *TechnologyAssociation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryParent queries the parent edge of a TechnologyAssociation.
+func (c *TechnologyAssociationClient) QueryParent(ta *TechnologyAssociation) *TechnologyQuery {
+	query := &TechnologyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ta.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(technologyassociation.Table, technologyassociation.FieldID, id),
+			sqlgraph.To(technology.Table, technology.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, technologyassociation.ParentTable, technologyassociation.ParentColumn),
+		)
+		fromV = sqlgraph.Neighbors(ta.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChild queries the child edge of a TechnologyAssociation.
+func (c *TechnologyAssociationClient) QueryChild(ta *TechnologyAssociation) *TechnologyQuery {
+	query := &TechnologyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ta.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(technologyassociation.Table, technologyassociation.FieldID, id),
+			sqlgraph.To(technology.Table, technology.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, technologyassociation.ChildTable, technologyassociation.ChildColumn),
+		)
+		fromV = sqlgraph.Neighbors(ta.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TechnologyAssociationClient) Hooks() []Hook {
+	hooks := c.hooks.TechnologyAssociation
+	return append(hooks[:len(hooks):len(hooks)], technologyassociation.Hooks[:]...)
 }
 
 // UserClient is a client for the User schema.

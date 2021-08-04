@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/technology"
+	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 )
 
 // TechnologyCreate is the builder for creating a Technology entity.
@@ -57,6 +58,36 @@ func (tc *TechnologyCreate) SetNillableColour(s *string) *TechnologyCreate {
 func (tc *TechnologyCreate) SetType(t technology.Type) *TechnologyCreate {
 	tc.mutation.SetType(t)
 	return tc
+}
+
+// AddParentTechnologyIDs adds the "parent_technologies" edge to the TechnologyAssociation entity by IDs.
+func (tc *TechnologyCreate) AddParentTechnologyIDs(ids ...int) *TechnologyCreate {
+	tc.mutation.AddParentTechnologyIDs(ids...)
+	return tc
+}
+
+// AddParentTechnologies adds the "parent_technologies" edges to the TechnologyAssociation entity.
+func (tc *TechnologyCreate) AddParentTechnologies(t ...*TechnologyAssociation) *TechnologyCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tc.AddParentTechnologyIDs(ids...)
+}
+
+// AddChildTechnologyIDs adds the "child_technologies" edge to the TechnologyAssociation entity by IDs.
+func (tc *TechnologyCreate) AddChildTechnologyIDs(ids ...int) *TechnologyCreate {
+	tc.mutation.AddChildTechnologyIDs(ids...)
+	return tc
+}
+
+// AddChildTechnologies adds the "child_technologies" edges to the TechnologyAssociation entity.
+func (tc *TechnologyCreate) AddChildTechnologies(t ...*TechnologyAssociation) *TechnologyCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tc.AddChildTechnologyIDs(ids...)
 }
 
 // Mutation returns the TechnologyMutation object of the builder.
@@ -187,6 +218,44 @@ func (tc *TechnologyCreate) createSpec() (*Technology, *sqlgraph.CreateSpec) {
 			Column: technology.FieldType,
 		})
 		_node.Type = value
+	}
+	if nodes := tc.mutation.ParentTechnologiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ParentTechnologiesTable,
+			Columns: []string{technology.ParentTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.ChildTechnologiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ChildTechnologiesTable,
+			Columns: []string{technology.ChildTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

@@ -266,6 +266,33 @@ var (
 		Columns:    TechnologiesColumns,
 		PrimaryKey: []*schema.Column{TechnologiesColumns[0]},
 	}
+	// TechnologyAssociationsColumns holds the columns for the "technology_associations" table.
+	TechnologyAssociationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"WRITTEN_IN", "IMPLEMENTS", "USES"}},
+		{Name: "technology_parent_technologies", Type: field.TypeInt, Nullable: true},
+		{Name: "technology_child_technologies", Type: field.TypeInt, Nullable: true},
+	}
+	// TechnologyAssociationsTable holds the schema information for the "technology_associations" table.
+	TechnologyAssociationsTable = &schema.Table{
+		Name:       "technology_associations",
+		Columns:    TechnologyAssociationsColumns,
+		PrimaryKey: []*schema.Column{TechnologyAssociationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "technology_associations_technologies_parent_technologies",
+				Columns:    []*schema.Column{TechnologyAssociationsColumns[2]},
+				RefColumns: []*schema.Column{TechnologiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "technology_associations_technologies_child_technologies",
+				Columns:    []*schema.Column{TechnologyAssociationsColumns[3]},
+				RefColumns: []*schema.Column{TechnologiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -291,6 +318,7 @@ var (
 		RepositoriesTable,
 		SitesTable,
 		TechnologiesTable,
+		TechnologyAssociationsTable,
 		UsersTable,
 	}
 )
@@ -312,4 +340,6 @@ func init() {
 	RepositoriesTable.ForeignKeys[2].RefTable = ProjectsTable
 	SitesTable.ForeignKeys[0].RefTable = ProjectsTable
 	SitesTable.ForeignKeys[1].RefTable = RepositoriesTable
+	TechnologyAssociationsTable.ForeignKeys[0].RefTable = TechnologiesTable
+	TechnologyAssociationsTable.ForeignKeys[1].RefTable = TechnologiesTable
 }

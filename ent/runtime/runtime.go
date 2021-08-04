@@ -17,6 +17,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/schema"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
+	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 	"github.com/fogo-sh/grackdb/ent/user"
 
 	"entgo.io/ent"
@@ -188,6 +189,15 @@ func init() {
 	technologyDescName := technologyFields[0].Descriptor()
 	// technology.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	technology.NameValidator = technologyDescName.Validators[0].(func(string) error)
+	technologyassociation.Policy = privacy.NewPolicies(schema.TechnologyAssociation{})
+	technologyassociation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := technologyassociation.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
 	user.Policy = privacy.NewPolicies(schema.User{})
 	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {

@@ -18,6 +18,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
+	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -2587,6 +2588,14 @@ type TechnologyWhereInput struct {
 	TypeNEQ   *technology.Type  `json:"typeNEQ,omitempty"`
 	TypeIn    []technology.Type `json:"typeIn,omitempty"`
 	TypeNotIn []technology.Type `json:"typeNotIn,omitempty"`
+
+	// "parent_technologies" edge predicates.
+	HasParentTechnologies     *bool                              `json:"hasParentTechnologies,omitempty"`
+	HasParentTechnologiesWith []*TechnologyAssociationWhereInput `json:"hasParentTechnologiesWith,omitempty"`
+
+	// "child_technologies" edge predicates.
+	HasChildTechnologies     *bool                              `json:"hasChildTechnologies,omitempty"`
+	HasChildTechnologiesWith []*TechnologyAssociationWhereInput `json:"hasChildTechnologiesWith,omitempty"`
 }
 
 // Filter applies the TechnologyWhereInput filter on the TechnologyQuery builder.
@@ -2814,6 +2823,42 @@ func (i *TechnologyWhereInput) P() (predicate.Technology, error) {
 		predicates = append(predicates, technology.TypeNotIn(i.TypeNotIn...))
 	}
 
+	if i.HasParentTechnologies != nil {
+		p := technology.HasParentTechnologies()
+		if !*i.HasParentTechnologies {
+			p = technology.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasParentTechnologiesWith) > 0 {
+		with := make([]predicate.TechnologyAssociation, 0, len(i.HasParentTechnologiesWith))
+		for _, w := range i.HasParentTechnologiesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, technology.HasParentTechnologiesWith(with...))
+	}
+	if i.HasChildTechnologies != nil {
+		p := technology.HasChildTechnologies()
+		if !*i.HasChildTechnologies {
+			p = technology.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasChildTechnologiesWith) > 0 {
+		with := make([]predicate.TechnologyAssociation, 0, len(i.HasChildTechnologiesWith))
+		for _, w := range i.HasChildTechnologiesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, technology.HasChildTechnologiesWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate TechnologyWhereInput")
@@ -2821,6 +2866,179 @@ func (i *TechnologyWhereInput) P() (predicate.Technology, error) {
 		return predicates[0], nil
 	default:
 		return technology.And(predicates...), nil
+	}
+}
+
+// TechnologyAssociationWhereInput represents a where input for filtering TechnologyAssociation queries.
+type TechnologyAssociationWhereInput struct {
+	Not *TechnologyAssociationWhereInput   `json:"not,omitempty"`
+	Or  []*TechnologyAssociationWhereInput `json:"or,omitempty"`
+	And []*TechnologyAssociationWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *int  `json:"id,omitempty"`
+	IDNEQ   *int  `json:"idNEQ,omitempty"`
+	IDIn    []int `json:"idIn,omitempty"`
+	IDNotIn []int `json:"idNotIn,omitempty"`
+	IDGT    *int  `json:"idGT,omitempty"`
+	IDGTE   *int  `json:"idGTE,omitempty"`
+	IDLT    *int  `json:"idLT,omitempty"`
+	IDLTE   *int  `json:"idLTE,omitempty"`
+
+	// "type" field predicates.
+	Type      *technologyassociation.Type  `json:"type,omitempty"`
+	TypeNEQ   *technologyassociation.Type  `json:"typeNEQ,omitempty"`
+	TypeIn    []technologyassociation.Type `json:"typeIn,omitempty"`
+	TypeNotIn []technologyassociation.Type `json:"typeNotIn,omitempty"`
+
+	// "parent" edge predicates.
+	HasParent     *bool                   `json:"hasParent,omitempty"`
+	HasParentWith []*TechnologyWhereInput `json:"hasParentWith,omitempty"`
+
+	// "child" edge predicates.
+	HasChild     *bool                   `json:"hasChild,omitempty"`
+	HasChildWith []*TechnologyWhereInput `json:"hasChildWith,omitempty"`
+}
+
+// Filter applies the TechnologyAssociationWhereInput filter on the TechnologyAssociationQuery builder.
+func (i *TechnologyAssociationWhereInput) Filter(q *TechnologyAssociationQuery) (*TechnologyAssociationQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// P returns a predicate for filtering technologyassociations.
+// An error is returned if the input is empty or invalid.
+func (i *TechnologyAssociationWhereInput) P() (predicate.TechnologyAssociation, error) {
+	var predicates []predicate.TechnologyAssociation
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, technologyassociation.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.TechnologyAssociation, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, technologyassociation.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.TechnologyAssociation, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, technologyassociation.And(and...))
+	}
+	if i.ID != nil {
+		predicates = append(predicates, technologyassociation.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, technologyassociation.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, technologyassociation.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, technologyassociation.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, technologyassociation.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, technologyassociation.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, technologyassociation.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, technologyassociation.IDLTE(*i.IDLTE))
+	}
+	if i.Type != nil {
+		predicates = append(predicates, technologyassociation.TypeEQ(*i.Type))
+	}
+	if i.TypeNEQ != nil {
+		predicates = append(predicates, technologyassociation.TypeNEQ(*i.TypeNEQ))
+	}
+	if len(i.TypeIn) > 0 {
+		predicates = append(predicates, technologyassociation.TypeIn(i.TypeIn...))
+	}
+	if len(i.TypeNotIn) > 0 {
+		predicates = append(predicates, technologyassociation.TypeNotIn(i.TypeNotIn...))
+	}
+
+	if i.HasParent != nil {
+		p := technologyassociation.HasParent()
+		if !*i.HasParent {
+			p = technologyassociation.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasParentWith) > 0 {
+		with := make([]predicate.Technology, 0, len(i.HasParentWith))
+		for _, w := range i.HasParentWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, technologyassociation.HasParentWith(with...))
+	}
+	if i.HasChild != nil {
+		p := technologyassociation.HasChild()
+		if !*i.HasChild {
+			p = technologyassociation.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasChildWith) > 0 {
+		with := make([]predicate.Technology, 0, len(i.HasChildWith))
+		for _, w := range i.HasChildWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, technologyassociation.HasChildWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate TechnologyAssociationWhereInput")
+	case 1:
+		return predicates[0], nil
+	default:
+		return technologyassociation.And(predicates...), nil
 	}
 }
 

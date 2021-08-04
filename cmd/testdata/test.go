@@ -36,6 +36,7 @@ const (
 	Repository               TestItemType = "Repository"
 	Site                     TestItemType = "Site"
 	Technology               TestItemType = "Technology"
+	TechnologyAssociation    TestItemType = "TechnologyAssociation"
 	User                     TestItemType = "User"
 )
 
@@ -225,6 +226,16 @@ func main() {
 			_, err = client.Technology.Create().SetInput(*input).Save(ctx)
 			if err != nil {
 				log.Fatalf("failed creating Technology: %v", err)
+			}
+		case TechnologyAssociation:
+			input := new(ent.CreateTechnologyAssociationInput)
+			err = Decode(item.Params, input)
+			if err != nil {
+				log.Fatalf("failed decoding TechnologyAssociation: %v", err)
+			}
+			_, err = client.TechnologyAssociation.Create().SetInput(*input).Save(ctx)
+			if err != nil {
+				log.Fatalf("failed creating TechnologyAssociation: %v", err)
 			}
 		case User:
 			input := new(ent.CreateUserInput)

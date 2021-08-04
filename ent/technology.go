@@ -23,6 +23,38 @@ type Technology struct {
 	Colour *string `json:"colour,omitempty"`
 	// Type holds the value of the "type" field.
 	Type technology.Type `json:"type,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the TechnologyQuery when eager-loading is set.
+	Edges TechnologyEdges `json:"edges"`
+}
+
+// TechnologyEdges holds the relations/edges for other nodes in the graph.
+type TechnologyEdges struct {
+	// ParentTechnologies holds the value of the parent_technologies edge.
+	ParentTechnologies []*TechnologyAssociation `json:"parent_technologies,omitempty"`
+	// ChildTechnologies holds the value of the child_technologies edge.
+	ChildTechnologies []*TechnologyAssociation `json:"child_technologies,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// ParentTechnologiesOrErr returns the ParentTechnologies value or an error if the edge
+// was not loaded in eager-loading.
+func (e TechnologyEdges) ParentTechnologiesOrErr() ([]*TechnologyAssociation, error) {
+	if e.loadedTypes[0] {
+		return e.ParentTechnologies, nil
+	}
+	return nil, &NotLoadedError{edge: "parent_technologies"}
+}
+
+// ChildTechnologiesOrErr returns the ChildTechnologies value or an error if the edge
+// was not loaded in eager-loading.
+func (e TechnologyEdges) ChildTechnologiesOrErr() ([]*TechnologyAssociation, error) {
+	if e.loadedTypes[1] {
+		return e.ChildTechnologies, nil
+	}
+	return nil, &NotLoadedError{edge: "child_technologies"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -84,6 +116,16 @@ func (t *Technology) assignValues(columns []string, values []interface{}) error 
 		}
 	}
 	return nil
+}
+
+// QueryParentTechnologies queries the "parent_technologies" edge of the Technology entity.
+func (t *Technology) QueryParentTechnologies() *TechnologyAssociationQuery {
+	return (&TechnologyClient{config: t.config}).QueryParentTechnologies(t)
+}
+
+// QueryChildTechnologies queries the "child_technologies" edge of the Technology entity.
+func (t *Technology) QueryChildTechnologies() *TechnologyAssociationQuery {
+	return (&TechnologyClient{config: t.config}).QueryChildTechnologies(t)
 }
 
 // Update returns a builder for updating this Technology.

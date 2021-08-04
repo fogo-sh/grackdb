@@ -236,6 +236,38 @@ func (s *Site) Repository(ctx context.Context) (*Repository, error) {
 	return result, MaskNotFound(err)
 }
 
+func (t *Technology) ParentTechnologies(ctx context.Context) ([]*TechnologyAssociation, error) {
+	result, err := t.Edges.ParentTechnologiesOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryParentTechnologies().All(ctx)
+	}
+	return result, err
+}
+
+func (t *Technology) ChildTechnologies(ctx context.Context) ([]*TechnologyAssociation, error) {
+	result, err := t.Edges.ChildTechnologiesOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryChildTechnologies().All(ctx)
+	}
+	return result, err
+}
+
+func (ta *TechnologyAssociation) Parent(ctx context.Context) (*Technology, error) {
+	result, err := ta.Edges.ParentOrErr()
+	if IsNotLoaded(err) {
+		result, err = ta.QueryParent().Only(ctx)
+	}
+	return result, err
+}
+
+func (ta *TechnologyAssociation) Child(ctx context.Context) (*Technology, error) {
+	result, err := ta.Edges.ChildOrErr()
+	if IsNotLoaded(err) {
+		result, err = ta.QueryChild().Only(ctx)
+	}
+	return result, err
+}
+
 func (u *User) DiscordAccounts(ctx context.Context) ([]*DiscordAccount, error) {
 	result, err := u.Edges.DiscordAccountsOrErr()
 	if IsNotLoaded(err) {

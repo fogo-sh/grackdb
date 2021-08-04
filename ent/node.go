@@ -25,6 +25,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
+	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 	"github.com/fogo-sh/grackdb/ent/user"
 	"github.com/hashicorp/go-multierror"
 	"golang.org/x/sync/semaphore"
@@ -589,7 +590,7 @@ func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
 		ID:     t.ID,
 		Type:   "Technology",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 0),
+		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(t.Name); err != nil {
@@ -623,6 +624,65 @@ func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
 		Type:  "technology.Type",
 		Name:  "type",
 		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "TechnologyAssociation",
+		Name: "parent_technologies",
+	}
+	node.Edges[0].IDs, err = t.QueryParentTechnologies().
+		Select(technologyassociation.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "TechnologyAssociation",
+		Name: "child_technologies",
+	}
+	node.Edges[1].IDs, err = t.QueryChildTechnologies().
+		Select(technologyassociation.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (ta *TechnologyAssociation) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     ta.ID,
+		Type:   "TechnologyAssociation",
+		Fields: make([]*Field, 1),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(ta.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "technologyassociation.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Technology",
+		Name: "parent",
+	}
+	node.Edges[0].IDs, err = ta.QueryParent().
+		Select(technology.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Technology",
+		Name: "child",
+	}
+	node.Edges[1].IDs, err = ta.QueryChild().
+		Select(technology.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
 	}
 	return node, nil
 }
@@ -850,6 +910,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
+	case technologyassociation.Table:
+		n, err := c.TechnologyAssociation.Query().
+			Where(technologyassociation.ID(id)).
+			CollectFields(ctx, "TechnologyAssociation").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case user.Table:
 		n, err := c.User.Query().
 			Where(user.ID(id)).
@@ -1066,6 +1135,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.Technology.Query().
 			Where(technology.IDIn(ids...)).
 			CollectFields(ctx, "Technology").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case technologyassociation.Table:
+		nodes, err := c.TechnologyAssociation.Query().
+			Where(technologyassociation.IDIn(ids...)).
+			CollectFields(ctx, "TechnologyAssociation").
 			All(ctx)
 		if err != nil {
 			return nil, err

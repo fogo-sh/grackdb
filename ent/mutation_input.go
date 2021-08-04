@@ -9,6 +9,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/technology"
+	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 )
 
 // CreateDiscordAccountInput represents a mutation input for creating discordaccounts.
@@ -797,10 +798,12 @@ func (u *SiteUpdateOne) SetInput(i UpdateSiteInput) *SiteUpdateOne {
 
 // CreateTechnologyInput represents a mutation input for creating technologies.
 type CreateTechnologyInput struct {
-	Name        string
-	Description *string
-	Colour      *string
-	Type        technology.Type
+	Name               string
+	Description        *string
+	Colour             *string
+	Type               technology.Type
+	ParentTechnologies []int
+	ChildTechnologies  []int
 }
 
 // Mutate applies the CreateTechnologyInput on the TechnologyCreate builder.
@@ -813,6 +816,12 @@ func (i *CreateTechnologyInput) Mutate(m *TechnologyCreate) {
 		m.SetColour(*v)
 	}
 	m.SetType(i.Type)
+	if ids := i.ParentTechnologies; len(ids) > 0 {
+		m.AddParentTechnologyIDs(ids...)
+	}
+	if ids := i.ChildTechnologies; len(ids) > 0 {
+		m.AddChildTechnologyIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the CreateTechnologyInput on the create builder.
@@ -823,12 +832,16 @@ func (c *TechnologyCreate) SetInput(i CreateTechnologyInput) *TechnologyCreate {
 
 // UpdateTechnologyInput represents a mutation input for updating technologies.
 type UpdateTechnologyInput struct {
-	Name             *string
-	Description      *string
-	ClearDescription bool
-	Colour           *string
-	ClearColour      bool
-	Type             *technology.Type
+	Name                      *string
+	Description               *string
+	ClearDescription          bool
+	Colour                    *string
+	ClearColour               bool
+	Type                      *technology.Type
+	AddParentTechnologyIDs    []int
+	RemoveParentTechnologyIDs []int
+	AddChildTechnologyIDs     []int
+	RemoveChildTechnologyIDs  []int
 }
 
 // Mutate applies the UpdateTechnologyInput on the TechnologyMutation.
@@ -851,6 +864,18 @@ func (i *UpdateTechnologyInput) Mutate(m *TechnologyMutation) {
 	if v := i.Type; v != nil {
 		m.SetType(*v)
 	}
+	if ids := i.AddParentTechnologyIDs; len(ids) > 0 {
+		m.AddParentTechnologyIDs(ids...)
+	}
+	if ids := i.RemoveParentTechnologyIDs; len(ids) > 0 {
+		m.RemoveParentTechnologyIDs(ids...)
+	}
+	if ids := i.AddChildTechnologyIDs; len(ids) > 0 {
+		m.AddChildTechnologyIDs(ids...)
+	}
+	if ids := i.RemoveChildTechnologyIDs; len(ids) > 0 {
+		m.RemoveChildTechnologyIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the UpdateTechnologyInput on the update builder.
@@ -861,6 +886,66 @@ func (u *TechnologyUpdate) SetInput(i UpdateTechnologyInput) *TechnologyUpdate {
 
 // SetInput applies the change-set in the UpdateTechnologyInput on the update-one builder.
 func (u *TechnologyUpdateOne) SetInput(i UpdateTechnologyInput) *TechnologyUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// CreateTechnologyAssociationInput represents a mutation input for creating technologyassociations.
+type CreateTechnologyAssociationInput struct {
+	Type   technologyassociation.Type
+	Parent int
+	Child  int
+}
+
+// Mutate applies the CreateTechnologyAssociationInput on the TechnologyAssociationCreate builder.
+func (i *CreateTechnologyAssociationInput) Mutate(m *TechnologyAssociationCreate) {
+	m.SetType(i.Type)
+	m.SetParentID(i.Parent)
+	m.SetChildID(i.Child)
+}
+
+// SetInput applies the change-set in the CreateTechnologyAssociationInput on the create builder.
+func (c *TechnologyAssociationCreate) SetInput(i CreateTechnologyAssociationInput) *TechnologyAssociationCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateTechnologyAssociationInput represents a mutation input for updating technologyassociations.
+type UpdateTechnologyAssociationInput struct {
+	Type        *technologyassociation.Type
+	Parent      *int
+	ClearParent bool
+	Child       *int
+	ClearChild  bool
+}
+
+// Mutate applies the UpdateTechnologyAssociationInput on the TechnologyAssociationMutation.
+func (i *UpdateTechnologyAssociationInput) Mutate(m *TechnologyAssociationMutation) {
+	if v := i.Type; v != nil {
+		m.SetType(*v)
+	}
+	if i.ClearParent {
+		m.ClearParent()
+	}
+	if v := i.Parent; v != nil {
+		m.SetParentID(*v)
+	}
+	if i.ClearChild {
+		m.ClearChild()
+	}
+	if v := i.Child; v != nil {
+		m.SetChildID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateTechnologyAssociationInput on the update builder.
+func (u *TechnologyAssociationUpdate) SetInput(i UpdateTechnologyAssociationInput) *TechnologyAssociationUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateTechnologyAssociationInput on the update-one builder.
+func (u *TechnologyAssociationUpdateOne) SetInput(i UpdateTechnologyAssociationInput) *TechnologyAssociationUpdateOne {
 	i.Mutate(u.Mutation())
 	return u
 }

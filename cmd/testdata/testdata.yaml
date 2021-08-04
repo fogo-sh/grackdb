@@ -64,6 +64,17 @@ Items:
       Name: Crystal
       Colour: "#000100"
       Type: LANGUAGE
+  - Name: Ent
+    Type: Technology
+    Params:
+      Name: Ent
+      Type: LIBRARY
+  - Name: Go -> Ent
+    Type: TechnologyAssociation
+    Params:
+      Type: WRITTEN_IN
+      Parent: 1
+      Child: 3
   
   - Name: Gik
     Type: Project

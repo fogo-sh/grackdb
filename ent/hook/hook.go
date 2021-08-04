@@ -152,6 +152,19 @@ func (f TechnologyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return f(ctx, mv)
 }
 
+// The TechnologyAssociationFunc type is an adapter to allow the use of ordinary
+// function as TechnologyAssociation mutator.
+type TechnologyAssociationFunc func(context.Context, *ent.TechnologyAssociationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TechnologyAssociationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.TechnologyAssociationMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TechnologyAssociationMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/technology"
+	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 )
 
 // TechnologyUpdate is the builder for updating Technology entities.
@@ -78,9 +79,81 @@ func (tu *TechnologyUpdate) SetType(t technology.Type) *TechnologyUpdate {
 	return tu
 }
 
+// AddParentTechnologyIDs adds the "parent_technologies" edge to the TechnologyAssociation entity by IDs.
+func (tu *TechnologyUpdate) AddParentTechnologyIDs(ids ...int) *TechnologyUpdate {
+	tu.mutation.AddParentTechnologyIDs(ids...)
+	return tu
+}
+
+// AddParentTechnologies adds the "parent_technologies" edges to the TechnologyAssociation entity.
+func (tu *TechnologyUpdate) AddParentTechnologies(t ...*TechnologyAssociation) *TechnologyUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tu.AddParentTechnologyIDs(ids...)
+}
+
+// AddChildTechnologyIDs adds the "child_technologies" edge to the TechnologyAssociation entity by IDs.
+func (tu *TechnologyUpdate) AddChildTechnologyIDs(ids ...int) *TechnologyUpdate {
+	tu.mutation.AddChildTechnologyIDs(ids...)
+	return tu
+}
+
+// AddChildTechnologies adds the "child_technologies" edges to the TechnologyAssociation entity.
+func (tu *TechnologyUpdate) AddChildTechnologies(t ...*TechnologyAssociation) *TechnologyUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tu.AddChildTechnologyIDs(ids...)
+}
+
 // Mutation returns the TechnologyMutation object of the builder.
 func (tu *TechnologyUpdate) Mutation() *TechnologyMutation {
 	return tu.mutation
+}
+
+// ClearParentTechnologies clears all "parent_technologies" edges to the TechnologyAssociation entity.
+func (tu *TechnologyUpdate) ClearParentTechnologies() *TechnologyUpdate {
+	tu.mutation.ClearParentTechnologies()
+	return tu
+}
+
+// RemoveParentTechnologyIDs removes the "parent_technologies" edge to TechnologyAssociation entities by IDs.
+func (tu *TechnologyUpdate) RemoveParentTechnologyIDs(ids ...int) *TechnologyUpdate {
+	tu.mutation.RemoveParentTechnologyIDs(ids...)
+	return tu
+}
+
+// RemoveParentTechnologies removes "parent_technologies" edges to TechnologyAssociation entities.
+func (tu *TechnologyUpdate) RemoveParentTechnologies(t ...*TechnologyAssociation) *TechnologyUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tu.RemoveParentTechnologyIDs(ids...)
+}
+
+// ClearChildTechnologies clears all "child_technologies" edges to the TechnologyAssociation entity.
+func (tu *TechnologyUpdate) ClearChildTechnologies() *TechnologyUpdate {
+	tu.mutation.ClearChildTechnologies()
+	return tu
+}
+
+// RemoveChildTechnologyIDs removes the "child_technologies" edge to TechnologyAssociation entities by IDs.
+func (tu *TechnologyUpdate) RemoveChildTechnologyIDs(ids ...int) *TechnologyUpdate {
+	tu.mutation.RemoveChildTechnologyIDs(ids...)
+	return tu
+}
+
+// RemoveChildTechnologies removes "child_technologies" edges to TechnologyAssociation entities.
+func (tu *TechnologyUpdate) RemoveChildTechnologies(t ...*TechnologyAssociation) *TechnologyUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tu.RemoveChildTechnologyIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -213,6 +286,114 @@ func (tu *TechnologyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: technology.FieldType,
 		})
 	}
+	if tu.mutation.ParentTechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ParentTechnologiesTable,
+			Columns: []string{technology.ParentTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedParentTechnologiesIDs(); len(nodes) > 0 && !tu.mutation.ParentTechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ParentTechnologiesTable,
+			Columns: []string{technology.ParentTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.ParentTechnologiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ParentTechnologiesTable,
+			Columns: []string{technology.ParentTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tu.mutation.ChildTechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ChildTechnologiesTable,
+			Columns: []string{technology.ChildTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedChildTechnologiesIDs(); len(nodes) > 0 && !tu.mutation.ChildTechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ChildTechnologiesTable,
+			Columns: []string{technology.ChildTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.ChildTechnologiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ChildTechnologiesTable,
+			Columns: []string{technology.ChildTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{technology.Label}
@@ -284,9 +465,81 @@ func (tuo *TechnologyUpdateOne) SetType(t technology.Type) *TechnologyUpdateOne 
 	return tuo
 }
 
+// AddParentTechnologyIDs adds the "parent_technologies" edge to the TechnologyAssociation entity by IDs.
+func (tuo *TechnologyUpdateOne) AddParentTechnologyIDs(ids ...int) *TechnologyUpdateOne {
+	tuo.mutation.AddParentTechnologyIDs(ids...)
+	return tuo
+}
+
+// AddParentTechnologies adds the "parent_technologies" edges to the TechnologyAssociation entity.
+func (tuo *TechnologyUpdateOne) AddParentTechnologies(t ...*TechnologyAssociation) *TechnologyUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tuo.AddParentTechnologyIDs(ids...)
+}
+
+// AddChildTechnologyIDs adds the "child_technologies" edge to the TechnologyAssociation entity by IDs.
+func (tuo *TechnologyUpdateOne) AddChildTechnologyIDs(ids ...int) *TechnologyUpdateOne {
+	tuo.mutation.AddChildTechnologyIDs(ids...)
+	return tuo
+}
+
+// AddChildTechnologies adds the "child_technologies" edges to the TechnologyAssociation entity.
+func (tuo *TechnologyUpdateOne) AddChildTechnologies(t ...*TechnologyAssociation) *TechnologyUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tuo.AddChildTechnologyIDs(ids...)
+}
+
 // Mutation returns the TechnologyMutation object of the builder.
 func (tuo *TechnologyUpdateOne) Mutation() *TechnologyMutation {
 	return tuo.mutation
+}
+
+// ClearParentTechnologies clears all "parent_technologies" edges to the TechnologyAssociation entity.
+func (tuo *TechnologyUpdateOne) ClearParentTechnologies() *TechnologyUpdateOne {
+	tuo.mutation.ClearParentTechnologies()
+	return tuo
+}
+
+// RemoveParentTechnologyIDs removes the "parent_technologies" edge to TechnologyAssociation entities by IDs.
+func (tuo *TechnologyUpdateOne) RemoveParentTechnologyIDs(ids ...int) *TechnologyUpdateOne {
+	tuo.mutation.RemoveParentTechnologyIDs(ids...)
+	return tuo
+}
+
+// RemoveParentTechnologies removes "parent_technologies" edges to TechnologyAssociation entities.
+func (tuo *TechnologyUpdateOne) RemoveParentTechnologies(t ...*TechnologyAssociation) *TechnologyUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tuo.RemoveParentTechnologyIDs(ids...)
+}
+
+// ClearChildTechnologies clears all "child_technologies" edges to the TechnologyAssociation entity.
+func (tuo *TechnologyUpdateOne) ClearChildTechnologies() *TechnologyUpdateOne {
+	tuo.mutation.ClearChildTechnologies()
+	return tuo
+}
+
+// RemoveChildTechnologyIDs removes the "child_technologies" edge to TechnologyAssociation entities by IDs.
+func (tuo *TechnologyUpdateOne) RemoveChildTechnologyIDs(ids ...int) *TechnologyUpdateOne {
+	tuo.mutation.RemoveChildTechnologyIDs(ids...)
+	return tuo
+}
+
+// RemoveChildTechnologies removes "child_technologies" edges to TechnologyAssociation entities.
+func (tuo *TechnologyUpdateOne) RemoveChildTechnologies(t ...*TechnologyAssociation) *TechnologyUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tuo.RemoveChildTechnologyIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -442,6 +695,114 @@ func (tuo *TechnologyUpdateOne) sqlSave(ctx context.Context) (_node *Technology,
 			Value:  value,
 			Column: technology.FieldType,
 		})
+	}
+	if tuo.mutation.ParentTechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ParentTechnologiesTable,
+			Columns: []string{technology.ParentTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedParentTechnologiesIDs(); len(nodes) > 0 && !tuo.mutation.ParentTechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ParentTechnologiesTable,
+			Columns: []string{technology.ParentTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.ParentTechnologiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ParentTechnologiesTable,
+			Columns: []string{technology.ParentTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.ChildTechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ChildTechnologiesTable,
+			Columns: []string{technology.ChildTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedChildTechnologiesIDs(); len(nodes) > 0 && !tuo.mutation.ChildTechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ChildTechnologiesTable,
+			Columns: []string{technology.ChildTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.ChildTechnologiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ChildTechnologiesTable,
+			Columns: []string{technology.ChildTechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Technology{config: tuo.config}
 	_spec.Assign = _node.assignValues

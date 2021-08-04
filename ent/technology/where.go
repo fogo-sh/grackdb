@@ -4,6 +4,7 @@ package technology
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 )
 
@@ -517,6 +518,62 @@ func TypeNotIn(vs ...Type) predicate.Technology {
 			return
 		}
 		s.Where(sql.NotIn(s.C(FieldType), v...))
+	})
+}
+
+// HasParentTechnologies applies the HasEdge predicate on the "parent_technologies" edge.
+func HasParentTechnologies() predicate.Technology {
+	return predicate.Technology(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ParentTechnologiesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ParentTechnologiesTable, ParentTechnologiesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasParentTechnologiesWith applies the HasEdge predicate on the "parent_technologies" edge with a given conditions (other predicates).
+func HasParentTechnologiesWith(preds ...predicate.TechnologyAssociation) predicate.Technology {
+	return predicate.Technology(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ParentTechnologiesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ParentTechnologiesTable, ParentTechnologiesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasChildTechnologies applies the HasEdge predicate on the "child_technologies" edge.
+func HasChildTechnologies() predicate.Technology {
+	return predicate.Technology(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ChildTechnologiesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ChildTechnologiesTable, ChildTechnologiesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasChildTechnologiesWith applies the HasEdge predicate on the "child_technologies" edge with a given conditions (other predicates).
+func HasChildTechnologiesWith(preds ...predicate.TechnologyAssociation) predicate.Technology {
+	return predicate.Technology(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ChildTechnologiesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ChildTechnologiesTable, ChildTechnologiesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

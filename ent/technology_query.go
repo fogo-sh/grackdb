@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -13,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/technology"
+	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 )
 
 // TechnologyQuery is the builder for querying Technology entities.
@@ -24,6 +26,9 @@ type TechnologyQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Technology
+	// eager-loading edges.
+	withParentTechnologies *TechnologyAssociationQuery
+	withChildTechnologies  *TechnologyAssociationQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,6 +63,50 @@ func (tq *TechnologyQuery) Unique(unique bool) *TechnologyQuery {
 func (tq *TechnologyQuery) Order(o ...OrderFunc) *TechnologyQuery {
 	tq.order = append(tq.order, o...)
 	return tq
+}
+
+// QueryParentTechnologies chains the current query on the "parent_technologies" edge.
+func (tq *TechnologyQuery) QueryParentTechnologies() *TechnologyAssociationQuery {
+	query := &TechnologyAssociationQuery{config: tq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(technology.Table, technology.FieldID, selector),
+			sqlgraph.To(technologyassociation.Table, technologyassociation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, technology.ParentTechnologiesTable, technology.ParentTechnologiesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryChildTechnologies chains the current query on the "child_technologies" edge.
+func (tq *TechnologyQuery) QueryChildTechnologies() *TechnologyAssociationQuery {
+	query := &TechnologyAssociationQuery{config: tq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(technology.Table, technology.FieldID, selector),
+			sqlgraph.To(technologyassociation.Table, technologyassociation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, technology.ChildTechnologiesTable, technology.ChildTechnologiesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Technology entity from the query.
@@ -236,15 +285,39 @@ func (tq *TechnologyQuery) Clone() *TechnologyQuery {
 		return nil
 	}
 	return &TechnologyQuery{
-		config:     tq.config,
-		limit:      tq.limit,
-		offset:     tq.offset,
-		order:      append([]OrderFunc{}, tq.order...),
-		predicates: append([]predicate.Technology{}, tq.predicates...),
+		config:                 tq.config,
+		limit:                  tq.limit,
+		offset:                 tq.offset,
+		order:                  append([]OrderFunc{}, tq.order...),
+		predicates:             append([]predicate.Technology{}, tq.predicates...),
+		withParentTechnologies: tq.withParentTechnologies.Clone(),
+		withChildTechnologies:  tq.withChildTechnologies.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
 	}
+}
+
+// WithParentTechnologies tells the query-builder to eager-load the nodes that are connected to
+// the "parent_technologies" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TechnologyQuery) WithParentTechnologies(opts ...func(*TechnologyAssociationQuery)) *TechnologyQuery {
+	query := &TechnologyAssociationQuery{config: tq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withParentTechnologies = query
+	return tq
+}
+
+// WithChildTechnologies tells the query-builder to eager-load the nodes that are connected to
+// the "child_technologies" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TechnologyQuery) WithChildTechnologies(opts ...func(*TechnologyAssociationQuery)) *TechnologyQuery {
+	query := &TechnologyAssociationQuery{config: tq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withChildTechnologies = query
+	return tq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -316,8 +389,12 @@ func (tq *TechnologyQuery) prepareQuery(ctx context.Context) error {
 
 func (tq *TechnologyQuery) sqlAll(ctx context.Context) ([]*Technology, error) {
 	var (
-		nodes = []*Technology{}
-		_spec = tq.querySpec()
+		nodes       = []*Technology{}
+		_spec       = tq.querySpec()
+		loadedTypes = [2]bool{
+			tq.withParentTechnologies != nil,
+			tq.withChildTechnologies != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Technology{config: tq.config}
@@ -329,6 +406,7 @@ func (tq *TechnologyQuery) sqlAll(ctx context.Context) ([]*Technology, error) {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, tq.driver, _spec); err != nil {
@@ -337,6 +415,65 @@ func (tq *TechnologyQuery) sqlAll(ctx context.Context) ([]*Technology, error) {
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := tq.withParentTechnologies; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Technology)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ParentTechnologies = []*TechnologyAssociation{}
+		}
+		query.withFKs = true
+		query.Where(predicate.TechnologyAssociation(func(s *sql.Selector) {
+			s.Where(sql.InValues(technology.ParentTechnologiesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.technology_parent_technologies
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "technology_parent_technologies" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "technology_parent_technologies" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.ParentTechnologies = append(node.Edges.ParentTechnologies, n)
+		}
+	}
+
+	if query := tq.withChildTechnologies; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Technology)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ChildTechnologies = []*TechnologyAssociation{}
+		}
+		query.withFKs = true
+		query.Where(predicate.TechnologyAssociation(func(s *sql.Selector) {
+			s.Where(sql.InValues(technology.ChildTechnologiesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.technology_child_technologies
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "technology_child_technologies" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "technology_child_technologies" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.ChildTechnologies = append(node.Edges.ChildTechnologies, n)
+		}
+	}
+
 	return nodes, nil
 }
 

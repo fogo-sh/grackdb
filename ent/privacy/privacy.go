@@ -428,6 +428,30 @@ func (f TechnologyMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Muta
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.TechnologyMutation", m)
 }
 
+// The TechnologyAssociationQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type TechnologyAssociationQueryRuleFunc func(context.Context, *ent.TechnologyAssociationQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f TechnologyAssociationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.TechnologyAssociationQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.TechnologyAssociationQuery", q)
+}
+
+// The TechnologyAssociationMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type TechnologyAssociationMutationRuleFunc func(context.Context, *ent.TechnologyAssociationMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f TechnologyAssociationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.TechnologyAssociationMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.TechnologyAssociationMutation", m)
+}
+
 // The UserQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type UserQueryRuleFunc func(context.Context, *ent.UserQuery) error

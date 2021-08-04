@@ -396,6 +396,42 @@ type Technology implements Node {
     description: String
     colour: String
     type: TechnologyType!
+
+    parentTechnologies: [TechnologyAssociation!]
+    childTechnologies: [TechnologyAssociation!]
+}
+
+enum TechnologyAssociationType {
+    WRITTEN_IN
+    IMPLEMENTS
+    USES
+}
+
+type TechnologyAssociationConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [TechnologyAssociationEdge]
+}
+
+type TechnologyAssociationEdge {
+    node: TechnologyAssociation
+    cursor: Cursor!
+}
+
+enum TechnologyAssociationOrderField {
+    TYPE
+}
+
+input TechnologyAssociationOrder {
+    direction: OrderDirection!
+    field: TechnologyAssociationOrderField
+}
+
+type TechnologyAssociation implements Node {
+    id: ID!
+    type: TechnologyAssociationType!
+    parent: Technology!
+    child: Technology!
 }
 
 type Query {
@@ -497,6 +533,14 @@ type Query {
         orderBy: TechnologyOrder
         where: TechnologyWhereInput
     ): TechnologyConnection
+    technologyAssociations(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: TechnologyAssociationOrder
+        where: TechnologyAssociationWhereInput
+    ): TechnologyAssociationConnection
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
@@ -577,6 +621,12 @@ input CreateTechnologyInput {
     type: TechnologyType!
 }
 
+input CreateTechnologyAssociationInput {
+    type: TechnologyAssociationType!
+    parent: Int!
+    child: Int!
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
@@ -590,4 +640,5 @@ type Mutation {
     createRepository(input: CreateRepositoryInput!): Repository!
     createSite(input: CreateSiteInput!): Site!
     createTechnology(input: CreateTechnologyInput!): Technology!
+    createTechnologyAssociation(input: CreateTechnologyAssociationInput!): TechnologyAssociation!
 }

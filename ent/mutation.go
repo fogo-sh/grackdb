@@ -20,6 +20,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
+	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 	"github.com/fogo-sh/grackdb/ent/user"
 
 	"entgo.io/ent"
@@ -45,6 +46,7 @@ const (
 	TypeRepository               = "Repository"
 	TypeSite                     = "Site"
 	TypeTechnology               = "Technology"
+	TypeTechnologyAssociation    = "TechnologyAssociation"
 	TypeUser                     = "User"
 )
 
@@ -5421,17 +5423,23 @@ func (m *SiteMutation) ResetEdge(name string) error {
 // TechnologyMutation represents an operation that mutates the Technology nodes in the graph.
 type TechnologyMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	description   *string
-	colour        *string
-	_type         *technology.Type
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Technology, error)
-	predicates    []predicate.Technology
+	op                         Op
+	typ                        string
+	id                         *int
+	name                       *string
+	description                *string
+	colour                     *string
+	_type                      *technology.Type
+	clearedFields              map[string]struct{}
+	parent_technologies        map[int]struct{}
+	removedparent_technologies map[int]struct{}
+	clearedparent_technologies bool
+	child_technologies         map[int]struct{}
+	removedchild_technologies  map[int]struct{}
+	clearedchild_technologies  bool
+	done                       bool
+	oldValue                   func(context.Context) (*Technology, error)
+	predicates                 []predicate.Technology
 }
 
 var _ ent.Mutation = (*TechnologyMutation)(nil)
@@ -5683,6 +5691,114 @@ func (m *TechnologyMutation) ResetType() {
 	m._type = nil
 }
 
+// AddParentTechnologyIDs adds the "parent_technologies" edge to the TechnologyAssociation entity by ids.
+func (m *TechnologyMutation) AddParentTechnologyIDs(ids ...int) {
+	if m.parent_technologies == nil {
+		m.parent_technologies = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.parent_technologies[ids[i]] = struct{}{}
+	}
+}
+
+// ClearParentTechnologies clears the "parent_technologies" edge to the TechnologyAssociation entity.
+func (m *TechnologyMutation) ClearParentTechnologies() {
+	m.clearedparent_technologies = true
+}
+
+// ParentTechnologiesCleared reports if the "parent_technologies" edge to the TechnologyAssociation entity was cleared.
+func (m *TechnologyMutation) ParentTechnologiesCleared() bool {
+	return m.clearedparent_technologies
+}
+
+// RemoveParentTechnologyIDs removes the "parent_technologies" edge to the TechnologyAssociation entity by IDs.
+func (m *TechnologyMutation) RemoveParentTechnologyIDs(ids ...int) {
+	if m.removedparent_technologies == nil {
+		m.removedparent_technologies = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.parent_technologies, ids[i])
+		m.removedparent_technologies[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedParentTechnologies returns the removed IDs of the "parent_technologies" edge to the TechnologyAssociation entity.
+func (m *TechnologyMutation) RemovedParentTechnologiesIDs() (ids []int) {
+	for id := range m.removedparent_technologies {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ParentTechnologiesIDs returns the "parent_technologies" edge IDs in the mutation.
+func (m *TechnologyMutation) ParentTechnologiesIDs() (ids []int) {
+	for id := range m.parent_technologies {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetParentTechnologies resets all changes to the "parent_technologies" edge.
+func (m *TechnologyMutation) ResetParentTechnologies() {
+	m.parent_technologies = nil
+	m.clearedparent_technologies = false
+	m.removedparent_technologies = nil
+}
+
+// AddChildTechnologyIDs adds the "child_technologies" edge to the TechnologyAssociation entity by ids.
+func (m *TechnologyMutation) AddChildTechnologyIDs(ids ...int) {
+	if m.child_technologies == nil {
+		m.child_technologies = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.child_technologies[ids[i]] = struct{}{}
+	}
+}
+
+// ClearChildTechnologies clears the "child_technologies" edge to the TechnologyAssociation entity.
+func (m *TechnologyMutation) ClearChildTechnologies() {
+	m.clearedchild_technologies = true
+}
+
+// ChildTechnologiesCleared reports if the "child_technologies" edge to the TechnologyAssociation entity was cleared.
+func (m *TechnologyMutation) ChildTechnologiesCleared() bool {
+	return m.clearedchild_technologies
+}
+
+// RemoveChildTechnologyIDs removes the "child_technologies" edge to the TechnologyAssociation entity by IDs.
+func (m *TechnologyMutation) RemoveChildTechnologyIDs(ids ...int) {
+	if m.removedchild_technologies == nil {
+		m.removedchild_technologies = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.child_technologies, ids[i])
+		m.removedchild_technologies[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedChildTechnologies returns the removed IDs of the "child_technologies" edge to the TechnologyAssociation entity.
+func (m *TechnologyMutation) RemovedChildTechnologiesIDs() (ids []int) {
+	for id := range m.removedchild_technologies {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ChildTechnologiesIDs returns the "child_technologies" edge IDs in the mutation.
+func (m *TechnologyMutation) ChildTechnologiesIDs() (ids []int) {
+	for id := range m.child_technologies {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetChildTechnologies resets all changes to the "child_technologies" edge.
+func (m *TechnologyMutation) ResetChildTechnologies() {
+	m.child_technologies = nil
+	m.clearedchild_technologies = false
+	m.removedchild_technologies = nil
+}
+
 // Op returns the operation name.
 func (m *TechnologyMutation) Op() Op {
 	return m.op
@@ -5862,50 +5978,527 @@ func (m *TechnologyMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TechnologyMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.parent_technologies != nil {
+		edges = append(edges, technology.EdgeParentTechnologies)
+	}
+	if m.child_technologies != nil {
+		edges = append(edges, technology.EdgeChildTechnologies)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TechnologyMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case technology.EdgeParentTechnologies:
+		ids := make([]ent.Value, 0, len(m.parent_technologies))
+		for id := range m.parent_technologies {
+			ids = append(ids, id)
+		}
+		return ids
+	case technology.EdgeChildTechnologies:
+		ids := make([]ent.Value, 0, len(m.child_technologies))
+		for id := range m.child_technologies {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TechnologyMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.removedparent_technologies != nil {
+		edges = append(edges, technology.EdgeParentTechnologies)
+	}
+	if m.removedchild_technologies != nil {
+		edges = append(edges, technology.EdgeChildTechnologies)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TechnologyMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case technology.EdgeParentTechnologies:
+		ids := make([]ent.Value, 0, len(m.removedparent_technologies))
+		for id := range m.removedparent_technologies {
+			ids = append(ids, id)
+		}
+		return ids
+	case technology.EdgeChildTechnologies:
+		ids := make([]ent.Value, 0, len(m.removedchild_technologies))
+		for id := range m.removedchild_technologies {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TechnologyMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.clearedparent_technologies {
+		edges = append(edges, technology.EdgeParentTechnologies)
+	}
+	if m.clearedchild_technologies {
+		edges = append(edges, technology.EdgeChildTechnologies)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TechnologyMutation) EdgeCleared(name string) bool {
+	switch name {
+	case technology.EdgeParentTechnologies:
+		return m.clearedparent_technologies
+	case technology.EdgeChildTechnologies:
+		return m.clearedchild_technologies
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TechnologyMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Technology unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TechnologyMutation) ResetEdge(name string) error {
+	switch name {
+	case technology.EdgeParentTechnologies:
+		m.ResetParentTechnologies()
+		return nil
+	case technology.EdgeChildTechnologies:
+		m.ResetChildTechnologies()
+		return nil
+	}
 	return fmt.Errorf("unknown Technology edge %s", name)
+}
+
+// TechnologyAssociationMutation represents an operation that mutates the TechnologyAssociation nodes in the graph.
+type TechnologyAssociationMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	_type         *technologyassociation.Type
+	clearedFields map[string]struct{}
+	parent        *int
+	clearedparent bool
+	child         *int
+	clearedchild  bool
+	done          bool
+	oldValue      func(context.Context) (*TechnologyAssociation, error)
+	predicates    []predicate.TechnologyAssociation
+}
+
+var _ ent.Mutation = (*TechnologyAssociationMutation)(nil)
+
+// technologyassociationOption allows management of the mutation configuration using functional options.
+type technologyassociationOption func(*TechnologyAssociationMutation)
+
+// newTechnologyAssociationMutation creates new mutation for the TechnologyAssociation entity.
+func newTechnologyAssociationMutation(c config, op Op, opts ...technologyassociationOption) *TechnologyAssociationMutation {
+	m := &TechnologyAssociationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTechnologyAssociation,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTechnologyAssociationID sets the ID field of the mutation.
+func withTechnologyAssociationID(id int) technologyassociationOption {
+	return func(m *TechnologyAssociationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TechnologyAssociation
+		)
+		m.oldValue = func(ctx context.Context) (*TechnologyAssociation, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TechnologyAssociation.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTechnologyAssociation sets the old TechnologyAssociation of the mutation.
+func withTechnologyAssociation(node *TechnologyAssociation) technologyassociationOption {
+	return func(m *TechnologyAssociationMutation) {
+		m.oldValue = func(context.Context) (*TechnologyAssociation, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TechnologyAssociationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TechnologyAssociationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TechnologyAssociationMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetType sets the "type" field.
+func (m *TechnologyAssociationMutation) SetType(t technologyassociation.Type) {
+	m._type = &t
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *TechnologyAssociationMutation) GetType() (r technologyassociation.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the TechnologyAssociation entity.
+// If the TechnologyAssociation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TechnologyAssociationMutation) OldType(ctx context.Context) (v technologyassociation.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *TechnologyAssociationMutation) ResetType() {
+	m._type = nil
+}
+
+// SetParentID sets the "parent" edge to the Technology entity by id.
+func (m *TechnologyAssociationMutation) SetParentID(id int) {
+	m.parent = &id
+}
+
+// ClearParent clears the "parent" edge to the Technology entity.
+func (m *TechnologyAssociationMutation) ClearParent() {
+	m.clearedparent = true
+}
+
+// ParentCleared reports if the "parent" edge to the Technology entity was cleared.
+func (m *TechnologyAssociationMutation) ParentCleared() bool {
+	return m.clearedparent
+}
+
+// ParentID returns the "parent" edge ID in the mutation.
+func (m *TechnologyAssociationMutation) ParentID() (id int, exists bool) {
+	if m.parent != nil {
+		return *m.parent, true
+	}
+	return
+}
+
+// ParentIDs returns the "parent" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ParentID instead. It exists only for internal usage by the builders.
+func (m *TechnologyAssociationMutation) ParentIDs() (ids []int) {
+	if id := m.parent; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetParent resets all changes to the "parent" edge.
+func (m *TechnologyAssociationMutation) ResetParent() {
+	m.parent = nil
+	m.clearedparent = false
+}
+
+// SetChildID sets the "child" edge to the Technology entity by id.
+func (m *TechnologyAssociationMutation) SetChildID(id int) {
+	m.child = &id
+}
+
+// ClearChild clears the "child" edge to the Technology entity.
+func (m *TechnologyAssociationMutation) ClearChild() {
+	m.clearedchild = true
+}
+
+// ChildCleared reports if the "child" edge to the Technology entity was cleared.
+func (m *TechnologyAssociationMutation) ChildCleared() bool {
+	return m.clearedchild
+}
+
+// ChildID returns the "child" edge ID in the mutation.
+func (m *TechnologyAssociationMutation) ChildID() (id int, exists bool) {
+	if m.child != nil {
+		return *m.child, true
+	}
+	return
+}
+
+// ChildIDs returns the "child" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ChildID instead. It exists only for internal usage by the builders.
+func (m *TechnologyAssociationMutation) ChildIDs() (ids []int) {
+	if id := m.child; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetChild resets all changes to the "child" edge.
+func (m *TechnologyAssociationMutation) ResetChild() {
+	m.child = nil
+	m.clearedchild = false
+}
+
+// Op returns the operation name.
+func (m *TechnologyAssociationMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (TechnologyAssociation).
+func (m *TechnologyAssociationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TechnologyAssociationMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m._type != nil {
+		fields = append(fields, technologyassociation.FieldType)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TechnologyAssociationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case technologyassociation.FieldType:
+		return m.GetType()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TechnologyAssociationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case technologyassociation.FieldType:
+		return m.OldType(ctx)
+	}
+	return nil, fmt.Errorf("unknown TechnologyAssociation field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TechnologyAssociationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case technologyassociation.FieldType:
+		v, ok := value.(technologyassociation.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TechnologyAssociation field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TechnologyAssociationMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TechnologyAssociationMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TechnologyAssociationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TechnologyAssociation numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TechnologyAssociationMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TechnologyAssociationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TechnologyAssociationMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown TechnologyAssociation nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TechnologyAssociationMutation) ResetField(name string) error {
+	switch name {
+	case technologyassociation.FieldType:
+		m.ResetType()
+		return nil
+	}
+	return fmt.Errorf("unknown TechnologyAssociation field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TechnologyAssociationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.parent != nil {
+		edges = append(edges, technologyassociation.EdgeParent)
+	}
+	if m.child != nil {
+		edges = append(edges, technologyassociation.EdgeChild)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TechnologyAssociationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case technologyassociation.EdgeParent:
+		if id := m.parent; id != nil {
+			return []ent.Value{*id}
+		}
+	case technologyassociation.EdgeChild:
+		if id := m.child; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TechnologyAssociationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TechnologyAssociationMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TechnologyAssociationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedparent {
+		edges = append(edges, technologyassociation.EdgeParent)
+	}
+	if m.clearedchild {
+		edges = append(edges, technologyassociation.EdgeChild)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TechnologyAssociationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case technologyassociation.EdgeParent:
+		return m.clearedparent
+	case technologyassociation.EdgeChild:
+		return m.clearedchild
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TechnologyAssociationMutation) ClearEdge(name string) error {
+	switch name {
+	case technologyassociation.EdgeParent:
+		m.ClearParent()
+		return nil
+	case technologyassociation.EdgeChild:
+		m.ClearChild()
+		return nil
+	}
+	return fmt.Errorf("unknown TechnologyAssociation unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TechnologyAssociationMutation) ResetEdge(name string) error {
+	switch name {
+	case technologyassociation.EdgeParent:
+		m.ResetParent()
+		return nil
+	case technologyassociation.EdgeChild:
+		m.ResetChild()
+		return nil
+	}
+	return fmt.Errorf("unknown TechnologyAssociation edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.

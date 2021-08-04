@@ -35,6 +35,7 @@ type hooks struct {
 	Repository               []ent.Hook
 	Site                     []ent.Hook
 	Technology               []ent.Hook
+	TechnologyAssociation    []ent.Hook
 	User                     []ent.Hook
 }
 

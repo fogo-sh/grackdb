@@ -25,6 +25,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
+	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 	"github.com/fogo-sh/grackdb/ent/user"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vmihailenco/msgpack/v5"
@@ -3307,6 +3308,276 @@ func (t *Technology) ToEdge(order *TechnologyOrder) *TechnologyEdge {
 	return &TechnologyEdge{
 		Node:   t,
 		Cursor: order.Field.toCursor(t),
+	}
+}
+
+// TechnologyAssociationEdge is the edge representation of TechnologyAssociation.
+type TechnologyAssociationEdge struct {
+	Node   *TechnologyAssociation `json:"node"`
+	Cursor Cursor                 `json:"cursor"`
+}
+
+// TechnologyAssociationConnection is the connection containing edges to TechnologyAssociation.
+type TechnologyAssociationConnection struct {
+	Edges      []*TechnologyAssociationEdge `json:"edges"`
+	PageInfo   PageInfo                     `json:"pageInfo"`
+	TotalCount int                          `json:"totalCount"`
+}
+
+// TechnologyAssociationPaginateOption enables pagination customization.
+type TechnologyAssociationPaginateOption func(*technologyAssociationPager) error
+
+// WithTechnologyAssociationOrder configures pagination ordering.
+func WithTechnologyAssociationOrder(order *TechnologyAssociationOrder) TechnologyAssociationPaginateOption {
+	if order == nil {
+		order = DefaultTechnologyAssociationOrder
+	}
+	o := *order
+	return func(pager *technologyAssociationPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultTechnologyAssociationOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithTechnologyAssociationFilter configures pagination filter.
+func WithTechnologyAssociationFilter(filter func(*TechnologyAssociationQuery) (*TechnologyAssociationQuery, error)) TechnologyAssociationPaginateOption {
+	return func(pager *technologyAssociationPager) error {
+		if filter == nil {
+			return errors.New("TechnologyAssociationQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type technologyAssociationPager struct {
+	order  *TechnologyAssociationOrder
+	filter func(*TechnologyAssociationQuery) (*TechnologyAssociationQuery, error)
+}
+
+func newTechnologyAssociationPager(opts []TechnologyAssociationPaginateOption) (*technologyAssociationPager, error) {
+	pager := &technologyAssociationPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultTechnologyAssociationOrder
+	}
+	return pager, nil
+}
+
+func (p *technologyAssociationPager) applyFilter(query *TechnologyAssociationQuery) (*TechnologyAssociationQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *technologyAssociationPager) toCursor(ta *TechnologyAssociation) Cursor {
+	return p.order.Field.toCursor(ta)
+}
+
+func (p *technologyAssociationPager) applyCursors(query *TechnologyAssociationQuery, after, before *Cursor) *TechnologyAssociationQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultTechnologyAssociationOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *technologyAssociationPager) applyOrder(query *TechnologyAssociationQuery, reverse bool) *TechnologyAssociationQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultTechnologyAssociationOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultTechnologyAssociationOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to TechnologyAssociation.
+func (ta *TechnologyAssociationQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...TechnologyAssociationPaginateOption,
+) (*TechnologyAssociationConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newTechnologyAssociationPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if ta, err = pager.applyFilter(ta); err != nil {
+		return nil, err
+	}
+
+	conn := &TechnologyAssociationConnection{Edges: []*TechnologyAssociationEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := ta.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := ta.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	ta = pager.applyCursors(ta, after, before)
+	ta = pager.applyOrder(ta, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		ta = ta.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		ta = ta.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := ta.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *TechnologyAssociation
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *TechnologyAssociation {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *TechnologyAssociation {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*TechnologyAssociationEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &TechnologyAssociationEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// TechnologyAssociationOrderFieldType orders TechnologyAssociation by type.
+	TechnologyAssociationOrderFieldType = &TechnologyAssociationOrderField{
+		field: technologyassociation.FieldType,
+		toCursor: func(ta *TechnologyAssociation) Cursor {
+			return Cursor{
+				ID:    ta.ID,
+				Value: ta.Type,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f TechnologyAssociationOrderField) String() string {
+	var str string
+	switch f.field {
+	case technologyassociation.FieldType:
+		str = "TYPE"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f TechnologyAssociationOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *TechnologyAssociationOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("TechnologyAssociationOrderField %T must be a string", v)
+	}
+	switch str {
+	case "TYPE":
+		*f = *TechnologyAssociationOrderFieldType
+	default:
+		return fmt.Errorf("%s is not a valid TechnologyAssociationOrderField", str)
+	}
+	return nil
+}
+
+// TechnologyAssociationOrderField defines the ordering field of TechnologyAssociation.
+type TechnologyAssociationOrderField struct {
+	field    string
+	toCursor func(*TechnologyAssociation) Cursor
+}
+
+// TechnologyAssociationOrder defines the ordering of TechnologyAssociation.
+type TechnologyAssociationOrder struct {
+	Direction OrderDirection                   `json:"direction"`
+	Field     *TechnologyAssociationOrderField `json:"field"`
+}
+
+// DefaultTechnologyAssociationOrder is the default ordering of TechnologyAssociation.
+var DefaultTechnologyAssociationOrder = &TechnologyAssociationOrder{
+	Direction: OrderDirectionAsc,
+	Field: &TechnologyAssociationOrderField{
+		field: technologyassociation.FieldID,
+		toCursor: func(ta *TechnologyAssociation) Cursor {
+			return Cursor{ID: ta.ID}
+		},
+	},
+}
+
+// ToEdge converts TechnologyAssociation into TechnologyAssociationEdge.
+func (ta *TechnologyAssociation) ToEdge(order *TechnologyAssociationOrder) *TechnologyAssociationEdge {
+	if order == nil {
+		order = DefaultTechnologyAssociationOrder
+	}
+	return &TechnologyAssociationEdge{
+		Node:   ta,
+		Cursor: order.Field.toCursor(ta),
 	}
 }
 
