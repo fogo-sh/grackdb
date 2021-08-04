@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -11,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/predicate"
@@ -31,6 +33,7 @@ type RepositoryQuery struct {
 	withProject            *ProjectQuery
 	withGithubAccount      *GithubAccountQuery
 	withGithubOrganization *GithubOrganizationQuery
+	withDiscordBots        *DiscordBotQuery
 	withFKs                bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -127,6 +130,28 @@ func (rq *RepositoryQuery) QueryGithubOrganization() *GithubOrganizationQuery {
 			sqlgraph.From(repository.Table, repository.FieldID, selector),
 			sqlgraph.To(githuborganization.Table, githuborganization.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, repository.GithubOrganizationTable, repository.GithubOrganizationColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDiscordBots chains the current query on the "discord_bots" edge.
+func (rq *RepositoryQuery) QueryDiscordBots() *DiscordBotQuery {
+	query := &DiscordBotQuery{config: rq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repository.Table, repository.FieldID, selector),
+			sqlgraph.To(discordbot.Table, discordbot.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, repository.DiscordBotsTable, repository.DiscordBotsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -318,6 +343,7 @@ func (rq *RepositoryQuery) Clone() *RepositoryQuery {
 		withProject:            rq.withProject.Clone(),
 		withGithubAccount:      rq.withGithubAccount.Clone(),
 		withGithubOrganization: rq.withGithubOrganization.Clone(),
+		withDiscordBots:        rq.withDiscordBots.Clone(),
 		// clone intermediate query.
 		sql:  rq.sql.Clone(),
 		path: rq.path,
@@ -354,6 +380,17 @@ func (rq *RepositoryQuery) WithGithubOrganization(opts ...func(*GithubOrganizati
 		opt(query)
 	}
 	rq.withGithubOrganization = query
+	return rq
+}
+
+// WithDiscordBots tells the query-builder to eager-load the nodes that are connected to
+// the "discord_bots" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RepositoryQuery) WithDiscordBots(opts ...func(*DiscordBotQuery)) *RepositoryQuery {
+	query := &DiscordBotQuery{config: rq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withDiscordBots = query
 	return rq
 }
 
@@ -429,10 +466,11 @@ func (rq *RepositoryQuery) sqlAll(ctx context.Context) ([]*Repository, error) {
 		nodes       = []*Repository{}
 		withFKs     = rq.withFKs
 		_spec       = rq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			rq.withProject != nil,
 			rq.withGithubAccount != nil,
 			rq.withGithubOrganization != nil,
+			rq.withDiscordBots != nil,
 		}
 	)
 	if rq.withProject != nil || rq.withGithubAccount != nil || rq.withGithubOrganization != nil {
@@ -545,6 +583,35 @@ func (rq *RepositoryQuery) sqlAll(ctx context.Context) ([]*Repository, error) {
 			for i := range nodes {
 				nodes[i].Edges.GithubOrganization = n
 			}
+		}
+	}
+
+	if query := rq.withDiscordBots; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Repository)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.DiscordBots = []*DiscordBot{}
+		}
+		query.withFKs = true
+		query.Where(predicate.DiscordBot(func(s *sql.Selector) {
+			s.Where(sql.InValues(repository.DiscordBotsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.repository_discord_bots
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "repository_discord_bots" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "repository_discord_bots" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.DiscordBots = append(node.Edges.DiscordBots, n)
 		}
 	}
 

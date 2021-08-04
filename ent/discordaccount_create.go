@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -44,9 +45,36 @@ func (dac *DiscordAccountCreate) SetOwnerID(id int) *DiscordAccountCreate {
 	return dac
 }
 
+// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
+func (dac *DiscordAccountCreate) SetNillableOwnerID(id *int) *DiscordAccountCreate {
+	if id != nil {
+		dac = dac.SetOwnerID(*id)
+	}
+	return dac
+}
+
 // SetOwner sets the "owner" edge to the User entity.
 func (dac *DiscordAccountCreate) SetOwner(u *User) *DiscordAccountCreate {
 	return dac.SetOwnerID(u.ID)
+}
+
+// SetBotID sets the "bot" edge to the DiscordBot entity by ID.
+func (dac *DiscordAccountCreate) SetBotID(id int) *DiscordAccountCreate {
+	dac.mutation.SetBotID(id)
+	return dac
+}
+
+// SetNillableBotID sets the "bot" edge to the DiscordBot entity by ID if the given value is not nil.
+func (dac *DiscordAccountCreate) SetNillableBotID(id *int) *DiscordAccountCreate {
+	if id != nil {
+		dac = dac.SetBotID(*id)
+	}
+	return dac
+}
+
+// SetBot sets the "bot" edge to the DiscordBot entity.
+func (dac *DiscordAccountCreate) SetBot(d *DiscordBot) *DiscordAccountCreate {
+	return dac.SetBotID(d.ID)
 }
 
 // Mutation returns the DiscordAccountMutation object of the builder.
@@ -122,9 +150,6 @@ func (dac *DiscordAccountCreate) check() error {
 			return &ValidationError{Name: "discriminator", err: fmt.Errorf("ent: validator failed for field \"discriminator\": %w", err)}
 		}
 	}
-	if _, ok := dac.mutation.OwnerID(); !ok {
-		return &ValidationError{Name: "owner", err: errors.New("ent: missing required edge \"owner\"")}
-	}
 	return nil
 }
 
@@ -194,6 +219,26 @@ func (dac *DiscordAccountCreate) createSpec() (*DiscordAccount, *sqlgraph.Create
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.user_discord_accounts = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dac.mutation.BotIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   discordaccount.BotTable,
+			Columns: []string{discordaccount.BotColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.discord_bot_account = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

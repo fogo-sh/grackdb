@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
@@ -535,6 +536,233 @@ func (da *DiscordAccount) ToEdge(order *DiscordAccountOrder) *DiscordAccountEdge
 	return &DiscordAccountEdge{
 		Node:   da,
 		Cursor: order.Field.toCursor(da),
+	}
+}
+
+// DiscordBotEdge is the edge representation of DiscordBot.
+type DiscordBotEdge struct {
+	Node   *DiscordBot `json:"node"`
+	Cursor Cursor      `json:"cursor"`
+}
+
+// DiscordBotConnection is the connection containing edges to DiscordBot.
+type DiscordBotConnection struct {
+	Edges      []*DiscordBotEdge `json:"edges"`
+	PageInfo   PageInfo          `json:"pageInfo"`
+	TotalCount int               `json:"totalCount"`
+}
+
+// DiscordBotPaginateOption enables pagination customization.
+type DiscordBotPaginateOption func(*discordBotPager) error
+
+// WithDiscordBotOrder configures pagination ordering.
+func WithDiscordBotOrder(order *DiscordBotOrder) DiscordBotPaginateOption {
+	if order == nil {
+		order = DefaultDiscordBotOrder
+	}
+	o := *order
+	return func(pager *discordBotPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultDiscordBotOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithDiscordBotFilter configures pagination filter.
+func WithDiscordBotFilter(filter func(*DiscordBotQuery) (*DiscordBotQuery, error)) DiscordBotPaginateOption {
+	return func(pager *discordBotPager) error {
+		if filter == nil {
+			return errors.New("DiscordBotQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type discordBotPager struct {
+	order  *DiscordBotOrder
+	filter func(*DiscordBotQuery) (*DiscordBotQuery, error)
+}
+
+func newDiscordBotPager(opts []DiscordBotPaginateOption) (*discordBotPager, error) {
+	pager := &discordBotPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultDiscordBotOrder
+	}
+	return pager, nil
+}
+
+func (p *discordBotPager) applyFilter(query *DiscordBotQuery) (*DiscordBotQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *discordBotPager) toCursor(db *DiscordBot) Cursor {
+	return p.order.Field.toCursor(db)
+}
+
+func (p *discordBotPager) applyCursors(query *DiscordBotQuery, after, before *Cursor) *DiscordBotQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultDiscordBotOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *discordBotPager) applyOrder(query *DiscordBotQuery, reverse bool) *DiscordBotQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultDiscordBotOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultDiscordBotOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to DiscordBot.
+func (db *DiscordBotQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...DiscordBotPaginateOption,
+) (*DiscordBotConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newDiscordBotPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if db, err = pager.applyFilter(db); err != nil {
+		return nil, err
+	}
+
+	conn := &DiscordBotConnection{Edges: []*DiscordBotEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := db.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := db.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	db = pager.applyCursors(db, after, before)
+	db = pager.applyOrder(db, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		db = db.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		db = db.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := db.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *DiscordBot
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *DiscordBot {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *DiscordBot {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*DiscordBotEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &DiscordBotEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// DiscordBotOrderField defines the ordering field of DiscordBot.
+type DiscordBotOrderField struct {
+	field    string
+	toCursor func(*DiscordBot) Cursor
+}
+
+// DiscordBotOrder defines the ordering of DiscordBot.
+type DiscordBotOrder struct {
+	Direction OrderDirection        `json:"direction"`
+	Field     *DiscordBotOrderField `json:"field"`
+}
+
+// DefaultDiscordBotOrder is the default ordering of DiscordBot.
+var DefaultDiscordBotOrder = &DiscordBotOrder{
+	Direction: OrderDirectionAsc,
+	Field: &DiscordBotOrderField{
+		field: discordbot.FieldID,
+		toCursor: func(db *DiscordBot) Cursor {
+			return Cursor{ID: db.ID}
+		},
+	},
+}
+
+// ToEdge converts DiscordBot into DiscordBotEdge.
+func (db *DiscordBot) ToEdge(order *DiscordBotOrder) *DiscordBotEdge {
+	if order == nil {
+		order = DefaultDiscordBotOrder
+	}
+	return &DiscordBotEdge{
+		Node:   db,
+		Cursor: order.Field.toCursor(db),
 	}
 }
 

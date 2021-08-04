@@ -32,10 +32,12 @@ func (ProjectContributor) Edges() []ent.Edge {
 		edge.From("project", Project.Type).
 			Ref("contributors").
 			Annotations(entgql.Bind()).
+			Required().
 			Unique(),
 		edge.From("user", User.Type).
 			Ref("project_contributions").
 			Annotations(entgql.Bind()).
+			Required().
 			Unique(),
 	}
 }

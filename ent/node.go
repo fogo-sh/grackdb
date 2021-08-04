@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/dialect/sql/schema"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
@@ -59,7 +60,7 @@ func (da *DiscordAccount) Node(ctx context.Context) (node *Node, err error) {
 		ID:     da.ID,
 		Type:   "DiscordAccount",
 		Fields: make([]*Field, 3),
-		Edges:  make([]*Edge, 1),
+		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(da.DiscordID); err != nil {
@@ -92,6 +93,56 @@ func (da *DiscordAccount) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[0].IDs, err = da.QueryOwner().
 		Select(user.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "DiscordBot",
+		Name: "bot",
+	}
+	node.Edges[1].IDs, err = da.QueryBot().
+		Select(discordbot.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (db *DiscordBot) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     db.ID,
+		Type:   "DiscordBot",
+		Fields: make([]*Field, 0),
+		Edges:  make([]*Edge, 3),
+	}
+	node.Edges[0] = &Edge{
+		Type: "DiscordAccount",
+		Name: "account",
+	}
+	node.Edges[0].IDs, err = db.QueryAccount().
+		Select(discordaccount.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Project",
+		Name: "project",
+	}
+	node.Edges[1].IDs, err = db.QueryProject().
+		Select(project.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "Repository",
+		Name: "repository",
+	}
+	node.Edges[2].IDs, err = db.QueryRepository().
+		Select(repository.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -239,7 +290,7 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		ID:     pr.ID,
 		Type:   "Project",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 4),
+		Edges:  make([]*Edge, 5),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(pr.Name); err != nil {
@@ -310,6 +361,16 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[3].IDs, err = pr.QueryRepositories().
 		Select(repository.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[4] = &Edge{
+		Type: "DiscordBot",
+		Name: "discord_bots",
+	}
+	node.Edges[4].IDs, err = pr.QueryDiscordBots().
+		Select(discordbot.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -400,7 +461,7 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 		ID:     r.ID,
 		Type:   "Repository",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(r.Name); err != nil {
@@ -445,6 +506,16 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[2].IDs, err = r.QueryGithubOrganization().
 		Select(githuborganization.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
+		Type: "DiscordBot",
+		Name: "discord_bots",
+	}
+	node.Edges[3].IDs, err = r.QueryDiscordBots().
+		Select(discordbot.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -580,6 +651,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 		n, err := c.DiscordAccount.Query().
 			Where(discordaccount.ID(id)).
 			CollectFields(ctx, "DiscordAccount").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case discordbot.Table:
+		n, err := c.DiscordBot.Query().
+			Where(discordbot.ID(id)).
+			CollectFields(ctx, "DiscordBot").
 			Only(ctx)
 		if err != nil {
 			return nil, err
@@ -734,6 +814,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.DiscordAccount.Query().
 			Where(discordaccount.IDIn(ids...)).
 			CollectFields(ctx, "DiscordAccount").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case discordbot.Table:
+		nodes, err := c.DiscordBot.Query().
+			Where(discordbot.IDIn(ids...)).
+			CollectFields(ctx, "DiscordBot").
 			All(ctx)
 		if err != nil {
 			return nil, err

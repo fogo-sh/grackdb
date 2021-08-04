@@ -43,7 +43,10 @@ func (DiscordAccount) Edges() []ent.Edge {
 		edge.From("owner", User.Type).
 			Ref("discord_accounts").
 			Annotations(entgql.Bind()).
-			Required().
+			Unique(),
+		edge.From("bot", DiscordBot.Type).
+			Ref("account").
+			Annotations(entgql.Bind()).
 			Unique(),
 	}
 }

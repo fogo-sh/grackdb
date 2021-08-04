@@ -188,6 +188,30 @@ func (f DiscordAccountMutationRuleFunc) EvalMutation(ctx context.Context, m ent.
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DiscordAccountMutation", m)
 }
 
+// The DiscordBotQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type DiscordBotQueryRuleFunc func(context.Context, *ent.DiscordBotQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f DiscordBotQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DiscordBotQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.DiscordBotQuery", q)
+}
+
+// The DiscordBotMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type DiscordBotMutationRuleFunc func(context.Context, *ent.DiscordBotMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f DiscordBotMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.DiscordBotMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DiscordBotMutation", m)
+}
+
 // The GithubAccountQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type GithubAccountQueryRuleFunc func(context.Context, *ent.GithubAccountQuery) error

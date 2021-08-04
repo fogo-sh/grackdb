@@ -21,6 +21,8 @@ const (
 	EdgeGithubAccount = "github_account"
 	// EdgeGithubOrganization holds the string denoting the github_organization edge name in mutations.
 	EdgeGithubOrganization = "github_organization"
+	// EdgeDiscordBots holds the string denoting the discord_bots edge name in mutations.
+	EdgeDiscordBots = "discord_bots"
 	// Table holds the table name of the repository in the database.
 	Table = "repositories"
 	// ProjectTable is the table the holds the project relation/edge.
@@ -44,6 +46,13 @@ const (
 	GithubOrganizationInverseTable = "github_organizations"
 	// GithubOrganizationColumn is the table column denoting the github_organization relation/edge.
 	GithubOrganizationColumn = "github_organization_repositories"
+	// DiscordBotsTable is the table the holds the discord_bots relation/edge.
+	DiscordBotsTable = "discord_bots"
+	// DiscordBotsInverseTable is the table name for the DiscordBot entity.
+	// It exists in this package in order to avoid circular dependency with the "discordbot" package.
+	DiscordBotsInverseTable = "discord_bots"
+	// DiscordBotsColumn is the table column denoting the discord_bots relation/edge.
+	DiscordBotsColumn = "repository_discord_bots"
 )
 
 // Columns holds all SQL columns for repository fields.

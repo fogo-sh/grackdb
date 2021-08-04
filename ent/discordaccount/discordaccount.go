@@ -19,6 +19,8 @@ const (
 	FieldDiscriminator = "discriminator"
 	// EdgeOwner holds the string denoting the owner edge name in mutations.
 	EdgeOwner = "owner"
+	// EdgeBot holds the string denoting the bot edge name in mutations.
+	EdgeBot = "bot"
 	// Table holds the table name of the discordaccount in the database.
 	Table = "discord_accounts"
 	// OwnerTable is the table the holds the owner relation/edge.
@@ -28,6 +30,13 @@ const (
 	OwnerInverseTable = "users"
 	// OwnerColumn is the table column denoting the owner relation/edge.
 	OwnerColumn = "user_discord_accounts"
+	// BotTable is the table the holds the bot relation/edge.
+	BotTable = "discord_accounts"
+	// BotInverseTable is the table name for the DiscordBot entity.
+	// It exists in this package in order to avoid circular dependency with the "discordbot" package.
+	BotInverseTable = "discord_bots"
+	// BotColumn is the table column denoting the bot relation/edge.
+	BotColumn = "discord_bot_account"
 )
 
 // Columns holds all SQL columns for discordaccount fields.
@@ -41,6 +50,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "discord_accounts"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"discord_bot_account",
 	"user_discord_accounts",
 }
 

@@ -26,6 +26,7 @@ type TestItemType string
 
 const (
 	DiscordAccount           TestItemType = "DiscordAccount"
+	DiscordBot               TestItemType = "DiscordBot"
 	GithubAccount            TestItemType = "GithubAccount"
 	GithubOrganization       TestItemType = "GithubOrganization"
 	GithubOrganizationMember TestItemType = "GithubOrganizationMember"
@@ -122,6 +123,16 @@ func main() {
 			_, err = client.DiscordAccount.Create().SetInput(*input).Save(ctx)
 			if err != nil {
 				log.Fatalf("failed creating DiscordAccount: %v", err)
+			}
+		case DiscordBot:
+			input := new(ent.CreateDiscordBotInput)
+			err = Decode(item.Params, input)
+			if err != nil {
+				log.Fatalf("failed decoding DiscordBot: %v", err)
+			}
+			_, err = client.DiscordBot.Create().SetInput(*input).Save(ctx)
+			if err != nil {
+				log.Fatalf("failed creating DiscordBot: %v", err)
 			}
 		case GithubAccount:
 			input := new(ent.CreateGithubAccountInput)

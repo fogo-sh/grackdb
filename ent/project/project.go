@@ -27,6 +27,8 @@ const (
 	EdgeChildProjects = "child_projects"
 	// EdgeRepositories holds the string denoting the repositories edge name in mutations.
 	EdgeRepositories = "repositories"
+	// EdgeDiscordBots holds the string denoting the discord_bots edge name in mutations.
+	EdgeDiscordBots = "discord_bots"
 	// Table holds the table name of the project in the database.
 	Table = "projects"
 	// ContributorsTable is the table the holds the contributors relation/edge.
@@ -57,6 +59,13 @@ const (
 	RepositoriesInverseTable = "repositories"
 	// RepositoriesColumn is the table column denoting the repositories relation/edge.
 	RepositoriesColumn = "project_repositories"
+	// DiscordBotsTable is the table the holds the discord_bots relation/edge.
+	DiscordBotsTable = "discord_bots"
+	// DiscordBotsInverseTable is the table name for the DiscordBot entity.
+	// It exists in this package in order to avoid circular dependency with the "discordbot" package.
+	DiscordBotsInverseTable = "discord_bots"
+	// DiscordBotsColumn is the table column denoting the discord_bots relation/edge.
+	DiscordBotsColumn = "project_discord_bots"
 )
 
 // Columns holds all SQL columns for project fields.

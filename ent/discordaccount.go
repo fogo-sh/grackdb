@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -25,6 +26,7 @@ type DiscordAccount struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DiscordAccountQuery when eager-loading is set.
 	Edges                 DiscordAccountEdges `json:"edges"`
+	discord_bot_account   *int
 	user_discord_accounts *int
 }
 
@@ -32,9 +34,11 @@ type DiscordAccount struct {
 type DiscordAccountEdges struct {
 	// Owner holds the value of the owner edge.
 	Owner *User `json:"owner,omitempty"`
+	// Bot holds the value of the bot edge.
+	Bot *DiscordBot `json:"bot,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
@@ -51,6 +55,20 @@ func (e DiscordAccountEdges) OwnerOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "owner"}
 }
 
+// BotOrErr returns the Bot value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DiscordAccountEdges) BotOrErr() (*DiscordBot, error) {
+	if e.loadedTypes[1] {
+		if e.Bot == nil {
+			// The edge bot was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: discordbot.Label}
+		}
+		return e.Bot, nil
+	}
+	return nil, &NotLoadedError{edge: "bot"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*DiscordAccount) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -60,7 +78,9 @@ func (*DiscordAccount) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case discordaccount.FieldDiscordID, discordaccount.FieldUsername, discordaccount.FieldDiscriminator:
 			values[i] = new(sql.NullString)
-		case discordaccount.ForeignKeys[0]: // user_discord_accounts
+		case discordaccount.ForeignKeys[0]: // discord_bot_account
+			values[i] = new(sql.NullInt64)
+		case discordaccount.ForeignKeys[1]: // user_discord_accounts
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type DiscordAccount", columns[i])
@@ -103,6 +123,13 @@ func (da *DiscordAccount) assignValues(columns []string, values []interface{}) e
 			}
 		case discordaccount.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field discord_bot_account", value)
+			} else if value.Valid {
+				da.discord_bot_account = new(int)
+				*da.discord_bot_account = int(value.Int64)
+			}
+		case discordaccount.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_discord_accounts", value)
 			} else if value.Valid {
 				da.user_discord_accounts = new(int)
@@ -116,6 +143,11 @@ func (da *DiscordAccount) assignValues(columns []string, values []interface{}) e
 // QueryOwner queries the "owner" edge of the DiscordAccount entity.
 func (da *DiscordAccount) QueryOwner() *UserQuery {
 	return (&DiscordAccountClient{config: da.config}).QueryOwner(da)
+}
+
+// QueryBot queries the "bot" edge of the DiscordAccount entity.
+func (da *DiscordAccount) QueryBot() *DiscordBotQuery {
+	return (&DiscordAccountClient{config: da.config}).QueryBot(da)
 }
 
 // Update returns a builder for updating this DiscordAccount.

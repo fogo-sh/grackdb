@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
@@ -82,6 +83,10 @@ type DiscordAccountWhereInput struct {
 	// "owner" edge predicates.
 	HasOwner     *bool             `json:"hasOwner,omitempty"`
 	HasOwnerWith []*UserWhereInput `json:"hasOwnerWith,omitempty"`
+
+	// "bot" edge predicates.
+	HasBot     *bool                   `json:"hasBot,omitempty"`
+	HasBotWith []*DiscordBotWhereInput `json:"hasBotWith,omitempty"`
 }
 
 // Filter applies the DiscordAccountWhereInput filter on the DiscordAccountQuery builder.
@@ -303,6 +308,24 @@ func (i *DiscordAccountWhereInput) P() (predicate.DiscordAccount, error) {
 		}
 		predicates = append(predicates, discordaccount.HasOwnerWith(with...))
 	}
+	if i.HasBot != nil {
+		p := discordaccount.HasBot()
+		if !*i.HasBot {
+			p = discordaccount.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasBotWith) > 0 {
+		with := make([]predicate.DiscordBot, 0, len(i.HasBotWith))
+		for _, w := range i.HasBotWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, discordaccount.HasBotWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate DiscordAccountWhereInput")
@@ -310,6 +333,183 @@ func (i *DiscordAccountWhereInput) P() (predicate.DiscordAccount, error) {
 		return predicates[0], nil
 	default:
 		return discordaccount.And(predicates...), nil
+	}
+}
+
+// DiscordBotWhereInput represents a where input for filtering DiscordBot queries.
+type DiscordBotWhereInput struct {
+	Not *DiscordBotWhereInput   `json:"not,omitempty"`
+	Or  []*DiscordBotWhereInput `json:"or,omitempty"`
+	And []*DiscordBotWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *int  `json:"id,omitempty"`
+	IDNEQ   *int  `json:"idNEQ,omitempty"`
+	IDIn    []int `json:"idIn,omitempty"`
+	IDNotIn []int `json:"idNotIn,omitempty"`
+	IDGT    *int  `json:"idGT,omitempty"`
+	IDGTE   *int  `json:"idGTE,omitempty"`
+	IDLT    *int  `json:"idLT,omitempty"`
+	IDLTE   *int  `json:"idLTE,omitempty"`
+
+	// "account" edge predicates.
+	HasAccount     *bool                       `json:"hasAccount,omitempty"`
+	HasAccountWith []*DiscordAccountWhereInput `json:"hasAccountWith,omitempty"`
+
+	// "project" edge predicates.
+	HasProject     *bool                `json:"hasProject,omitempty"`
+	HasProjectWith []*ProjectWhereInput `json:"hasProjectWith,omitempty"`
+
+	// "repository" edge predicates.
+	HasRepository     *bool                   `json:"hasRepository,omitempty"`
+	HasRepositoryWith []*RepositoryWhereInput `json:"hasRepositoryWith,omitempty"`
+}
+
+// Filter applies the DiscordBotWhereInput filter on the DiscordBotQuery builder.
+func (i *DiscordBotWhereInput) Filter(q *DiscordBotQuery) (*DiscordBotQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// P returns a predicate for filtering discordbots.
+// An error is returned if the input is empty or invalid.
+func (i *DiscordBotWhereInput) P() (predicate.DiscordBot, error) {
+	var predicates []predicate.DiscordBot
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, discordbot.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.DiscordBot, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, discordbot.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.DiscordBot, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, discordbot.And(and...))
+	}
+	if i.ID != nil {
+		predicates = append(predicates, discordbot.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, discordbot.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, discordbot.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, discordbot.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, discordbot.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, discordbot.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, discordbot.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, discordbot.IDLTE(*i.IDLTE))
+	}
+
+	if i.HasAccount != nil {
+		p := discordbot.HasAccount()
+		if !*i.HasAccount {
+			p = discordbot.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasAccountWith) > 0 {
+		with := make([]predicate.DiscordAccount, 0, len(i.HasAccountWith))
+		for _, w := range i.HasAccountWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, discordbot.HasAccountWith(with...))
+	}
+	if i.HasProject != nil {
+		p := discordbot.HasProject()
+		if !*i.HasProject {
+			p = discordbot.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasProjectWith) > 0 {
+		with := make([]predicate.Project, 0, len(i.HasProjectWith))
+		for _, w := range i.HasProjectWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, discordbot.HasProjectWith(with...))
+	}
+	if i.HasRepository != nil {
+		p := discordbot.HasRepository()
+		if !*i.HasRepository {
+			p = discordbot.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasRepositoryWith) > 0 {
+		with := make([]predicate.Repository, 0, len(i.HasRepositoryWith))
+		for _, w := range i.HasRepositoryWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, discordbot.HasRepositoryWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate DiscordBotWhereInput")
+	case 1:
+		return predicates[0], nil
+	default:
+		return discordbot.And(predicates...), nil
 	}
 }
 
@@ -1073,6 +1273,10 @@ type ProjectWhereInput struct {
 	// "repositories" edge predicates.
 	HasRepositories     *bool                   `json:"hasRepositories,omitempty"`
 	HasRepositoriesWith []*RepositoryWhereInput `json:"hasRepositoriesWith,omitempty"`
+
+	// "discord_bots" edge predicates.
+	HasDiscordBots     *bool                   `json:"hasDiscordBots,omitempty"`
+	HasDiscordBotsWith []*DiscordBotWhereInput `json:"hasDiscordBotsWith,omitempty"`
 }
 
 // Filter applies the ProjectWhereInput filter on the ProjectQuery builder.
@@ -1368,6 +1572,24 @@ func (i *ProjectWhereInput) P() (predicate.Project, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, project.HasRepositoriesWith(with...))
+	}
+	if i.HasDiscordBots != nil {
+		p := project.HasDiscordBots()
+		if !*i.HasDiscordBots {
+			p = project.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDiscordBotsWith) > 0 {
+		with := make([]predicate.DiscordBot, 0, len(i.HasDiscordBotsWith))
+		for _, w := range i.HasDiscordBotsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, project.HasDiscordBotsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -1784,6 +2006,10 @@ type RepositoryWhereInput struct {
 	// "github_organization" edge predicates.
 	HasGithubOrganization     *bool                           `json:"hasGithubOrganization,omitempty"`
 	HasGithubOrganizationWith []*GithubOrganizationWhereInput `json:"hasGithubOrganizationWith,omitempty"`
+
+	// "discord_bots" edge predicates.
+	HasDiscordBots     *bool                   `json:"hasDiscordBots,omitempty"`
+	HasDiscordBotsWith []*DiscordBotWhereInput `json:"hasDiscordBotsWith,omitempty"`
 }
 
 // Filter applies the RepositoryWhereInput filter on the RepositoryQuery builder.
@@ -2007,6 +2233,24 @@ func (i *RepositoryWhereInput) P() (predicate.Repository, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, repository.HasGithubOrganizationWith(with...))
+	}
+	if i.HasDiscordBots != nil {
+		p := repository.HasDiscordBots()
+		if !*i.HasDiscordBots {
+			p = repository.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDiscordBotsWith) > 0 {
+		with := make([]predicate.DiscordBot, 0, len(i.HasDiscordBotsWith))
+		for _, w := range i.HasDiscordBotsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, repository.HasDiscordBotsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

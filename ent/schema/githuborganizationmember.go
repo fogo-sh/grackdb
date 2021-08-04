@@ -35,10 +35,12 @@ func (GithubOrganizationMember) Edges() []ent.Edge {
 		edge.From("organization", GithubOrganization.Type).
 			Ref("members").
 			Annotations(entgql.Bind()).
+			Required().
 			Unique(),
 		edge.From("account", GithubAccount.Type).
 			Ref("organization_memberships").
 			Annotations(entgql.Bind()).
+			Required().
 			Unique(),
 	}
 }

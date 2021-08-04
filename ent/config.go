@@ -25,6 +25,7 @@ type config struct {
 // hooks per client, for fast access.
 type hooks struct {
 	DiscordAccount           []ent.Hook
+	DiscordBot               []ent.Hook
 	GithubAccount            []ent.Hook
 	GithubOrganization       []ent.Hook
 	GithubOrganizationMember []ent.Hook

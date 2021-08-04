@@ -34,10 +34,12 @@ func (ProjectAssociation) Edges() []ent.Edge {
 		edge.From("parent", Project.Type).
 			Ref("child_projects").
 			Annotations(entgql.Bind()).
+			Required().
 			Unique(),
 		edge.From("child", Project.Type).
 			Ref("parent_projects").
 			Annotations(entgql.Bind()).
+			Required().
 			Unique(),
 	}
 }

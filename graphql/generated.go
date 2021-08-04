@@ -54,6 +54,7 @@ type ComplexityRoot struct {
 	}
 
 	DiscordAccount struct {
+		Bot           func(childComplexity int) int
 		DiscordID     func(childComplexity int) int
 		Discriminator func(childComplexity int) int
 		ID            func(childComplexity int) int
@@ -68,6 +69,24 @@ type ComplexityRoot struct {
 	}
 
 	DiscordAccountEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	DiscordBot struct {
+		Account    func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Project    func(childComplexity int) int
+		Repository func(childComplexity int) int
+	}
+
+	DiscordBotConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	DiscordBotEdge struct {
 		Cursor func(childComplexity int) int
 		Node   func(childComplexity int) int
 	}
@@ -130,6 +149,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateDiscordAccount           func(childComplexity int, input ent.CreateDiscordAccountInput) int
+		CreateDiscordBot               func(childComplexity int, input ent.CreateDiscordBotInput) int
 		CreateGithubAccount            func(childComplexity int, input ent.CreateGithubAccountInput) int
 		CreateGithubOrganization       func(childComplexity int, input ent.CreateGithubOrganizationInput) int
 		CreateGithubOrganizationMember func(childComplexity int, input ent.CreateGithubOrganizationMemberInput) int
@@ -151,6 +171,7 @@ type ComplexityRoot struct {
 		ChildProjects  func(childComplexity int) int
 		Contributors   func(childComplexity int) int
 		Description    func(childComplexity int) int
+		DiscordBots    func(childComplexity int) int
 		EndDate        func(childComplexity int) int
 		ID             func(childComplexity int) int
 		Name           func(childComplexity int) int
@@ -210,6 +231,7 @@ type ComplexityRoot struct {
 		AvailableAuthProviders    func(childComplexity int) int
 		CurrentUser               func(childComplexity int) int
 		DiscordAccounts           func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.DiscordAccountOrder, where *ent.DiscordAccountWhereInput) int
+		DiscordBots               func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.DiscordBotWhereInput) int
 		GithubAccounts            func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubAccountOrder, where *ent.GithubAccountWhereInput) int
 		GithubOrganizationMembers func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationMemberOrder, where *ent.GithubOrganizationMemberWhereInput) int
 		GithubOrganizations       func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationOrder, where *ent.GithubOrganizationWhereInput) int
@@ -224,6 +246,7 @@ type ComplexityRoot struct {
 
 	Repository struct {
 		Description        func(childComplexity int) int
+		DiscordBots        func(childComplexity int) int
 		GithubAccount      func(childComplexity int) int
 		GithubOrganization func(childComplexity int) int
 		ID                 func(childComplexity int) int
@@ -266,6 +289,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error)
 	CreateDiscordAccount(ctx context.Context, input ent.CreateDiscordAccountInput) (*ent.DiscordAccount, error)
+	CreateDiscordBot(ctx context.Context, input ent.CreateDiscordBotInput) (*ent.DiscordBot, error)
 	CreateGithubAccount(ctx context.Context, input ent.CreateGithubAccountInput) (*ent.GithubAccount, error)
 	CreateGithubOrganization(ctx context.Context, input ent.CreateGithubOrganizationInput) (*ent.GithubOrganization, error)
 	CreateGithubOrganizationMember(ctx context.Context, input ent.CreateGithubOrganizationMemberInput) (*ent.GithubOrganizationMember, error)
@@ -279,6 +303,7 @@ type QueryResolver interface {
 	Nodes(ctx context.Context, ids []int) ([]ent.Noder, error)
 	Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error)
 	DiscordAccounts(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.DiscordAccountOrder, where *ent.DiscordAccountWhereInput) (*ent.DiscordAccountConnection, error)
+	DiscordBots(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.DiscordBotWhereInput) (*ent.DiscordBotConnection, error)
 	GithubAccounts(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubAccountOrder, where *ent.GithubAccountWhereInput) (*ent.GithubAccountConnection, error)
 	GithubOrganizationMembers(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationMemberOrder, where *ent.GithubOrganizationMemberWhereInput) (*ent.GithubOrganizationMemberConnection, error)
 	GithubOrganizations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationOrder, where *ent.GithubOrganizationWhereInput) (*ent.GithubOrganizationConnection, error)
@@ -318,6 +343,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AuthProvider.URL(childComplexity), true
+
+	case "DiscordAccount.bot":
+		if e.complexity.DiscordAccount.Bot == nil {
+			break
+		}
+
+		return e.complexity.DiscordAccount.Bot(childComplexity), true
 
 	case "DiscordAccount.discordId":
 		if e.complexity.DiscordAccount.DiscordID == nil {
@@ -388,6 +420,69 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DiscordAccountEdge.Node(childComplexity), true
+
+	case "DiscordBot.account":
+		if e.complexity.DiscordBot.Account == nil {
+			break
+		}
+
+		return e.complexity.DiscordBot.Account(childComplexity), true
+
+	case "DiscordBot.id":
+		if e.complexity.DiscordBot.ID == nil {
+			break
+		}
+
+		return e.complexity.DiscordBot.ID(childComplexity), true
+
+	case "DiscordBot.project":
+		if e.complexity.DiscordBot.Project == nil {
+			break
+		}
+
+		return e.complexity.DiscordBot.Project(childComplexity), true
+
+	case "DiscordBot.repository":
+		if e.complexity.DiscordBot.Repository == nil {
+			break
+		}
+
+		return e.complexity.DiscordBot.Repository(childComplexity), true
+
+	case "DiscordBotConnection.edges":
+		if e.complexity.DiscordBotConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.DiscordBotConnection.Edges(childComplexity), true
+
+	case "DiscordBotConnection.pageInfo":
+		if e.complexity.DiscordBotConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.DiscordBotConnection.PageInfo(childComplexity), true
+
+	case "DiscordBotConnection.totalCount":
+		if e.complexity.DiscordBotConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.DiscordBotConnection.TotalCount(childComplexity), true
+
+	case "DiscordBotEdge.cursor":
+		if e.complexity.DiscordBotEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.DiscordBotEdge.Cursor(childComplexity), true
+
+	case "DiscordBotEdge.node":
+		if e.complexity.DiscordBotEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.DiscordBotEdge.Node(childComplexity), true
 
 	case "GithubAccount.id":
 		if e.complexity.GithubAccount.ID == nil {
@@ -604,6 +699,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateDiscordAccount(childComplexity, args["input"].(ent.CreateDiscordAccountInput)), true
 
+	case "Mutation.createDiscordBot":
+		if e.complexity.Mutation.CreateDiscordBot == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createDiscordBot_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateDiscordBot(childComplexity, args["input"].(ent.CreateDiscordBotInput)), true
+
 	case "Mutation.createGithubAccount":
 		if e.complexity.Mutation.CreateGithubAccount == nil {
 			break
@@ -748,6 +855,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Project.Description(childComplexity), true
+
+	case "Project.discordBots":
+		if e.complexity.Project.DiscordBots == nil {
+			break
+		}
+
+		return e.complexity.Project.DiscordBots(childComplexity), true
 
 	case "Project.endDate":
 		if e.complexity.Project.EndDate == nil {
@@ -978,6 +1092,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.DiscordAccounts(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.DiscordAccountOrder), args["where"].(*ent.DiscordAccountWhereInput)), true
 
+	case "Query.discordBots":
+		if e.complexity.Query.DiscordBots == nil {
+			break
+		}
+
+		args, err := ec.field_Query_discordBots_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.DiscordBots(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["where"].(*ent.DiscordBotWhereInput)), true
+
 	case "Query.githubAccounts":
 		if e.complexity.Query.GithubAccounts == nil {
 			break
@@ -1104,6 +1230,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Repository.Description(childComplexity), true
+
+	case "Repository.discordBots":
+		if e.complexity.Repository.DiscordBots == nil {
+			break
+		}
+
+		return e.complexity.Repository.DiscordBots(childComplexity), true
 
 	case "Repository.githubAccount":
 		if e.complexity.Repository.GithubAccount == nil {
@@ -1396,7 +1529,26 @@ type DiscordAccount implements Node {
     discordId: String!
     username: String!
     discriminator: String!
-    owner: User!
+    owner: User
+    bot: DiscordBot
+}
+
+type DiscordBotConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [DiscordBotEdge]
+}
+
+type DiscordBotEdge {
+    node: DiscordBot
+    cursor: Cursor!
+}
+
+type DiscordBot implements Node {
+    id: ID!
+    account: DiscordAccount!
+    project: Project!
+    repository: Repository
 }
 
 type GithubAccountConnection {
@@ -1526,6 +1678,7 @@ type Project implements Node {
     parentProjects: [ProjectAssociation!]
     childProjects: [ProjectAssociation!]
     repositories: [Repository!]
+    discordBots: [DiscordBot!]
 }
 
 enum ProjectContributorRole {
@@ -1622,6 +1775,7 @@ type Repository implements Node {
     project: Project!
     githubAccount: GithubAccount
     githubOrganization: GithubOrganization
+    discordBots: [DiscordBot!]
 }
 
 type Query {
@@ -1644,6 +1798,13 @@ type Query {
         orderBy: DiscordAccountOrder
         where: DiscordAccountWhereInput
     ): DiscordAccountConnection
+    discordBots(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        where: DiscordBotWhereInput
+    ): DiscordBotConnection
     githubAccounts(
         after: Cursor
         first: Int
@@ -1716,7 +1877,14 @@ input CreateDiscordAccountInput {
     discordId: String!
     username: String!
     discriminator: String!
-    owner: Int!
+    owner: Int
+    bot: Int
+}
+
+input CreateDiscordBotInput {
+    account: Int!
+    project: Int!
+    repository: Int
 }
 
 input CreateGithubAccountInput {
@@ -1765,6 +1933,7 @@ input CreateRepositoryInput {
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
+    createDiscordBot(input: CreateDiscordBotInput!): DiscordBot!
     createGithubAccount(input: CreateGithubAccountInput!): GithubAccount!
     createGithubOrganization(input: CreateGithubOrganizationInput!): GithubOrganization!
     createGithubOrganizationMember(input: CreateGithubOrganizationMemberInput!): GithubOrganizationMember!
@@ -1905,6 +2074,10 @@ input DiscordAccountWhereInput {
   """owner edge predicates"""
   hasOwner: Boolean
   hasOwnerWith: [UserWhereInput!]
+  
+  """bot edge predicates"""
+  hasBot: Boolean
+  hasBotWith: [DiscordBotWhereInput!]
 }
 
 """
@@ -2136,6 +2309,10 @@ input ProjectWhereInput {
   """repositories edge predicates"""
   hasRepositories: Boolean
   hasRepositoriesWith: [RepositoryWhereInput!]
+  
+  """discord_bots edge predicates"""
+  hasDiscordBots: Boolean
+  hasDiscordBotsWith: [DiscordBotWhereInput!]
 }
 
 """
@@ -2268,6 +2445,42 @@ input RepositoryWhereInput {
   """github_organization edge predicates"""
   hasGithubOrganization: Boolean
   hasGithubOrganizationWith: [GithubOrganizationWhereInput!]
+  
+  """discord_bots edge predicates"""
+  hasDiscordBots: Boolean
+  hasDiscordBotsWith: [DiscordBotWhereInput!]
+}
+
+"""
+DiscordBotWhereInput is used for filtering DiscordBot objects.
+Input was generated by ent.
+"""
+input DiscordBotWhereInput {
+  not: DiscordBotWhereInput
+  and: [DiscordBotWhereInput!]
+  or: [DiscordBotWhereInput!]
+  
+  """id field predicates"""
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
+  
+  """account edge predicates"""
+  hasAccount: Boolean
+  hasAccountWith: [DiscordAccountWhereInput!]
+  
+  """project edge predicates"""
+  hasProject: Boolean
+  hasProjectWith: [ProjectWhereInput!]
+  
+  """repository edge predicates"""
+  hasRepository: Boolean
+  hasRepositoryWith: [RepositoryWhereInput!]
 }
 `, BuiltIn: false},
 }
@@ -2284,6 +2497,21 @@ func (ec *executionContext) field_Mutation_createDiscordAccount_args(ctx context
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateDiscordAccountInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateDiscordAccountInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createDiscordBot_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateDiscordBotInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateDiscordBotInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateDiscordBotInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2484,6 +2712,57 @@ func (ec *executionContext) field_Query_discordAccounts_args(ctx context.Context
 		}
 	}
 	args["where"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_discordBots_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.Cursor
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *ent.Cursor
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.DiscordBotWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg4, err = ec.unmarshalODiscordBotWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg4
 	return args, nil
 }
 
@@ -3270,14 +3549,43 @@ func (ec *executionContext) _DiscordAccount_owner(ctx context.Context, field gra
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DiscordAccount_bot(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordAccount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DiscordAccount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Bot(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DiscordBot)
+	fc.Result = res
+	return ec.marshalODiscordBot2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBot(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _DiscordAccountConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordAccountConnection) (ret graphql.Marshaler) {
@@ -3423,6 +3731,312 @@ func (ec *executionContext) _DiscordAccountEdge_cursor(ctx context.Context, fiel
 	}()
 	fc := &graphql.FieldContext{
 		Object:     "DiscordAccountEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.Cursor)
+	fc.Result = res
+	return ec.marshalNCursor2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DiscordBot_id(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordBot) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DiscordBot",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DiscordBot_account(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordBot) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DiscordBot",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Account(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DiscordAccount)
+	fc.Result = res
+	return ec.marshalNDiscordAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DiscordBot_project(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordBot) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DiscordBot",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Project(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Project)
+	fc.Result = res
+	return ec.marshalNProject2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DiscordBot_repository(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordBot) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DiscordBot",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Repository(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Repository)
+	fc.Result = res
+	return ec.marshalORepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DiscordBotConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordBotConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DiscordBotConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DiscordBotConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordBotConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DiscordBotConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DiscordBotConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordBotConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DiscordBotConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.DiscordBotEdge)
+	fc.Result = res
+	return ec.marshalODiscordBotEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DiscordBotEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordBotEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DiscordBotEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DiscordBot)
+	fc.Result = res
+	return ec.marshalODiscordBot2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBot(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DiscordBotEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.DiscordBotEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DiscordBotEdge",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -4515,6 +5129,48 @@ func (ec *executionContext) _Mutation_createDiscordAccount(ctx context.Context, 
 	return ec.marshalNDiscordAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccount(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createDiscordBot(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createDiscordBot_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateDiscordBot(rctx, args["input"].(ent.CreateDiscordBotInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DiscordBot)
+	fc.Result = res
+	return ec.marshalNDiscordBot2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBot(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createGithubAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -5238,6 +5894,38 @@ func (ec *executionContext) _Project_repositories(ctx context.Context, field gra
 	res := resTmp.([]*ent.Repository)
 	fc.Result = res
 	return ec.marshalORepository2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_discordBots(ctx context.Context, field graphql.CollectedField, obj *ent.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DiscordBots(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.DiscordBot)
+	fc.Result = res
+	return ec.marshalODiscordBot2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ProjectAssociation_id(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociation) (ret graphql.Marshaler) {
@@ -6186,6 +6874,45 @@ func (ec *executionContext) _Query_discordAccounts(ctx context.Context, field gr
 	return ec.marshalODiscordAccountConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccountConnection(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_discordBots(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_discordBots_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().DiscordBots(rctx, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["where"].(*ent.DiscordBotWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DiscordBotConnection)
+	fc.Result = res
+	return ec.marshalODiscordBotConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotConnection(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_githubAccounts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6793,6 +7520,38 @@ func (ec *executionContext) _Repository_githubOrganization(ctx context.Context, 
 	res := resTmp.(*ent.GithubOrganization)
 	fc.Result = res
 	return ec.marshalOGithubOrganization2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganization(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Repository_discordBots(ctx context.Context, field graphql.CollectedField, obj *ent.Repository) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Repository",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DiscordBots(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.DiscordBot)
+	fc.Result = res
+	return ec.marshalODiscordBot2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _RepositoryConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryConnection) (ret graphql.Marshaler) {
@@ -8452,7 +9211,51 @@ func (ec *executionContext) unmarshalInputCreateDiscordAccountInput(ctx context.
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("owner"))
-			it.Owner, err = ec.unmarshalNInt2int(ctx, v)
+			it.Owner, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "bot":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bot"))
+			it.Bot, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateDiscordBotInput(ctx context.Context, obj interface{}) (ent.CreateDiscordBotInput, error) {
+	var it ent.CreateDiscordBotInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "account":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("account"))
+			it.Account, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "project":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("project"))
+			it.Project, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "repository":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("repository"))
+			it.Repository, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8536,7 +9339,7 @@ func (ec *executionContext) unmarshalInputCreateGithubOrganizationMemberInput(ct
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("account"))
-			it.Account, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			it.Account, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8544,7 +9347,7 @@ func (ec *executionContext) unmarshalInputCreateGithubOrganizationMemberInput(ct
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("organization"))
-			it.Organization, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			it.Organization, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8572,7 +9375,7 @@ func (ec *executionContext) unmarshalInputCreateProjectAssociationInput(ctx cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent"))
-			it.Parent, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			it.Parent, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8580,7 +9383,7 @@ func (ec *executionContext) unmarshalInputCreateProjectAssociationInput(ctx cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("child"))
-			it.Child, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			it.Child, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8608,7 +9411,7 @@ func (ec *executionContext) unmarshalInputCreateProjectContributorInput(ctx cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("project"))
-			it.Project, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			it.Project, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8616,7 +9419,7 @@ func (ec *executionContext) unmarshalInputCreateProjectContributorInput(ctx cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user"))
-			it.User, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			it.User, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8696,7 +9499,7 @@ func (ec *executionContext) unmarshalInputCreateRepositoryInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("project"))
-			it.Project, err = ec.unmarshalNInt2ᚖint(ctx, v)
+			it.Project, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9197,6 +10000,170 @@ func (ec *executionContext) unmarshalInputDiscordAccountWhereInput(ctx context.C
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasOwnerWith"))
 			it.HasOwnerWith, err = ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUserWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasBot":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBot"))
+			it.HasBot, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasBotWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBotWith"))
+			it.HasBotWith, err = ec.unmarshalODiscordBotWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputDiscordBotWhereInput(ctx context.Context, obj interface{}) (ent.DiscordBotWhereInput, error) {
+	var it ent.DiscordBotWhereInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "not":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			it.Not, err = ec.unmarshalODiscordBotWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "and":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			it.And, err = ec.unmarshalODiscordBotWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "or":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			it.Or, err = ec.unmarshalODiscordBotWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			it.IDNEQ, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			it.IDIn, err = ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			it.IDNotIn, err = ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			it.IDGT, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			it.IDGTE, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			it.IDLT, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			it.IDLTE, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasAccount":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasAccount"))
+			it.HasAccount, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasAccountWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasAccountWith"))
+			it.HasAccountWith, err = ec.unmarshalODiscordAccountWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccountWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasProject":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProject"))
+			it.HasProject, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasProjectWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProjectWith"))
+			it.HasProjectWith, err = ec.unmarshalOProjectWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepository":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepository"))
+			it.HasRepository, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepositoryWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositoryWith"))
+			it.HasRepositoryWith, err = ec.unmarshalORepositoryWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11000,6 +11967,22 @@ func (ec *executionContext) unmarshalInputProjectWhereInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
+		case "hasDiscordBots":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDiscordBots"))
+			it.HasDiscordBots, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasDiscordBotsWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDiscordBotsWith"))
+			it.HasDiscordBotsWith, err = ec.unmarshalODiscordBotWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -11397,6 +12380,22 @@ func (ec *executionContext) unmarshalInputRepositoryWhereInput(ctx context.Conte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasGithubOrganizationWith"))
 			it.HasGithubOrganizationWith, err = ec.unmarshalOGithubOrganizationWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasDiscordBots":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDiscordBots"))
+			it.HasDiscordBots, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasDiscordBotsWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDiscordBotsWith"))
+			it.HasDiscordBotsWith, err = ec.unmarshalODiscordBotWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11824,6 +12823,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._DiscordAccount(ctx, sel, obj)
+	case *ent.DiscordBot:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DiscordBot(ctx, sel, obj)
 	case *ent.GithubAccount:
 		if obj == nil {
 			return graphql.Null
@@ -11940,9 +12944,17 @@ func (ec *executionContext) _DiscordAccount(ctx context.Context, sel ast.Selecti
 					}
 				}()
 				res = ec._DiscordAccount_owner(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
+				return res
+			})
+		case "bot":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DiscordAccount_bot(ctx, field, obj)
 				return res
 			})
 		default:
@@ -12005,6 +13017,135 @@ func (ec *executionContext) _DiscordAccountEdge(ctx context.Context, sel ast.Sel
 			out.Values[i] = ec._DiscordAccountEdge_node(ctx, field, obj)
 		case "cursor":
 			out.Values[i] = ec._DiscordAccountEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var discordBotImplementors = []string{"DiscordBot", "Node"}
+
+func (ec *executionContext) _DiscordBot(ctx context.Context, sel ast.SelectionSet, obj *ent.DiscordBot) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, discordBotImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DiscordBot")
+		case "id":
+			out.Values[i] = ec._DiscordBot_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "account":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DiscordBot_account(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "project":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DiscordBot_project(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "repository":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DiscordBot_repository(ctx, field, obj)
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var discordBotConnectionImplementors = []string{"DiscordBotConnection"}
+
+func (ec *executionContext) _DiscordBotConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.DiscordBotConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, discordBotConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DiscordBotConnection")
+		case "totalCount":
+			out.Values[i] = ec._DiscordBotConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._DiscordBotConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "edges":
+			out.Values[i] = ec._DiscordBotConnection_edges(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var discordBotEdgeImplementors = []string{"DiscordBotEdge"}
+
+func (ec *executionContext) _DiscordBotEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.DiscordBotEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, discordBotEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DiscordBotEdge")
+		case "node":
+			out.Values[i] = ec._DiscordBotEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._DiscordBotEdge_cursor(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -12417,6 +13558,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createDiscordBot":
+			out.Values[i] = ec._Mutation_createDiscordBot(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createGithubAccount":
 			out.Values[i] = ec._Mutation_createGithubAccount(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -12571,6 +13717,17 @@ func (ec *executionContext) _Project(ctx context.Context, sel ast.SelectionSet, 
 					}
 				}()
 				res = ec._Project_repositories(ctx, field, obj)
+				return res
+			})
+		case "discordBots":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Project_discordBots(ctx, field, obj)
 				return res
 			})
 		default:
@@ -12955,6 +14112,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_discordAccounts(ctx, field)
 				return res
 			})
+		case "discordBots":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_discordBots(ctx, field)
+				return res
+			})
 		case "githubAccounts":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -13126,6 +14294,17 @@ func (ec *executionContext) _Repository(ctx context.Context, sel ast.SelectionSe
 					}
 				}()
 				res = ec._Repository_githubOrganization(ctx, field, obj)
+				return res
+			})
+		case "discordBots":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Repository_discordBots(ctx, field, obj)
 				return res
 			})
 		default:
@@ -13607,6 +14786,11 @@ func (ec *executionContext) unmarshalNCreateDiscordAccountInput2githubᚗcomᚋf
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateDiscordBotInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateDiscordBotInput(ctx context.Context, v interface{}) (ent.CreateDiscordBotInput, error) {
+	res, err := ec.unmarshalInputCreateDiscordBotInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateGithubAccountInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateGithubAccountInput(ctx context.Context, v interface{}) (ent.CreateGithubAccountInput, error) {
 	res, err := ec.unmarshalInputCreateGithubAccountInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -13673,6 +14857,25 @@ func (ec *executionContext) marshalNDiscordAccount2ᚖgithubᚗcomᚋfogoᚑsh�
 
 func (ec *executionContext) unmarshalNDiscordAccountWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccountWhereInput(ctx context.Context, v interface{}) (*ent.DiscordAccountWhereInput, error) {
 	res, err := ec.unmarshalInputDiscordAccountWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDiscordBot2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBot(ctx context.Context, sel ast.SelectionSet, v ent.DiscordBot) graphql.Marshaler {
+	return ec._DiscordBot(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDiscordBot2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBot(ctx context.Context, sel ast.SelectionSet, v *ent.DiscordBot) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._DiscordBot(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNDiscordBotWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInput(ctx context.Context, v interface{}) (*ent.DiscordBotWhereInput, error) {
+	res, err := ec.unmarshalInputDiscordBotWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -13811,27 +15014,6 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	res := graphql.MarshalInt(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := graphql.MarshalInt(*v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -14506,6 +15688,139 @@ func (ec *executionContext) unmarshalODiscordAccountWhereInput2ᚖgithubᚗcom�
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputDiscordAccountWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODiscordBot2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.DiscordBot) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDiscordBot2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBot(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalODiscordBot2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBot(ctx context.Context, sel ast.SelectionSet, v *ent.DiscordBot) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DiscordBot(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalODiscordBotConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotConnection(ctx context.Context, sel ast.SelectionSet, v *ent.DiscordBotConnection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DiscordBotConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalODiscordBotEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.DiscordBotEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalODiscordBotEdge2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalODiscordBotEdge2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotEdge(ctx context.Context, sel ast.SelectionSet, v *ent.DiscordBotEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DiscordBotEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalODiscordBotWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.DiscordBotWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*ent.DiscordBotWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNDiscordBotWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalODiscordBotWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInput(ctx context.Context, v interface{}) (*ent.DiscordBotWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputDiscordBotWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

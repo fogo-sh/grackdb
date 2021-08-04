@@ -4,11 +4,13 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/predicate"
@@ -61,14 +63,6 @@ func (ru *RepositoryUpdate) SetProjectID(id int) *RepositoryUpdate {
 	return ru
 }
 
-// SetNillableProjectID sets the "project" edge to the Project entity by ID if the given value is not nil.
-func (ru *RepositoryUpdate) SetNillableProjectID(id *int) *RepositoryUpdate {
-	if id != nil {
-		ru = ru.SetProjectID(*id)
-	}
-	return ru
-}
-
 // SetProject sets the "project" edge to the Project entity.
 func (ru *RepositoryUpdate) SetProject(p *Project) *RepositoryUpdate {
 	return ru.SetProjectID(p.ID)
@@ -112,6 +106,21 @@ func (ru *RepositoryUpdate) SetGithubOrganization(g *GithubOrganization) *Reposi
 	return ru.SetGithubOrganizationID(g.ID)
 }
 
+// AddDiscordBotIDs adds the "discord_bots" edge to the DiscordBot entity by IDs.
+func (ru *RepositoryUpdate) AddDiscordBotIDs(ids ...int) *RepositoryUpdate {
+	ru.mutation.AddDiscordBotIDs(ids...)
+	return ru
+}
+
+// AddDiscordBots adds the "discord_bots" edges to the DiscordBot entity.
+func (ru *RepositoryUpdate) AddDiscordBots(d ...*DiscordBot) *RepositoryUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ru.AddDiscordBotIDs(ids...)
+}
+
 // Mutation returns the RepositoryMutation object of the builder.
 func (ru *RepositoryUpdate) Mutation() *RepositoryMutation {
 	return ru.mutation
@@ -133,6 +142,27 @@ func (ru *RepositoryUpdate) ClearGithubAccount() *RepositoryUpdate {
 func (ru *RepositoryUpdate) ClearGithubOrganization() *RepositoryUpdate {
 	ru.mutation.ClearGithubOrganization()
 	return ru
+}
+
+// ClearDiscordBots clears all "discord_bots" edges to the DiscordBot entity.
+func (ru *RepositoryUpdate) ClearDiscordBots() *RepositoryUpdate {
+	ru.mutation.ClearDiscordBots()
+	return ru
+}
+
+// RemoveDiscordBotIDs removes the "discord_bots" edge to DiscordBot entities by IDs.
+func (ru *RepositoryUpdate) RemoveDiscordBotIDs(ids ...int) *RepositoryUpdate {
+	ru.mutation.RemoveDiscordBotIDs(ids...)
+	return ru
+}
+
+// RemoveDiscordBots removes "discord_bots" edges to DiscordBot entities.
+func (ru *RepositoryUpdate) RemoveDiscordBots(d ...*DiscordBot) *RepositoryUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ru.RemoveDiscordBotIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -198,6 +228,9 @@ func (ru *RepositoryUpdate) check() error {
 		if err := repository.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
 		}
+	}
+	if _, ok := ru.mutation.ProjectID(); ru.mutation.ProjectCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"project\"")
 	}
 	return nil
 }
@@ -345,6 +378,60 @@ func (ru *RepositoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ru.mutation.DiscordBotsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.DiscordBotsTable,
+			Columns: []string{repository.DiscordBotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.RemovedDiscordBotsIDs(); len(nodes) > 0 && !ru.mutation.DiscordBotsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.DiscordBotsTable,
+			Columns: []string{repository.DiscordBotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.DiscordBotsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.DiscordBotsTable,
+			Columns: []string{repository.DiscordBotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{repository.Label}
@@ -396,14 +483,6 @@ func (ruo *RepositoryUpdateOne) SetProjectID(id int) *RepositoryUpdateOne {
 	return ruo
 }
 
-// SetNillableProjectID sets the "project" edge to the Project entity by ID if the given value is not nil.
-func (ruo *RepositoryUpdateOne) SetNillableProjectID(id *int) *RepositoryUpdateOne {
-	if id != nil {
-		ruo = ruo.SetProjectID(*id)
-	}
-	return ruo
-}
-
 // SetProject sets the "project" edge to the Project entity.
 func (ruo *RepositoryUpdateOne) SetProject(p *Project) *RepositoryUpdateOne {
 	return ruo.SetProjectID(p.ID)
@@ -447,6 +526,21 @@ func (ruo *RepositoryUpdateOne) SetGithubOrganization(g *GithubOrganization) *Re
 	return ruo.SetGithubOrganizationID(g.ID)
 }
 
+// AddDiscordBotIDs adds the "discord_bots" edge to the DiscordBot entity by IDs.
+func (ruo *RepositoryUpdateOne) AddDiscordBotIDs(ids ...int) *RepositoryUpdateOne {
+	ruo.mutation.AddDiscordBotIDs(ids...)
+	return ruo
+}
+
+// AddDiscordBots adds the "discord_bots" edges to the DiscordBot entity.
+func (ruo *RepositoryUpdateOne) AddDiscordBots(d ...*DiscordBot) *RepositoryUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ruo.AddDiscordBotIDs(ids...)
+}
+
 // Mutation returns the RepositoryMutation object of the builder.
 func (ruo *RepositoryUpdateOne) Mutation() *RepositoryMutation {
 	return ruo.mutation
@@ -468,6 +562,27 @@ func (ruo *RepositoryUpdateOne) ClearGithubAccount() *RepositoryUpdateOne {
 func (ruo *RepositoryUpdateOne) ClearGithubOrganization() *RepositoryUpdateOne {
 	ruo.mutation.ClearGithubOrganization()
 	return ruo
+}
+
+// ClearDiscordBots clears all "discord_bots" edges to the DiscordBot entity.
+func (ruo *RepositoryUpdateOne) ClearDiscordBots() *RepositoryUpdateOne {
+	ruo.mutation.ClearDiscordBots()
+	return ruo
+}
+
+// RemoveDiscordBotIDs removes the "discord_bots" edge to DiscordBot entities by IDs.
+func (ruo *RepositoryUpdateOne) RemoveDiscordBotIDs(ids ...int) *RepositoryUpdateOne {
+	ruo.mutation.RemoveDiscordBotIDs(ids...)
+	return ruo
+}
+
+// RemoveDiscordBots removes "discord_bots" edges to DiscordBot entities.
+func (ruo *RepositoryUpdateOne) RemoveDiscordBots(d ...*DiscordBot) *RepositoryUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ruo.RemoveDiscordBotIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -540,6 +655,9 @@ func (ruo *RepositoryUpdateOne) check() error {
 		if err := repository.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
 		}
+	}
+	if _, ok := ruo.mutation.ProjectID(); ruo.mutation.ProjectCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"project\"")
 	}
 	return nil
 }
@@ -696,6 +814,60 @@ func (ruo *RepositoryUpdateOne) sqlSave(ctx context.Context) (_node *Repository,
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: githuborganization.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.DiscordBotsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.DiscordBotsTable,
+			Columns: []string{repository.DiscordBotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.RemovedDiscordBotsIDs(); len(nodes) > 0 && !ruo.mutation.DiscordBotsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.DiscordBotsTable,
+			Columns: []string{repository.DiscordBotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.DiscordBotsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.DiscordBotsTable,
+			Columns: []string{repository.DiscordBotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
 				},
 			},
 		}

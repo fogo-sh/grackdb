@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -40,14 +41,6 @@ func (pcu *ProjectContributorUpdate) SetProjectID(id int) *ProjectContributorUpd
 	return pcu
 }
 
-// SetNillableProjectID sets the "project" edge to the Project entity by ID if the given value is not nil.
-func (pcu *ProjectContributorUpdate) SetNillableProjectID(id *int) *ProjectContributorUpdate {
-	if id != nil {
-		pcu = pcu.SetProjectID(*id)
-	}
-	return pcu
-}
-
 // SetProject sets the "project" edge to the Project entity.
 func (pcu *ProjectContributorUpdate) SetProject(p *Project) *ProjectContributorUpdate {
 	return pcu.SetProjectID(p.ID)
@@ -56,14 +49,6 @@ func (pcu *ProjectContributorUpdate) SetProject(p *Project) *ProjectContributorU
 // SetUserID sets the "user" edge to the User entity by ID.
 func (pcu *ProjectContributorUpdate) SetUserID(id int) *ProjectContributorUpdate {
 	pcu.mutation.SetUserID(id)
-	return pcu
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (pcu *ProjectContributorUpdate) SetNillableUserID(id *int) *ProjectContributorUpdate {
-	if id != nil {
-		pcu = pcu.SetUserID(*id)
-	}
 	return pcu
 }
 
@@ -152,6 +137,12 @@ func (pcu *ProjectContributorUpdate) check() error {
 		if err := projectcontributor.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf("ent: validator failed for field \"role\": %w", err)}
 		}
+	}
+	if _, ok := pcu.mutation.ProjectID(); pcu.mutation.ProjectCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"project\"")
+	}
+	if _, ok := pcu.mutation.UserID(); pcu.mutation.UserCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"user\"")
 	}
 	return nil
 }
@@ -282,14 +273,6 @@ func (pcuo *ProjectContributorUpdateOne) SetProjectID(id int) *ProjectContributo
 	return pcuo
 }
 
-// SetNillableProjectID sets the "project" edge to the Project entity by ID if the given value is not nil.
-func (pcuo *ProjectContributorUpdateOne) SetNillableProjectID(id *int) *ProjectContributorUpdateOne {
-	if id != nil {
-		pcuo = pcuo.SetProjectID(*id)
-	}
-	return pcuo
-}
-
 // SetProject sets the "project" edge to the Project entity.
 func (pcuo *ProjectContributorUpdateOne) SetProject(p *Project) *ProjectContributorUpdateOne {
 	return pcuo.SetProjectID(p.ID)
@@ -298,14 +281,6 @@ func (pcuo *ProjectContributorUpdateOne) SetProject(p *Project) *ProjectContribu
 // SetUserID sets the "user" edge to the User entity by ID.
 func (pcuo *ProjectContributorUpdateOne) SetUserID(id int) *ProjectContributorUpdateOne {
 	pcuo.mutation.SetUserID(id)
-	return pcuo
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (pcuo *ProjectContributorUpdateOne) SetNillableUserID(id *int) *ProjectContributorUpdateOne {
-	if id != nil {
-		pcuo = pcuo.SetUserID(*id)
-	}
 	return pcuo
 }
 
@@ -401,6 +376,12 @@ func (pcuo *ProjectContributorUpdateOne) check() error {
 		if err := projectcontributor.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf("ent: validator failed for field \"role\": %w", err)}
 		}
+	}
+	if _, ok := pcuo.mutation.ProjectID(); pcuo.mutation.ProjectCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"project\"")
+	}
+	if _, ok := pcuo.mutation.UserID(); pcuo.mutation.UserCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"user\"")
 	}
 	return nil
 }

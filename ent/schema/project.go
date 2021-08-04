@@ -44,6 +44,8 @@ func (Project) Edges() []ent.Edge {
 			Annotations(entgql.MapsTo("childProjects")),
 		edge.To("repositories", Repository.Type).
 			Annotations(entgql.Bind()),
+		edge.To("discord_bots", DiscordBot.Type).
+			Annotations(entgql.MapsTo("discordBots")),
 	}
 }
 

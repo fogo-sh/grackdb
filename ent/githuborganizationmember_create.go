@@ -41,14 +41,6 @@ func (gomc *GithubOrganizationMemberCreate) SetOrganizationID(id int) *GithubOrg
 	return gomc
 }
 
-// SetNillableOrganizationID sets the "organization" edge to the GithubOrganization entity by ID if the given value is not nil.
-func (gomc *GithubOrganizationMemberCreate) SetNillableOrganizationID(id *int) *GithubOrganizationMemberCreate {
-	if id != nil {
-		gomc = gomc.SetOrganizationID(*id)
-	}
-	return gomc
-}
-
 // SetOrganization sets the "organization" edge to the GithubOrganization entity.
 func (gomc *GithubOrganizationMemberCreate) SetOrganization(g *GithubOrganization) *GithubOrganizationMemberCreate {
 	return gomc.SetOrganizationID(g.ID)
@@ -57,14 +49,6 @@ func (gomc *GithubOrganizationMemberCreate) SetOrganization(g *GithubOrganizatio
 // SetAccountID sets the "account" edge to the GithubAccount entity by ID.
 func (gomc *GithubOrganizationMemberCreate) SetAccountID(id int) *GithubOrganizationMemberCreate {
 	gomc.mutation.SetAccountID(id)
-	return gomc
-}
-
-// SetNillableAccountID sets the "account" edge to the GithubAccount entity by ID if the given value is not nil.
-func (gomc *GithubOrganizationMemberCreate) SetNillableAccountID(id *int) *GithubOrganizationMemberCreate {
-	if id != nil {
-		gomc = gomc.SetAccountID(*id)
-	}
 	return gomc
 }
 
@@ -143,6 +127,12 @@ func (gomc *GithubOrganizationMemberCreate) check() error {
 		if err := githuborganizationmember.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf("ent: validator failed for field \"role\": %w", err)}
 		}
+	}
+	if _, ok := gomc.mutation.OrganizationID(); !ok {
+		return &ValidationError{Name: "organization", err: errors.New("ent: missing required edge \"organization\"")}
+	}
+	if _, ok := gomc.mutation.AccountID(); !ok {
+		return &ValidationError{Name: "account", err: errors.New("ent: missing required edge \"account\"")}
 	}
 	return nil
 }

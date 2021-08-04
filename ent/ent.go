@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
@@ -38,6 +39,7 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		discordaccount.Table:           discordaccount.ValidColumn,
+		discordbot.Table:               discordbot.ValidColumn,
 		githubaccount.Table:            githubaccount.ValidColumn,
 		githuborganization.Table:       githuborganization.ValidColumn,
 		githuborganizationmember.Table: githuborganizationmember.ValidColumn,

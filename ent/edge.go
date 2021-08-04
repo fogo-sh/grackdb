@@ -9,7 +9,39 @@ func (da *DiscordAccount) Owner(ctx context.Context) (*User, error) {
 	if IsNotLoaded(err) {
 		result, err = da.QueryOwner().Only(ctx)
 	}
+	return result, MaskNotFound(err)
+}
+
+func (da *DiscordAccount) Bot(ctx context.Context) (*DiscordBot, error) {
+	result, err := da.Edges.BotOrErr()
+	if IsNotLoaded(err) {
+		result, err = da.QueryBot().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (db *DiscordBot) Account(ctx context.Context) (*DiscordAccount, error) {
+	result, err := db.Edges.AccountOrErr()
+	if IsNotLoaded(err) {
+		result, err = db.QueryAccount().Only(ctx)
+	}
 	return result, err
+}
+
+func (db *DiscordBot) Project(ctx context.Context) (*Project, error) {
+	result, err := db.Edges.ProjectOrErr()
+	if IsNotLoaded(err) {
+		result, err = db.QueryProject().Only(ctx)
+	}
+	return result, err
+}
+
+func (db *DiscordBot) Repository(ctx context.Context) (*Repository, error) {
+	result, err := db.Edges.RepositoryOrErr()
+	if IsNotLoaded(err) {
+		result, err = db.QueryRepository().Only(ctx)
+	}
+	return result, MaskNotFound(err)
 }
 
 func (ga *GithubAccount) Owner(ctx context.Context) (*User, error) {
@@ -57,7 +89,7 @@ func (gom *GithubOrganizationMember) Organization(ctx context.Context) (*GithubO
 	if IsNotLoaded(err) {
 		result, err = gom.QueryOrganization().Only(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (gom *GithubOrganizationMember) Account(ctx context.Context) (*GithubAccount, error) {
@@ -65,7 +97,7 @@ func (gom *GithubOrganizationMember) Account(ctx context.Context) (*GithubAccoun
 	if IsNotLoaded(err) {
 		result, err = gom.QueryAccount().Only(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (pr *Project) Contributors(ctx context.Context) ([]*ProjectContributor, error) {
@@ -100,12 +132,20 @@ func (pr *Project) Repositories(ctx context.Context) ([]*Repository, error) {
 	return result, err
 }
 
+func (pr *Project) DiscordBots(ctx context.Context) ([]*DiscordBot, error) {
+	result, err := pr.Edges.DiscordBotsOrErr()
+	if IsNotLoaded(err) {
+		result, err = pr.QueryDiscordBots().All(ctx)
+	}
+	return result, err
+}
+
 func (pa *ProjectAssociation) Parent(ctx context.Context) (*Project, error) {
 	result, err := pa.Edges.ParentOrErr()
 	if IsNotLoaded(err) {
 		result, err = pa.QueryParent().Only(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (pa *ProjectAssociation) Child(ctx context.Context) (*Project, error) {
@@ -113,7 +153,7 @@ func (pa *ProjectAssociation) Child(ctx context.Context) (*Project, error) {
 	if IsNotLoaded(err) {
 		result, err = pa.QueryChild().Only(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (pc *ProjectContributor) Project(ctx context.Context) (*Project, error) {
@@ -121,7 +161,7 @@ func (pc *ProjectContributor) Project(ctx context.Context) (*Project, error) {
 	if IsNotLoaded(err) {
 		result, err = pc.QueryProject().Only(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (pc *ProjectContributor) User(ctx context.Context) (*User, error) {
@@ -129,7 +169,7 @@ func (pc *ProjectContributor) User(ctx context.Context) (*User, error) {
 	if IsNotLoaded(err) {
 		result, err = pc.QueryUser().Only(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (r *Repository) Project(ctx context.Context) (*Project, error) {
@@ -137,7 +177,7 @@ func (r *Repository) Project(ctx context.Context) (*Project, error) {
 	if IsNotLoaded(err) {
 		result, err = r.QueryProject().Only(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (r *Repository) GithubAccount(ctx context.Context) (*GithubAccount, error) {
@@ -154,6 +194,14 @@ func (r *Repository) GithubOrganization(ctx context.Context) (*GithubOrganizatio
 		result, err = r.QueryGithubOrganization().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (r *Repository) DiscordBots(ctx context.Context) ([]*DiscordBot, error) {
+	result, err := r.Edges.DiscordBotsOrErr()
+	if IsNotLoaded(err) {
+		result, err = r.QueryDiscordBots().All(ctx)
+	}
+	return result, err
 }
 
 func (u *User) DiscordAccounts(ctx context.Context) ([]*DiscordAccount, error) {

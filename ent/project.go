@@ -39,9 +39,11 @@ type ProjectEdges struct {
 	ChildProjects []*ProjectAssociation `json:"child_projects,omitempty"`
 	// Repositories holds the value of the repositories edge.
 	Repositories []*Repository `json:"repositories,omitempty"`
+	// DiscordBots holds the value of the discord_bots edge.
+	DiscordBots []*DiscordBot `json:"discord_bots,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // ContributorsOrErr returns the Contributors value or an error if the edge
@@ -78,6 +80,15 @@ func (e ProjectEdges) RepositoriesOrErr() ([]*Repository, error) {
 		return e.Repositories, nil
 	}
 	return nil, &NotLoadedError{edge: "repositories"}
+}
+
+// DiscordBotsOrErr returns the DiscordBots value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) DiscordBotsOrErr() ([]*DiscordBot, error) {
+	if e.loadedTypes[4] {
+		return e.DiscordBots, nil
+	}
+	return nil, &NotLoadedError{edge: "discord_bots"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -161,6 +172,11 @@ func (pr *Project) QueryChildProjects() *ProjectAssociationQuery {
 // QueryRepositories queries the "repositories" edge of the Project entity.
 func (pr *Project) QueryRepositories() *RepositoryQuery {
 	return (&ProjectClient{config: pr.config}).QueryRepositories(pr)
+}
+
+// QueryDiscordBots queries the "discord_bots" edge of the Project entity.
+func (pr *Project) QueryDiscordBots() *DiscordBotQuery {
+	return (&ProjectClient{config: pr.config}).QueryDiscordBots(pr)
 }
 
 // Update returns a builder for updating this Project.

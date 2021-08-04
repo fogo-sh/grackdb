@@ -25,6 +25,13 @@ func (r *mutationResolver) CreateDiscordAccount(ctx context.Context, input ent.C
 		Save(ctx)
 }
 
+func (r *mutationResolver) CreateDiscordBot(ctx context.Context, input ent.CreateDiscordBotInput) (*ent.DiscordBot, error) {
+	return ent.FromContext(ctx).DiscordBot.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
 func (r *mutationResolver) CreateGithubAccount(ctx context.Context, input ent.CreateGithubAccountInput) (*ent.GithubAccount, error) {
 	return ent.FromContext(ctx).GithubAccount.
 		Create().
@@ -95,6 +102,13 @@ func (r *queryResolver) DiscordAccounts(ctx context.Context, after *ent.Cursor, 
 		Paginate(ctx, after, first, before, last,
 			ent.WithDiscordAccountOrder(orderBy),
 			ent.WithDiscordAccountFilter(where.Filter),
+		)
+}
+
+func (r *queryResolver) DiscordBots(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.DiscordBotWhereInput) (*ent.DiscordBotConnection, error) {
+	return r.client.DiscordBot.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithDiscordBotFilter(where.Filter),
 		)
 }
 

@@ -9,6 +9,9 @@ import (
 // DiscordAccount is the predicate function for discordaccount builders.
 type DiscordAccount func(*sql.Selector)
 
+// DiscordBot is the predicate function for discordbot builders.
+type DiscordBot func(*sql.Selector)
+
 // GithubAccount is the predicate function for githubaccount builders.
 type GithubAccount func(*sql.Selector)
 

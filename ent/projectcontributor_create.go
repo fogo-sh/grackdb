@@ -33,14 +33,6 @@ func (pcc *ProjectContributorCreate) SetProjectID(id int) *ProjectContributorCre
 	return pcc
 }
 
-// SetNillableProjectID sets the "project" edge to the Project entity by ID if the given value is not nil.
-func (pcc *ProjectContributorCreate) SetNillableProjectID(id *int) *ProjectContributorCreate {
-	if id != nil {
-		pcc = pcc.SetProjectID(*id)
-	}
-	return pcc
-}
-
 // SetProject sets the "project" edge to the Project entity.
 func (pcc *ProjectContributorCreate) SetProject(p *Project) *ProjectContributorCreate {
 	return pcc.SetProjectID(p.ID)
@@ -49,14 +41,6 @@ func (pcc *ProjectContributorCreate) SetProject(p *Project) *ProjectContributorC
 // SetUserID sets the "user" edge to the User entity by ID.
 func (pcc *ProjectContributorCreate) SetUserID(id int) *ProjectContributorCreate {
 	pcc.mutation.SetUserID(id)
-	return pcc
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (pcc *ProjectContributorCreate) SetNillableUserID(id *int) *ProjectContributorCreate {
-	if id != nil {
-		pcc = pcc.SetUserID(*id)
-	}
 	return pcc
 }
 
@@ -126,6 +110,12 @@ func (pcc *ProjectContributorCreate) check() error {
 		if err := projectcontributor.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf("ent: validator failed for field \"role\": %w", err)}
 		}
+	}
+	if _, ok := pcc.mutation.ProjectID(); !ok {
+		return &ValidationError{Name: "project", err: errors.New("ent: missing required edge \"project\"")}
+	}
+	if _, ok := pcc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user", err: errors.New("ent: missing required edge \"user\"")}
 	}
 	return nil
 }

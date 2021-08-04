@@ -22,6 +22,19 @@ func (f DiscordAccountFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return f(ctx, mv)
 }
 
+// The DiscordBotFunc type is an adapter to allow the use of ordinary
+// function as DiscordBot mutator.
+type DiscordBotFunc func(context.Context, *ent.DiscordBotMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DiscordBotFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.DiscordBotMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DiscordBotMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The GithubAccountFunc type is an adapter to allow the use of ordinary
 // function as GithubAccount mutator.
 type GithubAccountFunc func(context.Context, *ent.GithubAccountMutation) (ent.Value, error)

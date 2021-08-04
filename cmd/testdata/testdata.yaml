@@ -71,6 +71,18 @@ Items:
       Description: for breaking images, in amazing ways
       GithubAccount: 2
       Project: 1
+  - Name: Gik
+    Type: DiscordAccount
+    Params:
+      Username: gik
+      Discriminator: "9377"
+      DiscordId: "701192931385671770"
+  - Name: Gik
+    Type: DiscordBot
+    Params:
+      Account: 3
+      Project: 1
+      Repository: 1
   
   - Name: Borik
     Type: Project
@@ -103,6 +115,18 @@ Items:
       Type: REPLACES
       Parent: 1
       Child: 2
+  - Name: Borik
+    Type: DiscordAccount
+    Params:
+      Username: Borik
+      Discriminator: "5283"
+      DiscordId: "774024240767696897"
+  - Name: Borik
+    Type: DiscordBot
+    Params:
+      Account: 4
+      Project: 2
+      Repository: 2
   
   - Name: GrackDB
     Type: Project

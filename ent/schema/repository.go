@@ -33,6 +33,7 @@ func (Repository) Edges() []ent.Edge {
 		edge.From("project", Project.Type).
 			Ref("repositories").
 			Annotations(entgql.Bind()).
+			Required().
 			Unique(),
 		edge.From("github_account", GithubAccount.Type).
 			Ref("repositories").
@@ -42,6 +43,8 @@ func (Repository) Edges() []ent.Edge {
 			Ref("repositories").
 			Annotations(entgql.MapsTo("githubOrganization")).
 			Unique(),
+		edge.To("discord_bots", DiscordBot.Type).
+			Annotations(entgql.MapsTo("discordBots")),
 	}
 }
 

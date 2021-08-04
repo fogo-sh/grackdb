@@ -15,7 +15,8 @@ type CreateDiscordAccountInput struct {
 	DiscordID     string
 	Username      string
 	Discriminator string
-	Owner         int
+	Owner         *int
+	Bot           *int
 }
 
 // Mutate applies the CreateDiscordAccountInput on the DiscordAccountCreate builder.
@@ -23,7 +24,12 @@ func (i *CreateDiscordAccountInput) Mutate(m *DiscordAccountCreate) {
 	m.SetDiscordID(i.DiscordID)
 	m.SetUsername(i.Username)
 	m.SetDiscriminator(i.Discriminator)
-	m.SetOwnerID(i.Owner)
+	if v := i.Owner; v != nil {
+		m.SetOwnerID(*v)
+	}
+	if v := i.Bot; v != nil {
+		m.SetBotID(*v)
+	}
 }
 
 // SetInput applies the change-set in the CreateDiscordAccountInput on the create builder.
@@ -38,6 +44,8 @@ type UpdateDiscordAccountInput struct {
 	Discriminator *string
 	Owner         *int
 	ClearOwner    bool
+	Bot           *int
+	ClearBot      bool
 }
 
 // Mutate applies the UpdateDiscordAccountInput on the DiscordAccountMutation.
@@ -54,6 +62,12 @@ func (i *UpdateDiscordAccountInput) Mutate(m *DiscordAccountMutation) {
 	if v := i.Owner; v != nil {
 		m.SetOwnerID(*v)
 	}
+	if i.ClearBot {
+		m.ClearBot()
+	}
+	if v := i.Bot; v != nil {
+		m.SetBotID(*v)
+	}
 }
 
 // SetInput applies the change-set in the UpdateDiscordAccountInput on the update builder.
@@ -64,6 +78,72 @@ func (u *DiscordAccountUpdate) SetInput(i UpdateDiscordAccountInput) *DiscordAcc
 
 // SetInput applies the change-set in the UpdateDiscordAccountInput on the update-one builder.
 func (u *DiscordAccountUpdateOne) SetInput(i UpdateDiscordAccountInput) *DiscordAccountUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// CreateDiscordBotInput represents a mutation input for creating discordbots.
+type CreateDiscordBotInput struct {
+	Account    int
+	Project    int
+	Repository *int
+}
+
+// Mutate applies the CreateDiscordBotInput on the DiscordBotCreate builder.
+func (i *CreateDiscordBotInput) Mutate(m *DiscordBotCreate) {
+	m.SetAccountID(i.Account)
+	m.SetProjectID(i.Project)
+	if v := i.Repository; v != nil {
+		m.SetRepositoryID(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateDiscordBotInput on the create builder.
+func (c *DiscordBotCreate) SetInput(i CreateDiscordBotInput) *DiscordBotCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateDiscordBotInput represents a mutation input for updating discordbots.
+type UpdateDiscordBotInput struct {
+	Account         *int
+	ClearAccount    bool
+	Project         *int
+	ClearProject    bool
+	Repository      *int
+	ClearRepository bool
+}
+
+// Mutate applies the UpdateDiscordBotInput on the DiscordBotMutation.
+func (i *UpdateDiscordBotInput) Mutate(m *DiscordBotMutation) {
+	if i.ClearAccount {
+		m.ClearAccount()
+	}
+	if v := i.Account; v != nil {
+		m.SetAccountID(*v)
+	}
+	if i.ClearProject {
+		m.ClearProject()
+	}
+	if v := i.Project; v != nil {
+		m.SetProjectID(*v)
+	}
+	if i.ClearRepository {
+		m.ClearRepository()
+	}
+	if v := i.Repository; v != nil {
+		m.SetRepositoryID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateDiscordBotInput on the update builder.
+func (u *DiscordBotUpdate) SetInput(i UpdateDiscordBotInput) *DiscordBotUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateDiscordBotInput on the update-one builder.
+func (u *DiscordBotUpdateOne) SetInput(i UpdateDiscordBotInput) *DiscordBotUpdateOne {
 	i.Mutate(u.Mutation())
 	return u
 }
@@ -221,8 +301,8 @@ func (u *GithubOrganizationUpdateOne) SetInput(i UpdateGithubOrganizationInput) 
 // CreateGithubOrganizationMemberInput represents a mutation input for creating githuborganizationmembers.
 type CreateGithubOrganizationMemberInput struct {
 	Role         *githuborganizationmember.Role
-	Organization *int
-	Account      *int
+	Organization int
+	Account      int
 }
 
 // Mutate applies the CreateGithubOrganizationMemberInput on the GithubOrganizationMemberCreate builder.
@@ -230,12 +310,8 @@ func (i *CreateGithubOrganizationMemberInput) Mutate(m *GithubOrganizationMember
 	if v := i.Role; v != nil {
 		m.SetRole(*v)
 	}
-	if v := i.Organization; v != nil {
-		m.SetOrganizationID(*v)
-	}
-	if v := i.Account; v != nil {
-		m.SetAccountID(*v)
-	}
+	m.SetOrganizationID(i.Organization)
+	m.SetAccountID(i.Account)
 }
 
 // SetInput applies the change-set in the CreateGithubOrganizationMemberInput on the create builder.
@@ -294,6 +370,7 @@ type CreateProjectInput struct {
 	ParentProjects []int
 	ChildProjects  []int
 	Repositories   []int
+	DiscordBots    []int
 }
 
 // Mutate applies the CreateProjectInput on the ProjectCreate builder.
@@ -317,6 +394,9 @@ func (i *CreateProjectInput) Mutate(m *ProjectCreate) {
 	}
 	if ids := i.Repositories; len(ids) > 0 {
 		m.AddRepositoryIDs(ids...)
+	}
+	if ids := i.DiscordBots; len(ids) > 0 {
+		m.AddDiscordBotIDs(ids...)
 	}
 }
 
@@ -342,6 +422,8 @@ type UpdateProjectInput struct {
 	RemoveChildProjectIDs  []int
 	AddRepositoryIDs       []int
 	RemoveRepositoryIDs    []int
+	AddDiscordBotIDs       []int
+	RemoveDiscordBotIDs    []int
 }
 
 // Mutate applies the UpdateProjectInput on the ProjectMutation.
@@ -388,6 +470,12 @@ func (i *UpdateProjectInput) Mutate(m *ProjectMutation) {
 	if ids := i.RemoveRepositoryIDs; len(ids) > 0 {
 		m.RemoveRepositoryIDs(ids...)
 	}
+	if ids := i.AddDiscordBotIDs; len(ids) > 0 {
+		m.AddDiscordBotIDs(ids...)
+	}
+	if ids := i.RemoveDiscordBotIDs; len(ids) > 0 {
+		m.RemoveDiscordBotIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the UpdateProjectInput on the update builder.
@@ -405,19 +493,15 @@ func (u *ProjectUpdateOne) SetInput(i UpdateProjectInput) *ProjectUpdateOne {
 // CreateProjectAssociationInput represents a mutation input for creating projectassociations.
 type CreateProjectAssociationInput struct {
 	Type   projectassociation.Type
-	Parent *int
-	Child  *int
+	Parent int
+	Child  int
 }
 
 // Mutate applies the CreateProjectAssociationInput on the ProjectAssociationCreate builder.
 func (i *CreateProjectAssociationInput) Mutate(m *ProjectAssociationCreate) {
 	m.SetType(i.Type)
-	if v := i.Parent; v != nil {
-		m.SetParentID(*v)
-	}
-	if v := i.Child; v != nil {
-		m.SetChildID(*v)
-	}
+	m.SetParentID(i.Parent)
+	m.SetChildID(i.Child)
 }
 
 // SetInput applies the change-set in the CreateProjectAssociationInput on the create builder.
@@ -469,19 +553,15 @@ func (u *ProjectAssociationUpdateOne) SetInput(i UpdateProjectAssociationInput) 
 // CreateProjectContributorInput represents a mutation input for creating projectcontributors.
 type CreateProjectContributorInput struct {
 	Role    projectcontributor.Role
-	Project *int
-	User    *int
+	Project int
+	User    int
 }
 
 // Mutate applies the CreateProjectContributorInput on the ProjectContributorCreate builder.
 func (i *CreateProjectContributorInput) Mutate(m *ProjectContributorCreate) {
 	m.SetRole(i.Role)
-	if v := i.Project; v != nil {
-		m.SetProjectID(*v)
-	}
-	if v := i.User; v != nil {
-		m.SetUserID(*v)
-	}
+	m.SetProjectID(i.Project)
+	m.SetUserID(i.User)
 }
 
 // SetInput applies the change-set in the CreateProjectContributorInput on the create builder.
@@ -534,9 +614,10 @@ func (u *ProjectContributorUpdateOne) SetInput(i UpdateProjectContributorInput) 
 type CreateRepositoryInput struct {
 	Name               string
 	Description        *string
-	Project            *int
+	Project            int
 	GithubAccount      *int
 	GithubOrganization *int
+	DiscordBots        []int
 }
 
 // Mutate applies the CreateRepositoryInput on the RepositoryCreate builder.
@@ -545,14 +626,15 @@ func (i *CreateRepositoryInput) Mutate(m *RepositoryCreate) {
 	if v := i.Description; v != nil {
 		m.SetDescription(*v)
 	}
-	if v := i.Project; v != nil {
-		m.SetProjectID(*v)
-	}
+	m.SetProjectID(i.Project)
 	if v := i.GithubAccount; v != nil {
 		m.SetGithubAccountID(*v)
 	}
 	if v := i.GithubOrganization; v != nil {
 		m.SetGithubOrganizationID(*v)
+	}
+	if ids := i.DiscordBots; len(ids) > 0 {
+		m.AddDiscordBotIDs(ids...)
 	}
 }
 
@@ -573,6 +655,8 @@ type UpdateRepositoryInput struct {
 	ClearGithubAccount      bool
 	GithubOrganization      *int
 	ClearGithubOrganization bool
+	AddDiscordBotIDs        []int
+	RemoveDiscordBotIDs     []int
 }
 
 // Mutate applies the UpdateRepositoryInput on the RepositoryMutation.
@@ -603,6 +687,12 @@ func (i *UpdateRepositoryInput) Mutate(m *RepositoryMutation) {
 	}
 	if v := i.GithubOrganization; v != nil {
 		m.SetGithubOrganizationID(*v)
+	}
+	if ids := i.AddDiscordBotIDs; len(ids) > 0 {
+		m.AddDiscordBotIDs(ids...)
+	}
+	if ids := i.RemoveDiscordBotIDs; len(ids) > 0 {
+		m.RemoveDiscordBotIDs(ids...)
 	}
 }
 

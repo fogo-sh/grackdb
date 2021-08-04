@@ -10,6 +10,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/migrate"
 
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
@@ -31,6 +32,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// DiscordAccount is the client for interacting with the DiscordAccount builders.
 	DiscordAccount *DiscordAccountClient
+	// DiscordBot is the client for interacting with the DiscordBot builders.
+	DiscordBot *DiscordBotClient
 	// GithubAccount is the client for interacting with the GithubAccount builders.
 	GithubAccount *GithubAccountClient
 	// GithubOrganization is the client for interacting with the GithubOrganization builders.
@@ -63,6 +66,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.DiscordAccount = NewDiscordAccountClient(c.config)
+	c.DiscordBot = NewDiscordBotClient(c.config)
 	c.GithubAccount = NewGithubAccountClient(c.config)
 	c.GithubOrganization = NewGithubOrganizationClient(c.config)
 	c.GithubOrganizationMember = NewGithubOrganizationMemberClient(c.config)
@@ -105,6 +109,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                      ctx,
 		config:                   cfg,
 		DiscordAccount:           NewDiscordAccountClient(cfg),
+		DiscordBot:               NewDiscordBotClient(cfg),
 		GithubAccount:            NewGithubAccountClient(cfg),
 		GithubOrganization:       NewGithubOrganizationClient(cfg),
 		GithubOrganizationMember: NewGithubOrganizationMemberClient(cfg),
@@ -132,6 +137,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		config:                   cfg,
 		DiscordAccount:           NewDiscordAccountClient(cfg),
+		DiscordBot:               NewDiscordBotClient(cfg),
 		GithubAccount:            NewGithubAccountClient(cfg),
 		GithubOrganization:       NewGithubOrganizationClient(cfg),
 		GithubOrganizationMember: NewGithubOrganizationMemberClient(cfg),
@@ -170,6 +176,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.DiscordAccount.Use(hooks...)
+	c.DiscordBot.Use(hooks...)
 	c.GithubAccount.Use(hooks...)
 	c.GithubOrganization.Use(hooks...)
 	c.GithubOrganizationMember.Use(hooks...)
@@ -281,10 +288,165 @@ func (c *DiscordAccountClient) QueryOwner(da *DiscordAccount) *UserQuery {
 	return query
 }
 
+// QueryBot queries the bot edge of a DiscordAccount.
+func (c *DiscordAccountClient) QueryBot(da *DiscordAccount) *DiscordBotQuery {
+	query := &DiscordBotQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := da.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discordaccount.Table, discordaccount.FieldID, id),
+			sqlgraph.To(discordbot.Table, discordbot.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, discordaccount.BotTable, discordaccount.BotColumn),
+		)
+		fromV = sqlgraph.Neighbors(da.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *DiscordAccountClient) Hooks() []Hook {
 	hooks := c.hooks.DiscordAccount
 	return append(hooks[:len(hooks):len(hooks)], discordaccount.Hooks[:]...)
+}
+
+// DiscordBotClient is a client for the DiscordBot schema.
+type DiscordBotClient struct {
+	config
+}
+
+// NewDiscordBotClient returns a client for the DiscordBot from the given config.
+func NewDiscordBotClient(c config) *DiscordBotClient {
+	return &DiscordBotClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `discordbot.Hooks(f(g(h())))`.
+func (c *DiscordBotClient) Use(hooks ...Hook) {
+	c.hooks.DiscordBot = append(c.hooks.DiscordBot, hooks...)
+}
+
+// Create returns a create builder for DiscordBot.
+func (c *DiscordBotClient) Create() *DiscordBotCreate {
+	mutation := newDiscordBotMutation(c.config, OpCreate)
+	return &DiscordBotCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DiscordBot entities.
+func (c *DiscordBotClient) CreateBulk(builders ...*DiscordBotCreate) *DiscordBotCreateBulk {
+	return &DiscordBotCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DiscordBot.
+func (c *DiscordBotClient) Update() *DiscordBotUpdate {
+	mutation := newDiscordBotMutation(c.config, OpUpdate)
+	return &DiscordBotUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DiscordBotClient) UpdateOne(db *DiscordBot) *DiscordBotUpdateOne {
+	mutation := newDiscordBotMutation(c.config, OpUpdateOne, withDiscordBot(db))
+	return &DiscordBotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DiscordBotClient) UpdateOneID(id int) *DiscordBotUpdateOne {
+	mutation := newDiscordBotMutation(c.config, OpUpdateOne, withDiscordBotID(id))
+	return &DiscordBotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DiscordBot.
+func (c *DiscordBotClient) Delete() *DiscordBotDelete {
+	mutation := newDiscordBotMutation(c.config, OpDelete)
+	return &DiscordBotDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *DiscordBotClient) DeleteOne(db *DiscordBot) *DiscordBotDeleteOne {
+	return c.DeleteOneID(db.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *DiscordBotClient) DeleteOneID(id int) *DiscordBotDeleteOne {
+	builder := c.Delete().Where(discordbot.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DiscordBotDeleteOne{builder}
+}
+
+// Query returns a query builder for DiscordBot.
+func (c *DiscordBotClient) Query() *DiscordBotQuery {
+	return &DiscordBotQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a DiscordBot entity by its id.
+func (c *DiscordBotClient) Get(ctx context.Context, id int) (*DiscordBot, error) {
+	return c.Query().Where(discordbot.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DiscordBotClient) GetX(ctx context.Context, id int) *DiscordBot {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAccount queries the account edge of a DiscordBot.
+func (c *DiscordBotClient) QueryAccount(db *DiscordBot) *DiscordAccountQuery {
+	query := &DiscordAccountQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := db.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discordbot.Table, discordbot.FieldID, id),
+			sqlgraph.To(discordaccount.Table, discordaccount.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, discordbot.AccountTable, discordbot.AccountColumn),
+		)
+		fromV = sqlgraph.Neighbors(db.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProject queries the project edge of a DiscordBot.
+func (c *DiscordBotClient) QueryProject(db *DiscordBot) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := db.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discordbot.Table, discordbot.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, discordbot.ProjectTable, discordbot.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(db.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRepository queries the repository edge of a DiscordBot.
+func (c *DiscordBotClient) QueryRepository(db *DiscordBot) *RepositoryQuery {
+	query := &RepositoryQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := db.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discordbot.Table, discordbot.FieldID, id),
+			sqlgraph.To(repository.Table, repository.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, discordbot.RepositoryTable, discordbot.RepositoryColumn),
+		)
+		fromV = sqlgraph.Neighbors(db.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DiscordBotClient) Hooks() []Hook {
+	hooks := c.hooks.DiscordBot
+	return append(hooks[:len(hooks):len(hooks)], discordbot.Hooks[:]...)
 }
 
 // GithubAccountClient is a client for the GithubAccount schema.
@@ -821,6 +983,22 @@ func (c *ProjectClient) QueryRepositories(pr *Project) *RepositoryQuery {
 	return query
 }
 
+// QueryDiscordBots queries the discord_bots edge of a Project.
+func (c *ProjectClient) QueryDiscordBots(pr *Project) *DiscordBotQuery {
+	query := &DiscordBotQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(discordbot.Table, discordbot.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.DiscordBotsTable, project.DiscordBotsColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProjectClient) Hooks() []Hook {
 	hooks := c.hooks.Project
@@ -1199,6 +1377,22 @@ func (c *RepositoryClient) QueryGithubOrganization(r *Repository) *GithubOrganiz
 			sqlgraph.From(repository.Table, repository.FieldID, id),
 			sqlgraph.To(githuborganization.Table, githuborganization.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, repository.GithubOrganizationTable, repository.GithubOrganizationColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDiscordBots queries the discord_bots edge of a Repository.
+func (c *RepositoryClient) QueryDiscordBots(r *Repository) *DiscordBotQuery {
+	query := &DiscordBotQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repository.Table, repository.FieldID, id),
+			sqlgraph.To(discordbot.Table, discordbot.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, repository.DiscordBotsTable, repository.DiscordBotsColumn),
 		)
 		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
 		return fromV, nil

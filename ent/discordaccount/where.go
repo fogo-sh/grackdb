@@ -473,6 +473,34 @@ func HasOwnerWith(preds ...predicate.User) predicate.DiscordAccount {
 	})
 }
 
+// HasBot applies the HasEdge predicate on the "bot" edge.
+func HasBot() predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BotTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, BotTable, BotColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBotWith applies the HasEdge predicate on the "bot" edge with a given conditions (other predicates).
+func HasBotWith(preds ...predicate.DiscordBot) predicate.DiscordAccount {
+	return predicate.DiscordAccount(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BotInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, BotTable, BotColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.DiscordAccount) predicate.DiscordAccount {
 	return predicate.DiscordAccount(func(s *sql.Selector) {

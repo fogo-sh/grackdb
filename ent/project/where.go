@@ -635,6 +635,34 @@ func HasRepositoriesWith(preds ...predicate.Repository) predicate.Project {
 	})
 }
 
+// HasDiscordBots applies the HasEdge predicate on the "discord_bots" edge.
+func HasDiscordBots() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DiscordBotsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DiscordBotsTable, DiscordBotsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDiscordBotsWith applies the HasEdge predicate on the "discord_bots" edge with a given conditions (other predicates).
+func HasDiscordBotsWith(preds ...predicate.DiscordBot) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DiscordBotsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DiscordBotsTable, DiscordBotsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Project) predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {

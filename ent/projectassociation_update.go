@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -39,14 +40,6 @@ func (pau *ProjectAssociationUpdate) SetParentID(id int) *ProjectAssociationUpda
 	return pau
 }
 
-// SetNillableParentID sets the "parent" edge to the Project entity by ID if the given value is not nil.
-func (pau *ProjectAssociationUpdate) SetNillableParentID(id *int) *ProjectAssociationUpdate {
-	if id != nil {
-		pau = pau.SetParentID(*id)
-	}
-	return pau
-}
-
 // SetParent sets the "parent" edge to the Project entity.
 func (pau *ProjectAssociationUpdate) SetParent(p *Project) *ProjectAssociationUpdate {
 	return pau.SetParentID(p.ID)
@@ -55,14 +48,6 @@ func (pau *ProjectAssociationUpdate) SetParent(p *Project) *ProjectAssociationUp
 // SetChildID sets the "child" edge to the Project entity by ID.
 func (pau *ProjectAssociationUpdate) SetChildID(id int) *ProjectAssociationUpdate {
 	pau.mutation.SetChildID(id)
-	return pau
-}
-
-// SetNillableChildID sets the "child" edge to the Project entity by ID if the given value is not nil.
-func (pau *ProjectAssociationUpdate) SetNillableChildID(id *int) *ProjectAssociationUpdate {
-	if id != nil {
-		pau = pau.SetChildID(*id)
-	}
 	return pau
 }
 
@@ -151,6 +136,12 @@ func (pau *ProjectAssociationUpdate) check() error {
 		if err := projectassociation.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
 		}
+	}
+	if _, ok := pau.mutation.ParentID(); pau.mutation.ParentCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"parent\"")
+	}
+	if _, ok := pau.mutation.ChildID(); pau.mutation.ChildCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"child\"")
 	}
 	return nil
 }
@@ -281,14 +272,6 @@ func (pauo *ProjectAssociationUpdateOne) SetParentID(id int) *ProjectAssociation
 	return pauo
 }
 
-// SetNillableParentID sets the "parent" edge to the Project entity by ID if the given value is not nil.
-func (pauo *ProjectAssociationUpdateOne) SetNillableParentID(id *int) *ProjectAssociationUpdateOne {
-	if id != nil {
-		pauo = pauo.SetParentID(*id)
-	}
-	return pauo
-}
-
 // SetParent sets the "parent" edge to the Project entity.
 func (pauo *ProjectAssociationUpdateOne) SetParent(p *Project) *ProjectAssociationUpdateOne {
 	return pauo.SetParentID(p.ID)
@@ -297,14 +280,6 @@ func (pauo *ProjectAssociationUpdateOne) SetParent(p *Project) *ProjectAssociati
 // SetChildID sets the "child" edge to the Project entity by ID.
 func (pauo *ProjectAssociationUpdateOne) SetChildID(id int) *ProjectAssociationUpdateOne {
 	pauo.mutation.SetChildID(id)
-	return pauo
-}
-
-// SetNillableChildID sets the "child" edge to the Project entity by ID if the given value is not nil.
-func (pauo *ProjectAssociationUpdateOne) SetNillableChildID(id *int) *ProjectAssociationUpdateOne {
-	if id != nil {
-		pauo = pauo.SetChildID(*id)
-	}
 	return pauo
 }
 
@@ -400,6 +375,12 @@ func (pauo *ProjectAssociationUpdateOne) check() error {
 		if err := projectassociation.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
 		}
+	}
+	if _, ok := pauo.mutation.ParentID(); pauo.mutation.ParentCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"parent\"")
+	}
+	if _, ok := pauo.mutation.ChildID(); pauo.mutation.ChildCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"child\"")
 	}
 	return nil
 }

@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/project"
@@ -45,14 +46,6 @@ func (rc *RepositoryCreate) SetNillableDescription(s *string) *RepositoryCreate 
 // SetProjectID sets the "project" edge to the Project entity by ID.
 func (rc *RepositoryCreate) SetProjectID(id int) *RepositoryCreate {
 	rc.mutation.SetProjectID(id)
-	return rc
-}
-
-// SetNillableProjectID sets the "project" edge to the Project entity by ID if the given value is not nil.
-func (rc *RepositoryCreate) SetNillableProjectID(id *int) *RepositoryCreate {
-	if id != nil {
-		rc = rc.SetProjectID(*id)
-	}
 	return rc
 }
 
@@ -97,6 +90,21 @@ func (rc *RepositoryCreate) SetNillableGithubOrganizationID(id *int) *Repository
 // SetGithubOrganization sets the "github_organization" edge to the GithubOrganization entity.
 func (rc *RepositoryCreate) SetGithubOrganization(g *GithubOrganization) *RepositoryCreate {
 	return rc.SetGithubOrganizationID(g.ID)
+}
+
+// AddDiscordBotIDs adds the "discord_bots" edge to the DiscordBot entity by IDs.
+func (rc *RepositoryCreate) AddDiscordBotIDs(ids ...int) *RepositoryCreate {
+	rc.mutation.AddDiscordBotIDs(ids...)
+	return rc
+}
+
+// AddDiscordBots adds the "discord_bots" edges to the DiscordBot entity.
+func (rc *RepositoryCreate) AddDiscordBots(d ...*DiscordBot) *RepositoryCreate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return rc.AddDiscordBotIDs(ids...)
 }
 
 // Mutation returns the RepositoryMutation object of the builder.
@@ -160,6 +168,9 @@ func (rc *RepositoryCreate) check() error {
 		if err := repository.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
 		}
+	}
+	if _, ok := rc.mutation.ProjectID(); !ok {
+		return &ValidationError{Name: "project", err: errors.New("ent: missing required edge \"project\"")}
 	}
 	return nil
 }
@@ -262,6 +273,25 @@ func (rc *RepositoryCreate) createSpec() (*Repository, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.github_organization_repositories = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.DiscordBotsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.DiscordBotsTable,
+			Columns: []string{repository.DiscordBotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

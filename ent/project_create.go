@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
@@ -121,6 +122,21 @@ func (pc *ProjectCreate) AddRepositories(r ...*Repository) *ProjectCreate {
 		ids[i] = r[i].ID
 	}
 	return pc.AddRepositoryIDs(ids...)
+}
+
+// AddDiscordBotIDs adds the "discord_bots" edge to the DiscordBot entity by IDs.
+func (pc *ProjectCreate) AddDiscordBotIDs(ids ...int) *ProjectCreate {
+	pc.mutation.AddDiscordBotIDs(ids...)
+	return pc
+}
+
+// AddDiscordBots adds the "discord_bots" edges to the DiscordBot entity.
+func (pc *ProjectCreate) AddDiscordBots(d ...*DiscordBot) *ProjectCreate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pc.AddDiscordBotIDs(ids...)
 }
 
 // Mutation returns the ProjectMutation object of the builder.
@@ -315,6 +331,25 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: repository.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.DiscordBotsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.DiscordBotsTable,
+			Columns: []string{project.DiscordBotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
 				},
 			},
 		}

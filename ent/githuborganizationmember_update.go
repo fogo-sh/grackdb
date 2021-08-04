@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -48,14 +49,6 @@ func (gomu *GithubOrganizationMemberUpdate) SetOrganizationID(id int) *GithubOrg
 	return gomu
 }
 
-// SetNillableOrganizationID sets the "organization" edge to the GithubOrganization entity by ID if the given value is not nil.
-func (gomu *GithubOrganizationMemberUpdate) SetNillableOrganizationID(id *int) *GithubOrganizationMemberUpdate {
-	if id != nil {
-		gomu = gomu.SetOrganizationID(*id)
-	}
-	return gomu
-}
-
 // SetOrganization sets the "organization" edge to the GithubOrganization entity.
 func (gomu *GithubOrganizationMemberUpdate) SetOrganization(g *GithubOrganization) *GithubOrganizationMemberUpdate {
 	return gomu.SetOrganizationID(g.ID)
@@ -64,14 +57,6 @@ func (gomu *GithubOrganizationMemberUpdate) SetOrganization(g *GithubOrganizatio
 // SetAccountID sets the "account" edge to the GithubAccount entity by ID.
 func (gomu *GithubOrganizationMemberUpdate) SetAccountID(id int) *GithubOrganizationMemberUpdate {
 	gomu.mutation.SetAccountID(id)
-	return gomu
-}
-
-// SetNillableAccountID sets the "account" edge to the GithubAccount entity by ID if the given value is not nil.
-func (gomu *GithubOrganizationMemberUpdate) SetNillableAccountID(id *int) *GithubOrganizationMemberUpdate {
-	if id != nil {
-		gomu = gomu.SetAccountID(*id)
-	}
 	return gomu
 }
 
@@ -160,6 +145,12 @@ func (gomu *GithubOrganizationMemberUpdate) check() error {
 		if err := githuborganizationmember.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf("ent: validator failed for field \"role\": %w", err)}
 		}
+	}
+	if _, ok := gomu.mutation.OrganizationID(); gomu.mutation.OrganizationCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"organization\"")
+	}
+	if _, ok := gomu.mutation.AccountID(); gomu.mutation.AccountCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"account\"")
 	}
 	return nil
 }
@@ -298,14 +289,6 @@ func (gomuo *GithubOrganizationMemberUpdateOne) SetOrganizationID(id int) *Githu
 	return gomuo
 }
 
-// SetNillableOrganizationID sets the "organization" edge to the GithubOrganization entity by ID if the given value is not nil.
-func (gomuo *GithubOrganizationMemberUpdateOne) SetNillableOrganizationID(id *int) *GithubOrganizationMemberUpdateOne {
-	if id != nil {
-		gomuo = gomuo.SetOrganizationID(*id)
-	}
-	return gomuo
-}
-
 // SetOrganization sets the "organization" edge to the GithubOrganization entity.
 func (gomuo *GithubOrganizationMemberUpdateOne) SetOrganization(g *GithubOrganization) *GithubOrganizationMemberUpdateOne {
 	return gomuo.SetOrganizationID(g.ID)
@@ -314,14 +297,6 @@ func (gomuo *GithubOrganizationMemberUpdateOne) SetOrganization(g *GithubOrganiz
 // SetAccountID sets the "account" edge to the GithubAccount entity by ID.
 func (gomuo *GithubOrganizationMemberUpdateOne) SetAccountID(id int) *GithubOrganizationMemberUpdateOne {
 	gomuo.mutation.SetAccountID(id)
-	return gomuo
-}
-
-// SetNillableAccountID sets the "account" edge to the GithubAccount entity by ID if the given value is not nil.
-func (gomuo *GithubOrganizationMemberUpdateOne) SetNillableAccountID(id *int) *GithubOrganizationMemberUpdateOne {
-	if id != nil {
-		gomuo = gomuo.SetAccountID(*id)
-	}
 	return gomuo
 }
 
@@ -417,6 +392,12 @@ func (gomuo *GithubOrganizationMemberUpdateOne) check() error {
 		if err := githuborganizationmember.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf("ent: validator failed for field \"role\": %w", err)}
 		}
+	}
+	if _, ok := gomuo.mutation.OrganizationID(); gomuo.mutation.OrganizationCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"organization\"")
+	}
+	if _, ok := gomuo.mutation.AccountID(); gomuo.mutation.AccountCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"account\"")
 	}
 	return nil
 }

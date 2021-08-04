@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
@@ -27,6 +28,7 @@ type DiscordAccountQuery struct {
 	predicates []predicate.DiscordAccount
 	// eager-loading edges.
 	withOwner *UserQuery
+	withBot   *DiscordBotQuery
 	withFKs   bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -79,6 +81,28 @@ func (daq *DiscordAccountQuery) QueryOwner() *UserQuery {
 			sqlgraph.From(discordaccount.Table, discordaccount.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, discordaccount.OwnerTable, discordaccount.OwnerColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(daq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBot chains the current query on the "bot" edge.
+func (daq *DiscordAccountQuery) QueryBot() *DiscordBotQuery {
+	query := &DiscordBotQuery{config: daq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := daq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := daq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discordaccount.Table, discordaccount.FieldID, selector),
+			sqlgraph.To(discordbot.Table, discordbot.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, discordaccount.BotTable, discordaccount.BotColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(daq.driver.Dialect(), step)
 		return fromU, nil
@@ -268,6 +292,7 @@ func (daq *DiscordAccountQuery) Clone() *DiscordAccountQuery {
 		order:      append([]OrderFunc{}, daq.order...),
 		predicates: append([]predicate.DiscordAccount{}, daq.predicates...),
 		withOwner:  daq.withOwner.Clone(),
+		withBot:    daq.withBot.Clone(),
 		// clone intermediate query.
 		sql:  daq.sql.Clone(),
 		path: daq.path,
@@ -282,6 +307,17 @@ func (daq *DiscordAccountQuery) WithOwner(opts ...func(*UserQuery)) *DiscordAcco
 		opt(query)
 	}
 	daq.withOwner = query
+	return daq
+}
+
+// WithBot tells the query-builder to eager-load the nodes that are connected to
+// the "bot" edge. The optional arguments are used to configure the query builder of the edge.
+func (daq *DiscordAccountQuery) WithBot(opts ...func(*DiscordBotQuery)) *DiscordAccountQuery {
+	query := &DiscordBotQuery{config: daq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	daq.withBot = query
 	return daq
 }
 
@@ -357,11 +393,12 @@ func (daq *DiscordAccountQuery) sqlAll(ctx context.Context) ([]*DiscordAccount, 
 		nodes       = []*DiscordAccount{}
 		withFKs     = daq.withFKs
 		_spec       = daq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			daq.withOwner != nil,
+			daq.withBot != nil,
 		}
 	)
-	if daq.withOwner != nil {
+	if daq.withOwner != nil || daq.withBot != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -412,6 +449,35 @@ func (daq *DiscordAccountQuery) sqlAll(ctx context.Context) ([]*DiscordAccount, 
 			}
 			for i := range nodes {
 				nodes[i].Edges.Owner = n
+			}
+		}
+	}
+
+	if query := daq.withBot; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*DiscordAccount)
+		for i := range nodes {
+			if nodes[i].discord_bot_account == nil {
+				continue
+			}
+			fk := *nodes[i].discord_bot_account
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(discordbot.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "discord_bot_account" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Bot = n
 			}
 		}
 	}

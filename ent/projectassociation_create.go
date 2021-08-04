@@ -32,14 +32,6 @@ func (pac *ProjectAssociationCreate) SetParentID(id int) *ProjectAssociationCrea
 	return pac
 }
 
-// SetNillableParentID sets the "parent" edge to the Project entity by ID if the given value is not nil.
-func (pac *ProjectAssociationCreate) SetNillableParentID(id *int) *ProjectAssociationCreate {
-	if id != nil {
-		pac = pac.SetParentID(*id)
-	}
-	return pac
-}
-
 // SetParent sets the "parent" edge to the Project entity.
 func (pac *ProjectAssociationCreate) SetParent(p *Project) *ProjectAssociationCreate {
 	return pac.SetParentID(p.ID)
@@ -48,14 +40,6 @@ func (pac *ProjectAssociationCreate) SetParent(p *Project) *ProjectAssociationCr
 // SetChildID sets the "child" edge to the Project entity by ID.
 func (pac *ProjectAssociationCreate) SetChildID(id int) *ProjectAssociationCreate {
 	pac.mutation.SetChildID(id)
-	return pac
-}
-
-// SetNillableChildID sets the "child" edge to the Project entity by ID if the given value is not nil.
-func (pac *ProjectAssociationCreate) SetNillableChildID(id *int) *ProjectAssociationCreate {
-	if id != nil {
-		pac = pac.SetChildID(*id)
-	}
 	return pac
 }
 
@@ -125,6 +109,12 @@ func (pac *ProjectAssociationCreate) check() error {
 		if err := projectassociation.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
 		}
+	}
+	if _, ok := pac.mutation.ParentID(); !ok {
+		return &ValidationError{Name: "parent", err: errors.New("ent: missing required edge \"parent\"")}
+	}
+	if _, ok := pac.mutation.ChildID(); !ok {
+		return &ValidationError{Name: "child", err: errors.New("ent: missing required edge \"child\"")}
 	}
 	return nil
 }

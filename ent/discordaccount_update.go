@@ -4,13 +4,13 @@ package ent
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
@@ -46,9 +46,36 @@ func (dau *DiscordAccountUpdate) SetOwnerID(id int) *DiscordAccountUpdate {
 	return dau
 }
 
+// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
+func (dau *DiscordAccountUpdate) SetNillableOwnerID(id *int) *DiscordAccountUpdate {
+	if id != nil {
+		dau = dau.SetOwnerID(*id)
+	}
+	return dau
+}
+
 // SetOwner sets the "owner" edge to the User entity.
 func (dau *DiscordAccountUpdate) SetOwner(u *User) *DiscordAccountUpdate {
 	return dau.SetOwnerID(u.ID)
+}
+
+// SetBotID sets the "bot" edge to the DiscordBot entity by ID.
+func (dau *DiscordAccountUpdate) SetBotID(id int) *DiscordAccountUpdate {
+	dau.mutation.SetBotID(id)
+	return dau
+}
+
+// SetNillableBotID sets the "bot" edge to the DiscordBot entity by ID if the given value is not nil.
+func (dau *DiscordAccountUpdate) SetNillableBotID(id *int) *DiscordAccountUpdate {
+	if id != nil {
+		dau = dau.SetBotID(*id)
+	}
+	return dau
+}
+
+// SetBot sets the "bot" edge to the DiscordBot entity.
+func (dau *DiscordAccountUpdate) SetBot(d *DiscordBot) *DiscordAccountUpdate {
+	return dau.SetBotID(d.ID)
 }
 
 // Mutation returns the DiscordAccountMutation object of the builder.
@@ -59,6 +86,12 @@ func (dau *DiscordAccountUpdate) Mutation() *DiscordAccountMutation {
 // ClearOwner clears the "owner" edge to the User entity.
 func (dau *DiscordAccountUpdate) ClearOwner() *DiscordAccountUpdate {
 	dau.mutation.ClearOwner()
+	return dau
+}
+
+// ClearBot clears the "bot" edge to the DiscordBot entity.
+func (dau *DiscordAccountUpdate) ClearBot() *DiscordAccountUpdate {
+	dau.mutation.ClearBot()
 	return dau
 }
 
@@ -125,9 +158,6 @@ func (dau *DiscordAccountUpdate) check() error {
 		if err := discordaccount.DiscriminatorValidator(v); err != nil {
 			return &ValidationError{Name: "discriminator", err: fmt.Errorf("ent: validator failed for field \"discriminator\": %w", err)}
 		}
-	}
-	if _, ok := dau.mutation.OwnerID(); dau.mutation.OwnerCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"owner\"")
 	}
 	return nil
 }
@@ -199,6 +229,41 @@ func (dau *DiscordAccountUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if dau.mutation.BotCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   discordaccount.BotTable,
+			Columns: []string{discordaccount.BotColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dau.mutation.BotIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   discordaccount.BotTable,
+			Columns: []string{discordaccount.BotColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, dau.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{discordaccount.Label}
@@ -236,9 +301,36 @@ func (dauo *DiscordAccountUpdateOne) SetOwnerID(id int) *DiscordAccountUpdateOne
 	return dauo
 }
 
+// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
+func (dauo *DiscordAccountUpdateOne) SetNillableOwnerID(id *int) *DiscordAccountUpdateOne {
+	if id != nil {
+		dauo = dauo.SetOwnerID(*id)
+	}
+	return dauo
+}
+
 // SetOwner sets the "owner" edge to the User entity.
 func (dauo *DiscordAccountUpdateOne) SetOwner(u *User) *DiscordAccountUpdateOne {
 	return dauo.SetOwnerID(u.ID)
+}
+
+// SetBotID sets the "bot" edge to the DiscordBot entity by ID.
+func (dauo *DiscordAccountUpdateOne) SetBotID(id int) *DiscordAccountUpdateOne {
+	dauo.mutation.SetBotID(id)
+	return dauo
+}
+
+// SetNillableBotID sets the "bot" edge to the DiscordBot entity by ID if the given value is not nil.
+func (dauo *DiscordAccountUpdateOne) SetNillableBotID(id *int) *DiscordAccountUpdateOne {
+	if id != nil {
+		dauo = dauo.SetBotID(*id)
+	}
+	return dauo
+}
+
+// SetBot sets the "bot" edge to the DiscordBot entity.
+func (dauo *DiscordAccountUpdateOne) SetBot(d *DiscordBot) *DiscordAccountUpdateOne {
+	return dauo.SetBotID(d.ID)
 }
 
 // Mutation returns the DiscordAccountMutation object of the builder.
@@ -249,6 +341,12 @@ func (dauo *DiscordAccountUpdateOne) Mutation() *DiscordAccountMutation {
 // ClearOwner clears the "owner" edge to the User entity.
 func (dauo *DiscordAccountUpdateOne) ClearOwner() *DiscordAccountUpdateOne {
 	dauo.mutation.ClearOwner()
+	return dauo
+}
+
+// ClearBot clears the "bot" edge to the DiscordBot entity.
+func (dauo *DiscordAccountUpdateOne) ClearBot() *DiscordAccountUpdateOne {
+	dauo.mutation.ClearBot()
 	return dauo
 }
 
@@ -322,9 +420,6 @@ func (dauo *DiscordAccountUpdateOne) check() error {
 		if err := discordaccount.DiscriminatorValidator(v); err != nil {
 			return &ValidationError{Name: "discriminator", err: fmt.Errorf("ent: validator failed for field \"discriminator\": %w", err)}
 		}
-	}
-	if _, ok := dauo.mutation.OwnerID(); dauo.mutation.OwnerCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"owner\"")
 	}
 	return nil
 }
@@ -405,6 +500,41 @@ func (dauo *DiscordAccountUpdateOne) sqlSave(ctx context.Context) (_node *Discor
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if dauo.mutation.BotCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   discordaccount.BotTable,
+			Columns: []string{discordaccount.BotColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dauo.mutation.BotIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   discordaccount.BotTable,
+			Columns: []string{discordaccount.BotColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: discordbot.FieldID,
 				},
 			},
 		}

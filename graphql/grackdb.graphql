@@ -78,7 +78,26 @@ type DiscordAccount implements Node {
     discordId: String!
     username: String!
     discriminator: String!
-    owner: User!
+    owner: User
+    bot: DiscordBot
+}
+
+type DiscordBotConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [DiscordBotEdge]
+}
+
+type DiscordBotEdge {
+    node: DiscordBot
+    cursor: Cursor!
+}
+
+type DiscordBot implements Node {
+    id: ID!
+    account: DiscordAccount!
+    project: Project!
+    repository: Repository
 }
 
 type GithubAccountConnection {
@@ -208,6 +227,7 @@ type Project implements Node {
     parentProjects: [ProjectAssociation!]
     childProjects: [ProjectAssociation!]
     repositories: [Repository!]
+    discordBots: [DiscordBot!]
 }
 
 enum ProjectContributorRole {
@@ -304,6 +324,7 @@ type Repository implements Node {
     project: Project!
     githubAccount: GithubAccount
     githubOrganization: GithubOrganization
+    discordBots: [DiscordBot!]
 }
 
 type Query {
@@ -326,6 +347,13 @@ type Query {
         orderBy: DiscordAccountOrder
         where: DiscordAccountWhereInput
     ): DiscordAccountConnection
+    discordBots(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        where: DiscordBotWhereInput
+    ): DiscordBotConnection
     githubAccounts(
         after: Cursor
         first: Int
@@ -398,7 +426,14 @@ input CreateDiscordAccountInput {
     discordId: String!
     username: String!
     discriminator: String!
-    owner: Int!
+    owner: Int
+    bot: Int
+}
+
+input CreateDiscordBotInput {
+    account: Int!
+    project: Int!
+    repository: Int
 }
 
 input CreateGithubAccountInput {
@@ -447,6 +482,7 @@ input CreateRepositoryInput {
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
+    createDiscordBot(input: CreateDiscordBotInput!): DiscordBot!
     createGithubAccount(input: CreateGithubAccountInput!): GithubAccount!
     createGithubOrganization(input: CreateGithubOrganizationInput!): GithubOrganization!
     createGithubOrganizationMember(input: CreateGithubOrganizationMemberInput!): GithubOrganizationMember!

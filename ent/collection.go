@@ -19,6 +19,10 @@ func (da *DiscordAccountQuery) CollectFields(ctx context.Context, satisfies ...s
 func (da *DiscordAccountQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *DiscordAccountQuery {
 	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
 		switch field.Name {
+		case "bot":
+			da = da.WithBot(func(query *DiscordBotQuery) {
+				query.collectField(ctx, field)
+			})
 		case "owner":
 			da = da.WithOwner(func(query *UserQuery) {
 				query.collectField(ctx, field)
@@ -26,6 +30,34 @@ func (da *DiscordAccountQuery) collectField(ctx *graphql.OperationContext, field
 		}
 	}
 	return da
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (db *DiscordBotQuery) CollectFields(ctx context.Context, satisfies ...string) *DiscordBotQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		db = db.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return db
+}
+
+func (db *DiscordBotQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *DiscordBotQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "account":
+			db = db.WithAccount(func(query *DiscordAccountQuery) {
+				query.collectField(ctx, field)
+			})
+		case "project":
+			db = db.WithProject(func(query *ProjectQuery) {
+				query.collectField(ctx, field)
+			})
+		case "repository":
+			db = db.WithRepository(func(query *RepositoryQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
+	return db
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
@@ -123,6 +155,10 @@ func (pr *ProjectQuery) collectField(ctx *graphql.OperationContext, field graphq
 			pr = pr.WithContributors(func(query *ProjectContributorQuery) {
 				query.collectField(ctx, field)
 			})
+		case "discordBots":
+			pr = pr.WithDiscordBots(func(query *DiscordBotQuery) {
+				query.collectField(ctx, field)
+			})
 		case "parentProjects":
 			pr = pr.WithParentProjects(func(query *ProjectAssociationQuery) {
 				query.collectField(ctx, field)
@@ -195,6 +231,10 @@ func (r *RepositoryQuery) CollectFields(ctx context.Context, satisfies ...string
 func (r *RepositoryQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *RepositoryQuery {
 	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
 		switch field.Name {
+		case "discordBots":
+			r = r.WithDiscordBots(func(query *DiscordBotQuery) {
+				query.collectField(ctx, field)
+			})
 		case "githubAccount":
 			r = r.WithGithubAccount(func(query *GithubAccountQuery) {
 				query.collectField(ctx, field)

@@ -38,9 +38,11 @@ type RepositoryEdges struct {
 	GithubAccount *GithubAccount `json:"github_account,omitempty"`
 	// GithubOrganization holds the value of the github_organization edge.
 	GithubOrganization *GithubOrganization `json:"github_organization,omitempty"`
+	// DiscordBots holds the value of the discord_bots edge.
+	DiscordBots []*DiscordBot `json:"discord_bots,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // ProjectOrErr returns the Project value or an error if the edge
@@ -83,6 +85,15 @@ func (e RepositoryEdges) GithubOrganizationOrErr() (*GithubOrganization, error) 
 		return e.GithubOrganization, nil
 	}
 	return nil, &NotLoadedError{edge: "github_organization"}
+}
+
+// DiscordBotsOrErr returns the DiscordBots value or an error if the edge
+// was not loaded in eager-loading.
+func (e RepositoryEdges) DiscordBotsOrErr() ([]*DiscordBot, error) {
+	if e.loadedTypes[3] {
+		return e.DiscordBots, nil
+	}
+	return nil, &NotLoadedError{edge: "discord_bots"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -173,6 +184,11 @@ func (r *Repository) QueryGithubAccount() *GithubAccountQuery {
 // QueryGithubOrganization queries the "github_organization" edge of the Repository entity.
 func (r *Repository) QueryGithubOrganization() *GithubOrganizationQuery {
 	return (&RepositoryClient{config: r.config}).QueryGithubOrganization(r)
+}
+
+// QueryDiscordBots queries the "discord_bots" edge of the Repository entity.
+func (r *Repository) QueryDiscordBots() *DiscordBotQuery {
+	return (&RepositoryClient{config: r.config}).QueryDiscordBots(r)
 }
 
 // Update returns a builder for updating this Repository.

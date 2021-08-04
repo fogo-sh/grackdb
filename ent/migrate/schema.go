@@ -14,6 +14,7 @@ var (
 		{Name: "discord_id", Type: field.TypeString, Unique: true},
 		{Name: "username", Type: field.TypeString},
 		{Name: "discriminator", Type: field.TypeString, Size: 4},
+		{Name: "discord_bot_account", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "user_discord_accounts", Type: field.TypeInt, Nullable: true},
 	}
 	// DiscordAccountsTable holds the schema information for the "discord_accounts" table.
@@ -23,9 +24,41 @@ var (
 		PrimaryKey: []*schema.Column{DiscordAccountsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "discord_accounts_users_discord_accounts",
+				Symbol:     "discord_accounts_discord_bots_account",
 				Columns:    []*schema.Column{DiscordAccountsColumns[4]},
+				RefColumns: []*schema.Column{DiscordBotsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "discord_accounts_users_discord_accounts",
+				Columns:    []*schema.Column{DiscordAccountsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// DiscordBotsColumns holds the columns for the "discord_bots" table.
+	DiscordBotsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "project_discord_bots", Type: field.TypeInt, Nullable: true},
+		{Name: "repository_discord_bots", Type: field.TypeInt, Nullable: true},
+	}
+	// DiscordBotsTable holds the schema information for the "discord_bots" table.
+	DiscordBotsTable = &schema.Table{
+		Name:       "discord_bots",
+		Columns:    DiscordBotsColumns,
+		PrimaryKey: []*schema.Column{DiscordBotsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "discord_bots_projects_discord_bots",
+				Columns:    []*schema.Column{DiscordBotsColumns[1]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "discord_bots_repositories_discord_bots",
+				Columns:    []*schema.Column{DiscordBotsColumns[2]},
+				RefColumns: []*schema.Column{RepositoriesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -207,6 +240,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		DiscordAccountsTable,
+		DiscordBotsTable,
 		GithubAccountsTable,
 		GithubOrganizationsTable,
 		GithubOrganizationMembersTable,
@@ -219,7 +253,10 @@ var (
 )
 
 func init() {
-	DiscordAccountsTable.ForeignKeys[0].RefTable = UsersTable
+	DiscordAccountsTable.ForeignKeys[0].RefTable = DiscordBotsTable
+	DiscordAccountsTable.ForeignKeys[1].RefTable = UsersTable
+	DiscordBotsTable.ForeignKeys[0].RefTable = ProjectsTable
+	DiscordBotsTable.ForeignKeys[1].RefTable = RepositoriesTable
 	GithubAccountsTable.ForeignKeys[0].RefTable = UsersTable
 	GithubOrganizationMembersTable.ForeignKeys[0].RefTable = GithubAccountsTable
 	GithubOrganizationMembersTable.ForeignKeys[1].RefTable = GithubOrganizationsTable

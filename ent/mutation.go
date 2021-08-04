@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/discordbot"
 	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
@@ -32,6 +33,7 @@ const (
 
 	// Node types.
 	TypeDiscordAccount           = "DiscordAccount"
+	TypeDiscordBot               = "DiscordBot"
 	TypeGithubAccount            = "GithubAccount"
 	TypeGithubOrganization       = "GithubOrganization"
 	TypeGithubOrganizationMember = "GithubOrganizationMember"
@@ -54,6 +56,8 @@ type DiscordAccountMutation struct {
 	clearedFields map[string]struct{}
 	owner         *int
 	clearedowner  bool
+	bot           *int
+	clearedbot    bool
 	done          bool
 	oldValue      func(context.Context) (*DiscordAccount, error)
 	predicates    []predicate.DiscordAccount
@@ -285,6 +289,45 @@ func (m *DiscordAccountMutation) ResetOwner() {
 	m.clearedowner = false
 }
 
+// SetBotID sets the "bot" edge to the DiscordBot entity by id.
+func (m *DiscordAccountMutation) SetBotID(id int) {
+	m.bot = &id
+}
+
+// ClearBot clears the "bot" edge to the DiscordBot entity.
+func (m *DiscordAccountMutation) ClearBot() {
+	m.clearedbot = true
+}
+
+// BotCleared reports if the "bot" edge to the DiscordBot entity was cleared.
+func (m *DiscordAccountMutation) BotCleared() bool {
+	return m.clearedbot
+}
+
+// BotID returns the "bot" edge ID in the mutation.
+func (m *DiscordAccountMutation) BotID() (id int, exists bool) {
+	if m.bot != nil {
+		return *m.bot, true
+	}
+	return
+}
+
+// BotIDs returns the "bot" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BotID instead. It exists only for internal usage by the builders.
+func (m *DiscordAccountMutation) BotIDs() (ids []int) {
+	if id := m.bot; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetBot resets all changes to the "bot" edge.
+func (m *DiscordAccountMutation) ResetBot() {
+	m.bot = nil
+	m.clearedbot = false
+}
+
 // Op returns the operation name.
 func (m *DiscordAccountMutation) Op() Op {
 	return m.op
@@ -432,9 +475,12 @@ func (m *DiscordAccountMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DiscordAccountMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.owner != nil {
 		edges = append(edges, discordaccount.EdgeOwner)
+	}
+	if m.bot != nil {
+		edges = append(edges, discordaccount.EdgeBot)
 	}
 	return edges
 }
@@ -447,13 +493,17 @@ func (m *DiscordAccountMutation) AddedIDs(name string) []ent.Value {
 		if id := m.owner; id != nil {
 			return []ent.Value{*id}
 		}
+	case discordaccount.EdgeBot:
+		if id := m.bot; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DiscordAccountMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
@@ -467,9 +517,12 @@ func (m *DiscordAccountMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DiscordAccountMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedowner {
 		edges = append(edges, discordaccount.EdgeOwner)
+	}
+	if m.clearedbot {
+		edges = append(edges, discordaccount.EdgeBot)
 	}
 	return edges
 }
@@ -480,6 +533,8 @@ func (m *DiscordAccountMutation) EdgeCleared(name string) bool {
 	switch name {
 	case discordaccount.EdgeOwner:
 		return m.clearedowner
+	case discordaccount.EdgeBot:
+		return m.clearedbot
 	}
 	return false
 }
@@ -490,6 +545,9 @@ func (m *DiscordAccountMutation) ClearEdge(name string) error {
 	switch name {
 	case discordaccount.EdgeOwner:
 		m.ClearOwner()
+		return nil
+	case discordaccount.EdgeBot:
+		m.ClearBot()
 		return nil
 	}
 	return fmt.Errorf("unknown DiscordAccount unique edge %s", name)
@@ -502,8 +560,423 @@ func (m *DiscordAccountMutation) ResetEdge(name string) error {
 	case discordaccount.EdgeOwner:
 		m.ResetOwner()
 		return nil
+	case discordaccount.EdgeBot:
+		m.ResetBot()
+		return nil
 	}
 	return fmt.Errorf("unknown DiscordAccount edge %s", name)
+}
+
+// DiscordBotMutation represents an operation that mutates the DiscordBot nodes in the graph.
+type DiscordBotMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int
+	clearedFields     map[string]struct{}
+	account           *int
+	clearedaccount    bool
+	project           *int
+	clearedproject    bool
+	repository        *int
+	clearedrepository bool
+	done              bool
+	oldValue          func(context.Context) (*DiscordBot, error)
+	predicates        []predicate.DiscordBot
+}
+
+var _ ent.Mutation = (*DiscordBotMutation)(nil)
+
+// discordbotOption allows management of the mutation configuration using functional options.
+type discordbotOption func(*DiscordBotMutation)
+
+// newDiscordBotMutation creates new mutation for the DiscordBot entity.
+func newDiscordBotMutation(c config, op Op, opts ...discordbotOption) *DiscordBotMutation {
+	m := &DiscordBotMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDiscordBot,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDiscordBotID sets the ID field of the mutation.
+func withDiscordBotID(id int) discordbotOption {
+	return func(m *DiscordBotMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DiscordBot
+		)
+		m.oldValue = func(ctx context.Context) (*DiscordBot, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DiscordBot.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDiscordBot sets the old DiscordBot of the mutation.
+func withDiscordBot(node *DiscordBot) discordbotOption {
+	return func(m *DiscordBotMutation) {
+		m.oldValue = func(context.Context) (*DiscordBot, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DiscordBotMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DiscordBotMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DiscordBotMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetAccountID sets the "account" edge to the DiscordAccount entity by id.
+func (m *DiscordBotMutation) SetAccountID(id int) {
+	m.account = &id
+}
+
+// ClearAccount clears the "account" edge to the DiscordAccount entity.
+func (m *DiscordBotMutation) ClearAccount() {
+	m.clearedaccount = true
+}
+
+// AccountCleared reports if the "account" edge to the DiscordAccount entity was cleared.
+func (m *DiscordBotMutation) AccountCleared() bool {
+	return m.clearedaccount
+}
+
+// AccountID returns the "account" edge ID in the mutation.
+func (m *DiscordBotMutation) AccountID() (id int, exists bool) {
+	if m.account != nil {
+		return *m.account, true
+	}
+	return
+}
+
+// AccountIDs returns the "account" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AccountID instead. It exists only for internal usage by the builders.
+func (m *DiscordBotMutation) AccountIDs() (ids []int) {
+	if id := m.account; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAccount resets all changes to the "account" edge.
+func (m *DiscordBotMutation) ResetAccount() {
+	m.account = nil
+	m.clearedaccount = false
+}
+
+// SetProjectID sets the "project" edge to the Project entity by id.
+func (m *DiscordBotMutation) SetProjectID(id int) {
+	m.project = &id
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (m *DiscordBotMutation) ClearProject() {
+	m.clearedproject = true
+}
+
+// ProjectCleared reports if the "project" edge to the Project entity was cleared.
+func (m *DiscordBotMutation) ProjectCleared() bool {
+	return m.clearedproject
+}
+
+// ProjectID returns the "project" edge ID in the mutation.
+func (m *DiscordBotMutation) ProjectID() (id int, exists bool) {
+	if m.project != nil {
+		return *m.project, true
+	}
+	return
+}
+
+// ProjectIDs returns the "project" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProjectID instead. It exists only for internal usage by the builders.
+func (m *DiscordBotMutation) ProjectIDs() (ids []int) {
+	if id := m.project; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProject resets all changes to the "project" edge.
+func (m *DiscordBotMutation) ResetProject() {
+	m.project = nil
+	m.clearedproject = false
+}
+
+// SetRepositoryID sets the "repository" edge to the Repository entity by id.
+func (m *DiscordBotMutation) SetRepositoryID(id int) {
+	m.repository = &id
+}
+
+// ClearRepository clears the "repository" edge to the Repository entity.
+func (m *DiscordBotMutation) ClearRepository() {
+	m.clearedrepository = true
+}
+
+// RepositoryCleared reports if the "repository" edge to the Repository entity was cleared.
+func (m *DiscordBotMutation) RepositoryCleared() bool {
+	return m.clearedrepository
+}
+
+// RepositoryID returns the "repository" edge ID in the mutation.
+func (m *DiscordBotMutation) RepositoryID() (id int, exists bool) {
+	if m.repository != nil {
+		return *m.repository, true
+	}
+	return
+}
+
+// RepositoryIDs returns the "repository" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RepositoryID instead. It exists only for internal usage by the builders.
+func (m *DiscordBotMutation) RepositoryIDs() (ids []int) {
+	if id := m.repository; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRepository resets all changes to the "repository" edge.
+func (m *DiscordBotMutation) ResetRepository() {
+	m.repository = nil
+	m.clearedrepository = false
+}
+
+// Op returns the operation name.
+func (m *DiscordBotMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (DiscordBot).
+func (m *DiscordBotMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DiscordBotMutation) Fields() []string {
+	fields := make([]string, 0, 0)
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DiscordBotMutation) Field(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DiscordBotMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	return nil, fmt.Errorf("unknown DiscordBot field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DiscordBotMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown DiscordBot field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DiscordBotMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DiscordBotMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DiscordBotMutation) AddField(name string, value ent.Value) error {
+	return fmt.Errorf("unknown DiscordBot numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DiscordBotMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DiscordBotMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DiscordBotMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown DiscordBot nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DiscordBotMutation) ResetField(name string) error {
+	return fmt.Errorf("unknown DiscordBot field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DiscordBotMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.account != nil {
+		edges = append(edges, discordbot.EdgeAccount)
+	}
+	if m.project != nil {
+		edges = append(edges, discordbot.EdgeProject)
+	}
+	if m.repository != nil {
+		edges = append(edges, discordbot.EdgeRepository)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DiscordBotMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case discordbot.EdgeAccount:
+		if id := m.account; id != nil {
+			return []ent.Value{*id}
+		}
+	case discordbot.EdgeProject:
+		if id := m.project; id != nil {
+			return []ent.Value{*id}
+		}
+	case discordbot.EdgeRepository:
+		if id := m.repository; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DiscordBotMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DiscordBotMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DiscordBotMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedaccount {
+		edges = append(edges, discordbot.EdgeAccount)
+	}
+	if m.clearedproject {
+		edges = append(edges, discordbot.EdgeProject)
+	}
+	if m.clearedrepository {
+		edges = append(edges, discordbot.EdgeRepository)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DiscordBotMutation) EdgeCleared(name string) bool {
+	switch name {
+	case discordbot.EdgeAccount:
+		return m.clearedaccount
+	case discordbot.EdgeProject:
+		return m.clearedproject
+	case discordbot.EdgeRepository:
+		return m.clearedrepository
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DiscordBotMutation) ClearEdge(name string) error {
+	switch name {
+	case discordbot.EdgeAccount:
+		m.ClearAccount()
+		return nil
+	case discordbot.EdgeProject:
+		m.ClearProject()
+		return nil
+	case discordbot.EdgeRepository:
+		m.ClearRepository()
+		return nil
+	}
+	return fmt.Errorf("unknown DiscordBot unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DiscordBotMutation) ResetEdge(name string) error {
+	switch name {
+	case discordbot.EdgeAccount:
+		m.ResetAccount()
+		return nil
+	case discordbot.EdgeProject:
+		m.ResetProject()
+		return nil
+	case discordbot.EdgeRepository:
+		m.ResetRepository()
+		return nil
+	}
+	return fmt.Errorf("unknown DiscordBot edge %s", name)
 }
 
 // GithubAccountMutation represents an operation that mutates the GithubAccount nodes in the graph.
@@ -2005,6 +2478,9 @@ type ProjectMutation struct {
 	repositories           map[int]struct{}
 	removedrepositories    map[int]struct{}
 	clearedrepositories    bool
+	discord_bots           map[int]struct{}
+	removeddiscord_bots    map[int]struct{}
+	cleareddiscord_bots    bool
 	done                   bool
 	oldValue               func(context.Context) (*Project, error)
 	predicates             []predicate.Project
@@ -2475,6 +2951,60 @@ func (m *ProjectMutation) ResetRepositories() {
 	m.removedrepositories = nil
 }
 
+// AddDiscordBotIDs adds the "discord_bots" edge to the DiscordBot entity by ids.
+func (m *ProjectMutation) AddDiscordBotIDs(ids ...int) {
+	if m.discord_bots == nil {
+		m.discord_bots = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.discord_bots[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDiscordBots clears the "discord_bots" edge to the DiscordBot entity.
+func (m *ProjectMutation) ClearDiscordBots() {
+	m.cleareddiscord_bots = true
+}
+
+// DiscordBotsCleared reports if the "discord_bots" edge to the DiscordBot entity was cleared.
+func (m *ProjectMutation) DiscordBotsCleared() bool {
+	return m.cleareddiscord_bots
+}
+
+// RemoveDiscordBotIDs removes the "discord_bots" edge to the DiscordBot entity by IDs.
+func (m *ProjectMutation) RemoveDiscordBotIDs(ids ...int) {
+	if m.removeddiscord_bots == nil {
+		m.removeddiscord_bots = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.discord_bots, ids[i])
+		m.removeddiscord_bots[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDiscordBots returns the removed IDs of the "discord_bots" edge to the DiscordBot entity.
+func (m *ProjectMutation) RemovedDiscordBotsIDs() (ids []int) {
+	for id := range m.removeddiscord_bots {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DiscordBotsIDs returns the "discord_bots" edge IDs in the mutation.
+func (m *ProjectMutation) DiscordBotsIDs() (ids []int) {
+	for id := range m.discord_bots {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDiscordBots resets all changes to the "discord_bots" edge.
+func (m *ProjectMutation) ResetDiscordBots() {
+	m.discord_bots = nil
+	m.cleareddiscord_bots = false
+	m.removeddiscord_bots = nil
+}
+
 // Op returns the operation name.
 func (m *ProjectMutation) Op() Op {
 	return m.op
@@ -2654,7 +3184,7 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.contributors != nil {
 		edges = append(edges, project.EdgeContributors)
 	}
@@ -2666,6 +3196,9 @@ func (m *ProjectMutation) AddedEdges() []string {
 	}
 	if m.repositories != nil {
 		edges = append(edges, project.EdgeRepositories)
+	}
+	if m.discord_bots != nil {
+		edges = append(edges, project.EdgeDiscordBots)
 	}
 	return edges
 }
@@ -2698,13 +3231,19 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeDiscordBots:
+		ids := make([]ent.Value, 0, len(m.discord_bots))
+		for id := range m.discord_bots {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedcontributors != nil {
 		edges = append(edges, project.EdgeContributors)
 	}
@@ -2716,6 +3255,9 @@ func (m *ProjectMutation) RemovedEdges() []string {
 	}
 	if m.removedrepositories != nil {
 		edges = append(edges, project.EdgeRepositories)
+	}
+	if m.removeddiscord_bots != nil {
+		edges = append(edges, project.EdgeDiscordBots)
 	}
 	return edges
 }
@@ -2748,13 +3290,19 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeDiscordBots:
+		ids := make([]ent.Value, 0, len(m.removeddiscord_bots))
+		for id := range m.removeddiscord_bots {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedcontributors {
 		edges = append(edges, project.EdgeContributors)
 	}
@@ -2766,6 +3314,9 @@ func (m *ProjectMutation) ClearedEdges() []string {
 	}
 	if m.clearedrepositories {
 		edges = append(edges, project.EdgeRepositories)
+	}
+	if m.cleareddiscord_bots {
+		edges = append(edges, project.EdgeDiscordBots)
 	}
 	return edges
 }
@@ -2782,6 +3333,8 @@ func (m *ProjectMutation) EdgeCleared(name string) bool {
 		return m.clearedchild_projects
 	case project.EdgeRepositories:
 		return m.clearedrepositories
+	case project.EdgeDiscordBots:
+		return m.cleareddiscord_bots
 	}
 	return false
 }
@@ -2809,6 +3362,9 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 		return nil
 	case project.EdgeRepositories:
 		m.ResetRepositories()
+		return nil
+	case project.EdgeDiscordBots:
+		m.ResetDiscordBots()
 		return nil
 	}
 	return fmt.Errorf("unknown Project edge %s", name)
@@ -3659,6 +4215,9 @@ type RepositoryMutation struct {
 	clearedgithub_account      bool
 	github_organization        *int
 	clearedgithub_organization bool
+	discord_bots               map[int]struct{}
+	removeddiscord_bots        map[int]struct{}
+	cleareddiscord_bots        bool
 	done                       bool
 	oldValue                   func(context.Context) (*Repository, error)
 	predicates                 []predicate.Repository
@@ -3945,6 +4504,60 @@ func (m *RepositoryMutation) ResetGithubOrganization() {
 	m.clearedgithub_organization = false
 }
 
+// AddDiscordBotIDs adds the "discord_bots" edge to the DiscordBot entity by ids.
+func (m *RepositoryMutation) AddDiscordBotIDs(ids ...int) {
+	if m.discord_bots == nil {
+		m.discord_bots = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.discord_bots[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDiscordBots clears the "discord_bots" edge to the DiscordBot entity.
+func (m *RepositoryMutation) ClearDiscordBots() {
+	m.cleareddiscord_bots = true
+}
+
+// DiscordBotsCleared reports if the "discord_bots" edge to the DiscordBot entity was cleared.
+func (m *RepositoryMutation) DiscordBotsCleared() bool {
+	return m.cleareddiscord_bots
+}
+
+// RemoveDiscordBotIDs removes the "discord_bots" edge to the DiscordBot entity by IDs.
+func (m *RepositoryMutation) RemoveDiscordBotIDs(ids ...int) {
+	if m.removeddiscord_bots == nil {
+		m.removeddiscord_bots = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.discord_bots, ids[i])
+		m.removeddiscord_bots[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDiscordBots returns the removed IDs of the "discord_bots" edge to the DiscordBot entity.
+func (m *RepositoryMutation) RemovedDiscordBotsIDs() (ids []int) {
+	for id := range m.removeddiscord_bots {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DiscordBotsIDs returns the "discord_bots" edge IDs in the mutation.
+func (m *RepositoryMutation) DiscordBotsIDs() (ids []int) {
+	for id := range m.discord_bots {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDiscordBots resets all changes to the "discord_bots" edge.
+func (m *RepositoryMutation) ResetDiscordBots() {
+	m.discord_bots = nil
+	m.cleareddiscord_bots = false
+	m.removeddiscord_bots = nil
+}
+
 // Op returns the operation name.
 func (m *RepositoryMutation) Op() Op {
 	return m.op
@@ -4084,7 +4697,7 @@ func (m *RepositoryMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RepositoryMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.project != nil {
 		edges = append(edges, repository.EdgeProject)
 	}
@@ -4093,6 +4706,9 @@ func (m *RepositoryMutation) AddedEdges() []string {
 	}
 	if m.github_organization != nil {
 		edges = append(edges, repository.EdgeGithubOrganization)
+	}
+	if m.discord_bots != nil {
+		edges = append(edges, repository.EdgeDiscordBots)
 	}
 	return edges
 }
@@ -4113,13 +4729,22 @@ func (m *RepositoryMutation) AddedIDs(name string) []ent.Value {
 		if id := m.github_organization; id != nil {
 			return []ent.Value{*id}
 		}
+	case repository.EdgeDiscordBots:
+		ids := make([]ent.Value, 0, len(m.discord_bots))
+		for id := range m.discord_bots {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RepositoryMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.removeddiscord_bots != nil {
+		edges = append(edges, repository.EdgeDiscordBots)
+	}
 	return edges
 }
 
@@ -4127,13 +4752,19 @@ func (m *RepositoryMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *RepositoryMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case repository.EdgeDiscordBots:
+		ids := make([]ent.Value, 0, len(m.removeddiscord_bots))
+		for id := range m.removeddiscord_bots {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RepositoryMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedproject {
 		edges = append(edges, repository.EdgeProject)
 	}
@@ -4142,6 +4773,9 @@ func (m *RepositoryMutation) ClearedEdges() []string {
 	}
 	if m.clearedgithub_organization {
 		edges = append(edges, repository.EdgeGithubOrganization)
+	}
+	if m.cleareddiscord_bots {
+		edges = append(edges, repository.EdgeDiscordBots)
 	}
 	return edges
 }
@@ -4156,6 +4790,8 @@ func (m *RepositoryMutation) EdgeCleared(name string) bool {
 		return m.clearedgithub_account
 	case repository.EdgeGithubOrganization:
 		return m.clearedgithub_organization
+	case repository.EdgeDiscordBots:
+		return m.cleareddiscord_bots
 	}
 	return false
 }
@@ -4189,6 +4825,9 @@ func (m *RepositoryMutation) ResetEdge(name string) error {
 		return nil
 	case repository.EdgeGithubOrganization:
 		m.ResetGithubOrganization()
+		return nil
+	case repository.EdgeDiscordBots:
+		m.ResetDiscordBots()
 		return nil
 	}
 	return fmt.Errorf("unknown Repository edge %s", name)
