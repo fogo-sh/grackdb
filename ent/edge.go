@@ -148,6 +148,14 @@ func (pr *Project) Sites(ctx context.Context) ([]*Site, error) {
 	return result, err
 }
 
+func (pr *Project) Technologies(ctx context.Context) ([]*ProjectTechnology, error) {
+	result, err := pr.Edges.TechnologiesOrErr()
+	if IsNotLoaded(err) {
+		result, err = pr.QueryTechnologies().All(ctx)
+	}
+	return result, err
+}
+
 func (pa *ProjectAssociation) Parent(ctx context.Context) (*Project, error) {
 	result, err := pa.Edges.ParentOrErr()
 	if IsNotLoaded(err) {
@@ -176,6 +184,22 @@ func (pc *ProjectContributor) User(ctx context.Context) (*User, error) {
 	result, err := pc.Edges.UserOrErr()
 	if IsNotLoaded(err) {
 		result, err = pc.QueryUser().Only(ctx)
+	}
+	return result, err
+}
+
+func (pt *ProjectTechnology) Project(ctx context.Context) (*Project, error) {
+	result, err := pt.Edges.ProjectOrErr()
+	if IsNotLoaded(err) {
+		result, err = pt.QueryProject().Only(ctx)
+	}
+	return result, err
+}
+
+func (pt *ProjectTechnology) Technology(ctx context.Context) (*Technology, error) {
+	result, err := pt.Edges.TechnologyOrErr()
+	if IsNotLoaded(err) {
+		result, err = pt.QueryTechnology().Only(ctx)
 	}
 	return result, err
 }
@@ -248,6 +272,14 @@ func (t *Technology) ChildTechnologies(ctx context.Context) ([]*TechnologyAssoci
 	result, err := t.Edges.ChildTechnologiesOrErr()
 	if IsNotLoaded(err) {
 		result, err = t.QueryChildTechnologies().All(ctx)
+	}
+	return result, err
+}
+
+func (t *Technology) Projects(ctx context.Context) ([]*ProjectTechnology, error) {
+	result, err := t.Edges.ProjectsOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryProjects().All(ctx)
 	}
 	return result, err
 }

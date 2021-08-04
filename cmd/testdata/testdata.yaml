@@ -108,6 +108,12 @@ Items:
       Account: 3
       Project: 1
       Repository: 1
+  - Name: Gik -> Crystal
+    Type: ProjectTechnology
+    Params:
+      Type: WRITTEN_IN
+      Project: 1
+      Technology: 2
   
   - Name: Borik
     Type: Project
@@ -152,6 +158,12 @@ Items:
       Account: 4
       Project: 2
       Repository: 2
+  - Name: Borik -> Crystal
+    Type: ProjectTechnology
+    Params:
+      Type: WRITTEN_IN
+      Project: 2
+      Technology: 1
   
   - Name: GrackDB
     Type: Project
@@ -182,3 +194,15 @@ Items:
       URL: https://grackdb.fogo.sh
       Project: 3
       Repository: 3
+  - Name: GrackDB -> Go
+    Type: ProjectTechnology
+    Params:
+      Type: WRITTEN_IN
+      Project: 3
+      Technology: 2
+  - Name: GrackDB -> Ent
+    Type: ProjectTechnology
+    Params:
+      Type: USES
+      Project: 3
+      Technology: 3

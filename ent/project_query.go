@@ -17,6 +17,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 )
@@ -37,6 +38,7 @@ type ProjectQuery struct {
 	withRepositories   *RepositoryQuery
 	withDiscordBots    *DiscordBotQuery
 	withSites          *SiteQuery
+	withTechnologies   *ProjectTechnologyQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -198,6 +200,28 @@ func (pq *ProjectQuery) QuerySites() *SiteQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(site.Table, site.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.SitesTable, project.SitesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTechnologies chains the current query on the "technologies" edge.
+func (pq *ProjectQuery) QueryTechnologies() *ProjectTechnologyQuery {
+	query := &ProjectTechnologyQuery{config: pq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(projecttechnology.Table, projecttechnology.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.TechnologiesTable, project.TechnologiesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -392,6 +416,7 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 		withRepositories:   pq.withRepositories.Clone(),
 		withDiscordBots:    pq.withDiscordBots.Clone(),
 		withSites:          pq.withSites.Clone(),
+		withTechnologies:   pq.withTechnologies.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -461,6 +486,17 @@ func (pq *ProjectQuery) WithSites(opts ...func(*SiteQuery)) *ProjectQuery {
 		opt(query)
 	}
 	pq.withSites = query
+	return pq
+}
+
+// WithTechnologies tells the query-builder to eager-load the nodes that are connected to
+// the "technologies" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProjectQuery) WithTechnologies(opts ...func(*ProjectTechnologyQuery)) *ProjectQuery {
+	query := &ProjectTechnologyQuery{config: pq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withTechnologies = query
 	return pq
 }
 
@@ -535,13 +571,14 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context) ([]*Project, error) {
 	var (
 		nodes       = []*Project{}
 		_spec       = pq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
 			pq.withContributors != nil,
 			pq.withParentProjects != nil,
 			pq.withChildProjects != nil,
 			pq.withRepositories != nil,
 			pq.withDiscordBots != nil,
 			pq.withSites != nil,
+			pq.withTechnologies != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -735,6 +772,35 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context) ([]*Project, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "project_sites" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Sites = append(node.Edges.Sites, n)
+		}
+	}
+
+	if query := pq.withTechnologies; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Project)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Technologies = []*ProjectTechnology{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ProjectTechnology(func(s *sql.Selector) {
+			s.Where(sql.InValues(project.TechnologiesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.project_technologies
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "project_technologies" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "project_technologies" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Technologies = append(node.Edges.Technologies, n)
 		}
 	}
 

@@ -22,6 +22,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
@@ -293,7 +294,7 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		ID:     pr.ID,
 		Type:   "Project",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 6),
+		Edges:  make([]*Edge, 7),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(pr.Name); err != nil {
@@ -388,6 +389,16 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[6] = &Edge{
+		Type: "ProjectTechnology",
+		Name: "technologies",
+	}
+	node.Edges[6].IDs, err = pr.QueryTechnologies().
+		Select(projecttechnology.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -462,6 +473,45 @@ func (pc *ProjectContributor) Node(ctx context.Context) (node *Node, err error) 
 	}
 	node.Edges[1].IDs, err = pc.QueryUser().
 		Select(user.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (pt *ProjectTechnology) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     pt.ID,
+		Type:   "ProjectTechnology",
+		Fields: make([]*Field, 1),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(pt.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "projecttechnology.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Project",
+		Name: "project",
+	}
+	node.Edges[0].IDs, err = pt.QueryProject().
+		Select(project.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Technology",
+		Name: "technology",
+	}
+	node.Edges[1].IDs, err = pt.QueryTechnology().
+		Select(technology.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -590,7 +640,7 @@ func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
 		ID:     t.ID,
 		Type:   "Technology",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 2),
+		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(t.Name); err != nil {
@@ -641,6 +691,16 @@ func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[1].IDs, err = t.QueryChildTechnologies().
 		Select(technologyassociation.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "ProjectTechnology",
+		Name: "projects",
+	}
+	node.Edges[2].IDs, err = t.QueryProjects().
+		Select(projecttechnology.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -883,6 +943,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
+	case projecttechnology.Table:
+		n, err := c.ProjectTechnology.Query().
+			Where(projecttechnology.ID(id)).
+			CollectFields(ctx, "ProjectTechnology").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case repository.Table:
 		n, err := c.Repository.Query().
 			Where(repository.ID(id)).
@@ -1096,6 +1165,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.ProjectContributor.Query().
 			Where(projectcontributor.IDIn(ids...)).
 			CollectFields(ctx, "ProjectContributor").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case projecttechnology.Table:
+		nodes, err := c.ProjectTechnology.Query().
+			Where(projecttechnology.IDIn(ids...)).
+			CollectFields(ctx, "ProjectTechnology").
 			All(ctx)
 		if err != nil {
 			return nil, err

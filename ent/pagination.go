@@ -22,6 +22,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
@@ -2442,6 +2443,276 @@ func (pc *ProjectContributor) ToEdge(order *ProjectContributorOrder) *ProjectCon
 	return &ProjectContributorEdge{
 		Node:   pc,
 		Cursor: order.Field.toCursor(pc),
+	}
+}
+
+// ProjectTechnologyEdge is the edge representation of ProjectTechnology.
+type ProjectTechnologyEdge struct {
+	Node   *ProjectTechnology `json:"node"`
+	Cursor Cursor             `json:"cursor"`
+}
+
+// ProjectTechnologyConnection is the connection containing edges to ProjectTechnology.
+type ProjectTechnologyConnection struct {
+	Edges      []*ProjectTechnologyEdge `json:"edges"`
+	PageInfo   PageInfo                 `json:"pageInfo"`
+	TotalCount int                      `json:"totalCount"`
+}
+
+// ProjectTechnologyPaginateOption enables pagination customization.
+type ProjectTechnologyPaginateOption func(*projectTechnologyPager) error
+
+// WithProjectTechnologyOrder configures pagination ordering.
+func WithProjectTechnologyOrder(order *ProjectTechnologyOrder) ProjectTechnologyPaginateOption {
+	if order == nil {
+		order = DefaultProjectTechnologyOrder
+	}
+	o := *order
+	return func(pager *projectTechnologyPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultProjectTechnologyOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithProjectTechnologyFilter configures pagination filter.
+func WithProjectTechnologyFilter(filter func(*ProjectTechnologyQuery) (*ProjectTechnologyQuery, error)) ProjectTechnologyPaginateOption {
+	return func(pager *projectTechnologyPager) error {
+		if filter == nil {
+			return errors.New("ProjectTechnologyQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type projectTechnologyPager struct {
+	order  *ProjectTechnologyOrder
+	filter func(*ProjectTechnologyQuery) (*ProjectTechnologyQuery, error)
+}
+
+func newProjectTechnologyPager(opts []ProjectTechnologyPaginateOption) (*projectTechnologyPager, error) {
+	pager := &projectTechnologyPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultProjectTechnologyOrder
+	}
+	return pager, nil
+}
+
+func (p *projectTechnologyPager) applyFilter(query *ProjectTechnologyQuery) (*ProjectTechnologyQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *projectTechnologyPager) toCursor(pt *ProjectTechnology) Cursor {
+	return p.order.Field.toCursor(pt)
+}
+
+func (p *projectTechnologyPager) applyCursors(query *ProjectTechnologyQuery, after, before *Cursor) *ProjectTechnologyQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultProjectTechnologyOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *projectTechnologyPager) applyOrder(query *ProjectTechnologyQuery, reverse bool) *ProjectTechnologyQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultProjectTechnologyOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultProjectTechnologyOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to ProjectTechnology.
+func (pt *ProjectTechnologyQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ProjectTechnologyPaginateOption,
+) (*ProjectTechnologyConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newProjectTechnologyPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if pt, err = pager.applyFilter(pt); err != nil {
+		return nil, err
+	}
+
+	conn := &ProjectTechnologyConnection{Edges: []*ProjectTechnologyEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := pt.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := pt.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	pt = pager.applyCursors(pt, after, before)
+	pt = pager.applyOrder(pt, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		pt = pt.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		pt = pt.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := pt.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *ProjectTechnology
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *ProjectTechnology {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *ProjectTechnology {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*ProjectTechnologyEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &ProjectTechnologyEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// ProjectTechnologyOrderFieldType orders ProjectTechnology by type.
+	ProjectTechnologyOrderFieldType = &ProjectTechnologyOrderField{
+		field: projecttechnology.FieldType,
+		toCursor: func(pt *ProjectTechnology) Cursor {
+			return Cursor{
+				ID:    pt.ID,
+				Value: pt.Type,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f ProjectTechnologyOrderField) String() string {
+	var str string
+	switch f.field {
+	case projecttechnology.FieldType:
+		str = "TYPE"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f ProjectTechnologyOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *ProjectTechnologyOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("ProjectTechnologyOrderField %T must be a string", v)
+	}
+	switch str {
+	case "TYPE":
+		*f = *ProjectTechnologyOrderFieldType
+	default:
+		return fmt.Errorf("%s is not a valid ProjectTechnologyOrderField", str)
+	}
+	return nil
+}
+
+// ProjectTechnologyOrderField defines the ordering field of ProjectTechnology.
+type ProjectTechnologyOrderField struct {
+	field    string
+	toCursor func(*ProjectTechnology) Cursor
+}
+
+// ProjectTechnologyOrder defines the ordering of ProjectTechnology.
+type ProjectTechnologyOrder struct {
+	Direction OrderDirection               `json:"direction"`
+	Field     *ProjectTechnologyOrderField `json:"field"`
+}
+
+// DefaultProjectTechnologyOrder is the default ordering of ProjectTechnology.
+var DefaultProjectTechnologyOrder = &ProjectTechnologyOrder{
+	Direction: OrderDirectionAsc,
+	Field: &ProjectTechnologyOrderField{
+		field: projecttechnology.FieldID,
+		toCursor: func(pt *ProjectTechnology) Cursor {
+			return Cursor{ID: pt.ID}
+		},
+	},
+}
+
+// ToEdge converts ProjectTechnology into ProjectTechnologyEdge.
+func (pt *ProjectTechnology) ToEdge(order *ProjectTechnologyOrder) *ProjectTechnologyEdge {
+	if order == nil {
+		order = DefaultProjectTechnologyOrder
+	}
+	return &ProjectTechnologyEdge{
+		Node:   pt,
+		Cursor: order.Field.toCursor(pt),
 	}
 }
 

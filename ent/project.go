@@ -43,9 +43,11 @@ type ProjectEdges struct {
 	DiscordBots []*DiscordBot `json:"discord_bots,omitempty"`
 	// Sites holds the value of the sites edge.
 	Sites []*Site `json:"sites,omitempty"`
+	// Technologies holds the value of the technologies edge.
+	Technologies []*ProjectTechnology `json:"technologies,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // ContributorsOrErr returns the Contributors value or an error if the edge
@@ -100,6 +102,15 @@ func (e ProjectEdges) SitesOrErr() ([]*Site, error) {
 		return e.Sites, nil
 	}
 	return nil, &NotLoadedError{edge: "sites"}
+}
+
+// TechnologiesOrErr returns the Technologies value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) TechnologiesOrErr() ([]*ProjectTechnology, error) {
+	if e.loadedTypes[6] {
+		return e.Technologies, nil
+	}
+	return nil, &NotLoadedError{edge: "technologies"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -193,6 +204,11 @@ func (pr *Project) QueryDiscordBots() *DiscordBotQuery {
 // QuerySites queries the "sites" edge of the Project entity.
 func (pr *Project) QuerySites() *SiteQuery {
 	return (&ProjectClient{config: pr.config}).QuerySites(pr)
+}
+
+// QueryTechnologies queries the "technologies" edge of the Project entity.
+func (pr *Project) QueryTechnologies() *ProjectTechnologyQuery {
+	return (&ProjectClient{config: pr.config}).QueryTechnologies(pr)
 }
 
 // Update returns a builder for updating this Project.

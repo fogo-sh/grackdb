@@ -33,6 +33,7 @@ const (
 	Project                  TestItemType = "Project"
 	ProjectAssociation       TestItemType = "ProjectAssociation"
 	ProjectContributor       TestItemType = "ProjectContributor"
+	ProjectTechnology        TestItemType = "ProjectTechnology"
 	Repository               TestItemType = "Repository"
 	Site                     TestItemType = "Site"
 	Technology               TestItemType = "Technology"
@@ -196,6 +197,16 @@ func main() {
 			_, err = client.ProjectContributor.Create().SetInput(*input).Save(ctx)
 			if err != nil {
 				log.Fatalf("failed creating ProjectContributor: %v", err)
+			}
+		case ProjectTechnology:
+			input := new(ent.CreateProjectTechnologyInput)
+			err = Decode(item.Params, input)
+			if err != nil {
+				log.Fatalf("failed decoding ProjectTechnology: %v", err)
+			}
+			_, err = client.ProjectTechnology.Create().SetInput(*input).Save(ctx)
+			if err != nil {
+				log.Fatalf("failed creating ProjectTechnology: %v", err)
 			}
 		case Repository:
 			input := new(ent.CreateRepositoryInput)

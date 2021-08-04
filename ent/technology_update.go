@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/predicate"
+	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 )
@@ -109,6 +110,21 @@ func (tu *TechnologyUpdate) AddChildTechnologies(t ...*TechnologyAssociation) *T
 	return tu.AddChildTechnologyIDs(ids...)
 }
 
+// AddProjectIDs adds the "projects" edge to the ProjectTechnology entity by IDs.
+func (tu *TechnologyUpdate) AddProjectIDs(ids ...int) *TechnologyUpdate {
+	tu.mutation.AddProjectIDs(ids...)
+	return tu
+}
+
+// AddProjects adds the "projects" edges to the ProjectTechnology entity.
+func (tu *TechnologyUpdate) AddProjects(p ...*ProjectTechnology) *TechnologyUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return tu.AddProjectIDs(ids...)
+}
+
 // Mutation returns the TechnologyMutation object of the builder.
 func (tu *TechnologyUpdate) Mutation() *TechnologyMutation {
 	return tu.mutation
@@ -154,6 +170,27 @@ func (tu *TechnologyUpdate) RemoveChildTechnologies(t ...*TechnologyAssociation)
 		ids[i] = t[i].ID
 	}
 	return tu.RemoveChildTechnologyIDs(ids...)
+}
+
+// ClearProjects clears all "projects" edges to the ProjectTechnology entity.
+func (tu *TechnologyUpdate) ClearProjects() *TechnologyUpdate {
+	tu.mutation.ClearProjects()
+	return tu
+}
+
+// RemoveProjectIDs removes the "projects" edge to ProjectTechnology entities by IDs.
+func (tu *TechnologyUpdate) RemoveProjectIDs(ids ...int) *TechnologyUpdate {
+	tu.mutation.RemoveProjectIDs(ids...)
+	return tu
+}
+
+// RemoveProjects removes "projects" edges to ProjectTechnology entities.
+func (tu *TechnologyUpdate) RemoveProjects(p ...*ProjectTechnology) *TechnologyUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return tu.RemoveProjectIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -394,6 +431,60 @@ func (tu *TechnologyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if tu.mutation.ProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ProjectsTable,
+			Columns: []string{technology.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedProjectsIDs(); len(nodes) > 0 && !tu.mutation.ProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ProjectsTable,
+			Columns: []string{technology.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ProjectsTable,
+			Columns: []string{technology.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{technology.Label}
@@ -495,6 +586,21 @@ func (tuo *TechnologyUpdateOne) AddChildTechnologies(t ...*TechnologyAssociation
 	return tuo.AddChildTechnologyIDs(ids...)
 }
 
+// AddProjectIDs adds the "projects" edge to the ProjectTechnology entity by IDs.
+func (tuo *TechnologyUpdateOne) AddProjectIDs(ids ...int) *TechnologyUpdateOne {
+	tuo.mutation.AddProjectIDs(ids...)
+	return tuo
+}
+
+// AddProjects adds the "projects" edges to the ProjectTechnology entity.
+func (tuo *TechnologyUpdateOne) AddProjects(p ...*ProjectTechnology) *TechnologyUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return tuo.AddProjectIDs(ids...)
+}
+
 // Mutation returns the TechnologyMutation object of the builder.
 func (tuo *TechnologyUpdateOne) Mutation() *TechnologyMutation {
 	return tuo.mutation
@@ -540,6 +646,27 @@ func (tuo *TechnologyUpdateOne) RemoveChildTechnologies(t ...*TechnologyAssociat
 		ids[i] = t[i].ID
 	}
 	return tuo.RemoveChildTechnologyIDs(ids...)
+}
+
+// ClearProjects clears all "projects" edges to the ProjectTechnology entity.
+func (tuo *TechnologyUpdateOne) ClearProjects() *TechnologyUpdateOne {
+	tuo.mutation.ClearProjects()
+	return tuo
+}
+
+// RemoveProjectIDs removes the "projects" edge to ProjectTechnology entities by IDs.
+func (tuo *TechnologyUpdateOne) RemoveProjectIDs(ids ...int) *TechnologyUpdateOne {
+	tuo.mutation.RemoveProjectIDs(ids...)
+	return tuo
+}
+
+// RemoveProjects removes "projects" edges to ProjectTechnology entities.
+func (tuo *TechnologyUpdateOne) RemoveProjects(p ...*ProjectTechnology) *TechnologyUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return tuo.RemoveProjectIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -796,6 +923,60 @@ func (tuo *TechnologyUpdateOne) sqlSave(ctx context.Context) (_node *Technology,
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.ProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ProjectsTable,
+			Columns: []string{technology.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedProjectsIDs(); len(nodes) > 0 && !tuo.mutation.ProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ProjectsTable,
+			Columns: []string{technology.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ProjectsTable,
+			Columns: []string{technology.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
 				},
 			},
 		}

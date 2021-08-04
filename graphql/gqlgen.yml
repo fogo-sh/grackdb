@@ -31,3 +31,6 @@ models:
   TechnologyAssociationType:
     model:
       - github.com/fogo-sh/grackdb/ent/technologyassociation.Type
+  ProjectTechnologyType:
+    model:
+      - github.com/fogo-sh/grackdb/ent/projecttechnology.Type

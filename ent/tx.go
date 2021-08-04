@@ -28,6 +28,8 @@ type Tx struct {
 	ProjectAssociation *ProjectAssociationClient
 	// ProjectContributor is the client for interacting with the ProjectContributor builders.
 	ProjectContributor *ProjectContributorClient
+	// ProjectTechnology is the client for interacting with the ProjectTechnology builders.
+	ProjectTechnology *ProjectTechnologyClient
 	// Repository is the client for interacting with the Repository builders.
 	Repository *RepositoryClient
 	// Site is the client for interacting with the Site builders.
@@ -181,6 +183,7 @@ func (tx *Tx) init() {
 	tx.Project = NewProjectClient(tx.config)
 	tx.ProjectAssociation = NewProjectAssociationClient(tx.config)
 	tx.ProjectContributor = NewProjectContributorClient(tx.config)
+	tx.ProjectTechnology = NewProjectTechnologyClient(tx.config)
 	tx.Repository = NewRepositoryClient(tx.config)
 	tx.Site = NewSiteClient(tx.config)
 	tx.Technology = NewTechnologyClient(tx.config)

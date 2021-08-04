@@ -49,6 +49,8 @@ func (Technology) Edges() []ent.Edge {
 			Annotations(entgql.MapsTo("parentTechnologies")),
 		edge.To("child_technologies", TechnologyAssociation.Type).
 			Annotations(entgql.MapsTo("childTechnologies")),
+		edge.To("projects", ProjectTechnology.Type).
+			Annotations(entgql.Bind()),
 	}
 }
 

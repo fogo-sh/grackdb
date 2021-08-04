@@ -190,6 +190,33 @@ var (
 			},
 		},
 	}
+	// ProjectTechnologiesColumns holds the columns for the "project_technologies" table.
+	ProjectTechnologiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"WRITTEN_IN", "IMPLEMENTS", "USES", "CONTAINS"}},
+		{Name: "project_technologies", Type: field.TypeInt, Nullable: true},
+		{Name: "technology_projects", Type: field.TypeInt, Nullable: true},
+	}
+	// ProjectTechnologiesTable holds the schema information for the "project_technologies" table.
+	ProjectTechnologiesTable = &schema.Table{
+		Name:       "project_technologies",
+		Columns:    ProjectTechnologiesColumns,
+		PrimaryKey: []*schema.Column{ProjectTechnologiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "project_technologies_projects_technologies",
+				Columns:    []*schema.Column{ProjectTechnologiesColumns[2]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "project_technologies_technologies_projects",
+				Columns:    []*schema.Column{ProjectTechnologiesColumns[3]},
+				RefColumns: []*schema.Column{TechnologiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// RepositoriesColumns holds the columns for the "repositories" table.
 	RepositoriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -315,6 +342,7 @@ var (
 		ProjectsTable,
 		ProjectAssociationsTable,
 		ProjectContributorsTable,
+		ProjectTechnologiesTable,
 		RepositoriesTable,
 		SitesTable,
 		TechnologiesTable,
@@ -335,6 +363,8 @@ func init() {
 	ProjectAssociationsTable.ForeignKeys[1].RefTable = ProjectsTable
 	ProjectContributorsTable.ForeignKeys[0].RefTable = ProjectsTable
 	ProjectContributorsTable.ForeignKeys[1].RefTable = UsersTable
+	ProjectTechnologiesTable.ForeignKeys[0].RefTable = ProjectsTable
+	ProjectTechnologiesTable.ForeignKeys[1].RefTable = TechnologiesTable
 	RepositoriesTable.ForeignKeys[0].RefTable = GithubAccountsTable
 	RepositoriesTable.ForeignKeys[1].RefTable = GithubOrganizationsTable
 	RepositoriesTable.ForeignKeys[2].RefTable = ProjectsTable

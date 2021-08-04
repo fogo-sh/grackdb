@@ -15,6 +15,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 )
@@ -174,6 +175,21 @@ func (pu *ProjectUpdate) AddSites(s ...*Site) *ProjectUpdate {
 	return pu.AddSiteIDs(ids...)
 }
 
+// AddTechnologyIDs adds the "technologies" edge to the ProjectTechnology entity by IDs.
+func (pu *ProjectUpdate) AddTechnologyIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.AddTechnologyIDs(ids...)
+	return pu
+}
+
+// AddTechnologies adds the "technologies" edges to the ProjectTechnology entity.
+func (pu *ProjectUpdate) AddTechnologies(p ...*ProjectTechnology) *ProjectUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.AddTechnologyIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -303,6 +319,27 @@ func (pu *ProjectUpdate) RemoveSites(s ...*Site) *ProjectUpdate {
 		ids[i] = s[i].ID
 	}
 	return pu.RemoveSiteIDs(ids...)
+}
+
+// ClearTechnologies clears all "technologies" edges to the ProjectTechnology entity.
+func (pu *ProjectUpdate) ClearTechnologies() *ProjectUpdate {
+	pu.mutation.ClearTechnologies()
+	return pu
+}
+
+// RemoveTechnologyIDs removes the "technologies" edge to ProjectTechnology entities by IDs.
+func (pu *ProjectUpdate) RemoveTechnologyIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.RemoveTechnologyIDs(ids...)
+	return pu
+}
+
+// RemoveTechnologies removes "technologies" edges to ProjectTechnology entities.
+func (pu *ProjectUpdate) RemoveTechnologies(p ...*ProjectTechnology) *ProjectUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.RemoveTechnologyIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -754,6 +791,60 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.TechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TechnologiesTable,
+			Columns: []string{project.TechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedTechnologiesIDs(); len(nodes) > 0 && !pu.mutation.TechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TechnologiesTable,
+			Columns: []string{project.TechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.TechnologiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TechnologiesTable,
+			Columns: []string{project.TechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{project.Label}
@@ -915,6 +1006,21 @@ func (puo *ProjectUpdateOne) AddSites(s ...*Site) *ProjectUpdateOne {
 	return puo.AddSiteIDs(ids...)
 }
 
+// AddTechnologyIDs adds the "technologies" edge to the ProjectTechnology entity by IDs.
+func (puo *ProjectUpdateOne) AddTechnologyIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.AddTechnologyIDs(ids...)
+	return puo
+}
+
+// AddTechnologies adds the "technologies" edges to the ProjectTechnology entity.
+func (puo *ProjectUpdateOne) AddTechnologies(p ...*ProjectTechnology) *ProjectUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.AddTechnologyIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -1044,6 +1150,27 @@ func (puo *ProjectUpdateOne) RemoveSites(s ...*Site) *ProjectUpdateOne {
 		ids[i] = s[i].ID
 	}
 	return puo.RemoveSiteIDs(ids...)
+}
+
+// ClearTechnologies clears all "technologies" edges to the ProjectTechnology entity.
+func (puo *ProjectUpdateOne) ClearTechnologies() *ProjectUpdateOne {
+	puo.mutation.ClearTechnologies()
+	return puo
+}
+
+// RemoveTechnologyIDs removes the "technologies" edge to ProjectTechnology entities by IDs.
+func (puo *ProjectUpdateOne) RemoveTechnologyIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.RemoveTechnologyIDs(ids...)
+	return puo
+}
+
+// RemoveTechnologies removes "technologies" edges to ProjectTechnology entities.
+func (puo *ProjectUpdateOne) RemoveTechnologies(p ...*ProjectTechnology) *ProjectUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.RemoveTechnologyIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1511,6 +1638,60 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: site.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.TechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TechnologiesTable,
+			Columns: []string{project.TechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedTechnologiesIDs(); len(nodes) > 0 && !puo.mutation.TechnologiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TechnologiesTable,
+			Columns: []string{project.TechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.TechnologiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TechnologiesTable,
+			Columns: []string{project.TechnologiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
 				},
 			},
 		}

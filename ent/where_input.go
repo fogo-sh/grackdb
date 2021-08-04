@@ -15,6 +15,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
@@ -1284,6 +1285,10 @@ type ProjectWhereInput struct {
 	// "sites" edge predicates.
 	HasSites     *bool             `json:"hasSites,omitempty"`
 	HasSitesWith []*SiteWhereInput `json:"hasSitesWith,omitempty"`
+
+	// "technologies" edge predicates.
+	HasTechnologies     *bool                          `json:"hasTechnologies,omitempty"`
+	HasTechnologiesWith []*ProjectTechnologyWhereInput `json:"hasTechnologiesWith,omitempty"`
 }
 
 // Filter applies the ProjectWhereInput filter on the ProjectQuery builder.
@@ -1615,6 +1620,24 @@ func (i *ProjectWhereInput) P() (predicate.Project, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, project.HasSitesWith(with...))
+	}
+	if i.HasTechnologies != nil {
+		p := project.HasTechnologies()
+		if !*i.HasTechnologies {
+			p = project.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasTechnologiesWith) > 0 {
+		with := make([]predicate.ProjectTechnology, 0, len(i.HasTechnologiesWith))
+		for _, w := range i.HasTechnologiesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, project.HasTechnologiesWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -1969,6 +1992,179 @@ func (i *ProjectContributorWhereInput) P() (predicate.ProjectContributor, error)
 		return predicates[0], nil
 	default:
 		return projectcontributor.And(predicates...), nil
+	}
+}
+
+// ProjectTechnologyWhereInput represents a where input for filtering ProjectTechnology queries.
+type ProjectTechnologyWhereInput struct {
+	Not *ProjectTechnologyWhereInput   `json:"not,omitempty"`
+	Or  []*ProjectTechnologyWhereInput `json:"or,omitempty"`
+	And []*ProjectTechnologyWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *int  `json:"id,omitempty"`
+	IDNEQ   *int  `json:"idNEQ,omitempty"`
+	IDIn    []int `json:"idIn,omitempty"`
+	IDNotIn []int `json:"idNotIn,omitempty"`
+	IDGT    *int  `json:"idGT,omitempty"`
+	IDGTE   *int  `json:"idGTE,omitempty"`
+	IDLT    *int  `json:"idLT,omitempty"`
+	IDLTE   *int  `json:"idLTE,omitempty"`
+
+	// "type" field predicates.
+	Type      *projecttechnology.Type  `json:"type,omitempty"`
+	TypeNEQ   *projecttechnology.Type  `json:"typeNEQ,omitempty"`
+	TypeIn    []projecttechnology.Type `json:"typeIn,omitempty"`
+	TypeNotIn []projecttechnology.Type `json:"typeNotIn,omitempty"`
+
+	// "project" edge predicates.
+	HasProject     *bool                `json:"hasProject,omitempty"`
+	HasProjectWith []*ProjectWhereInput `json:"hasProjectWith,omitempty"`
+
+	// "technology" edge predicates.
+	HasTechnology     *bool                   `json:"hasTechnology,omitempty"`
+	HasTechnologyWith []*TechnologyWhereInput `json:"hasTechnologyWith,omitempty"`
+}
+
+// Filter applies the ProjectTechnologyWhereInput filter on the ProjectTechnologyQuery builder.
+func (i *ProjectTechnologyWhereInput) Filter(q *ProjectTechnologyQuery) (*ProjectTechnologyQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// P returns a predicate for filtering projecttechnologies.
+// An error is returned if the input is empty or invalid.
+func (i *ProjectTechnologyWhereInput) P() (predicate.ProjectTechnology, error) {
+	var predicates []predicate.ProjectTechnology
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, projecttechnology.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.ProjectTechnology, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, projecttechnology.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.ProjectTechnology, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, projecttechnology.And(and...))
+	}
+	if i.ID != nil {
+		predicates = append(predicates, projecttechnology.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, projecttechnology.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, projecttechnology.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, projecttechnology.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, projecttechnology.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, projecttechnology.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, projecttechnology.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, projecttechnology.IDLTE(*i.IDLTE))
+	}
+	if i.Type != nil {
+		predicates = append(predicates, projecttechnology.TypeEQ(*i.Type))
+	}
+	if i.TypeNEQ != nil {
+		predicates = append(predicates, projecttechnology.TypeNEQ(*i.TypeNEQ))
+	}
+	if len(i.TypeIn) > 0 {
+		predicates = append(predicates, projecttechnology.TypeIn(i.TypeIn...))
+	}
+	if len(i.TypeNotIn) > 0 {
+		predicates = append(predicates, projecttechnology.TypeNotIn(i.TypeNotIn...))
+	}
+
+	if i.HasProject != nil {
+		p := projecttechnology.HasProject()
+		if !*i.HasProject {
+			p = projecttechnology.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasProjectWith) > 0 {
+		with := make([]predicate.Project, 0, len(i.HasProjectWith))
+		for _, w := range i.HasProjectWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, projecttechnology.HasProjectWith(with...))
+	}
+	if i.HasTechnology != nil {
+		p := projecttechnology.HasTechnology()
+		if !*i.HasTechnology {
+			p = projecttechnology.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasTechnologyWith) > 0 {
+		with := make([]predicate.Technology, 0, len(i.HasTechnologyWith))
+		for _, w := range i.HasTechnologyWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, projecttechnology.HasTechnologyWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate ProjectTechnologyWhereInput")
+	case 1:
+		return predicates[0], nil
+	default:
+		return projecttechnology.And(predicates...), nil
 	}
 }
 
@@ -2596,6 +2792,10 @@ type TechnologyWhereInput struct {
 	// "child_technologies" edge predicates.
 	HasChildTechnologies     *bool                              `json:"hasChildTechnologies,omitempty"`
 	HasChildTechnologiesWith []*TechnologyAssociationWhereInput `json:"hasChildTechnologiesWith,omitempty"`
+
+	// "projects" edge predicates.
+	HasProjects     *bool                          `json:"hasProjects,omitempty"`
+	HasProjectsWith []*ProjectTechnologyWhereInput `json:"hasProjectsWith,omitempty"`
 }
 
 // Filter applies the TechnologyWhereInput filter on the TechnologyQuery builder.
@@ -2858,6 +3058,24 @@ func (i *TechnologyWhereInput) P() (predicate.Technology, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, technology.HasChildTechnologiesWith(with...))
+	}
+	if i.HasProjects != nil {
+		p := technology.HasProjects()
+		if !*i.HasProjects {
+			p = technology.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasProjectsWith) > 0 {
+		with := make([]predicate.ProjectTechnology, 0, len(i.HasProjectsWith))
+		for _, w := range i.HasProjectsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, technology.HasProjectsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

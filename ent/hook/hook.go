@@ -113,6 +113,19 @@ func (f ProjectContributorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return f(ctx, mv)
 }
 
+// The ProjectTechnologyFunc type is an adapter to allow the use of ordinary
+// function as ProjectTechnology mutator.
+type ProjectTechnologyFunc func(context.Context, *ent.ProjectTechnologyMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectTechnologyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ProjectTechnologyMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectTechnologyMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The RepositoryFunc type is an adapter to allow the use of ordinary
 // function as Repository mutator.
 type RepositoryFunc func(context.Context, *ent.RepositoryMutation) (ent.Value, error)

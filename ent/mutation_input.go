@@ -8,6 +8,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 )
@@ -374,6 +375,7 @@ type CreateProjectInput struct {
 	Repositories   []int
 	DiscordBots    []int
 	Sites          []int
+	Technologies   []int
 }
 
 // Mutate applies the CreateProjectInput on the ProjectCreate builder.
@@ -404,6 +406,9 @@ func (i *CreateProjectInput) Mutate(m *ProjectCreate) {
 	if ids := i.Sites; len(ids) > 0 {
 		m.AddSiteIDs(ids...)
 	}
+	if ids := i.Technologies; len(ids) > 0 {
+		m.AddTechnologyIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the CreateProjectInput on the create builder.
@@ -432,6 +437,8 @@ type UpdateProjectInput struct {
 	RemoveDiscordBotIDs    []int
 	AddSiteIDs             []int
 	RemoveSiteIDs          []int
+	AddTechnologyIDs       []int
+	RemoveTechnologyIDs    []int
 }
 
 // Mutate applies the UpdateProjectInput on the ProjectMutation.
@@ -489,6 +496,12 @@ func (i *UpdateProjectInput) Mutate(m *ProjectMutation) {
 	}
 	if ids := i.RemoveSiteIDs; len(ids) > 0 {
 		m.RemoveSiteIDs(ids...)
+	}
+	if ids := i.AddTechnologyIDs; len(ids) > 0 {
+		m.AddTechnologyIDs(ids...)
+	}
+	if ids := i.RemoveTechnologyIDs; len(ids) > 0 {
+		m.RemoveTechnologyIDs(ids...)
 	}
 }
 
@@ -620,6 +633,66 @@ func (u *ProjectContributorUpdate) SetInput(i UpdateProjectContributorInput) *Pr
 
 // SetInput applies the change-set in the UpdateProjectContributorInput on the update-one builder.
 func (u *ProjectContributorUpdateOne) SetInput(i UpdateProjectContributorInput) *ProjectContributorUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// CreateProjectTechnologyInput represents a mutation input for creating projecttechnologies.
+type CreateProjectTechnologyInput struct {
+	Type       projecttechnology.Type
+	Project    int
+	Technology int
+}
+
+// Mutate applies the CreateProjectTechnologyInput on the ProjectTechnologyCreate builder.
+func (i *CreateProjectTechnologyInput) Mutate(m *ProjectTechnologyCreate) {
+	m.SetType(i.Type)
+	m.SetProjectID(i.Project)
+	m.SetTechnologyID(i.Technology)
+}
+
+// SetInput applies the change-set in the CreateProjectTechnologyInput on the create builder.
+func (c *ProjectTechnologyCreate) SetInput(i CreateProjectTechnologyInput) *ProjectTechnologyCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateProjectTechnologyInput represents a mutation input for updating projecttechnologies.
+type UpdateProjectTechnologyInput struct {
+	Type            *projecttechnology.Type
+	Project         *int
+	ClearProject    bool
+	Technology      *int
+	ClearTechnology bool
+}
+
+// Mutate applies the UpdateProjectTechnologyInput on the ProjectTechnologyMutation.
+func (i *UpdateProjectTechnologyInput) Mutate(m *ProjectTechnologyMutation) {
+	if v := i.Type; v != nil {
+		m.SetType(*v)
+	}
+	if i.ClearProject {
+		m.ClearProject()
+	}
+	if v := i.Project; v != nil {
+		m.SetProjectID(*v)
+	}
+	if i.ClearTechnology {
+		m.ClearTechnology()
+	}
+	if v := i.Technology; v != nil {
+		m.SetTechnologyID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateProjectTechnologyInput on the update builder.
+func (u *ProjectTechnologyUpdate) SetInput(i UpdateProjectTechnologyInput) *ProjectTechnologyUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateProjectTechnologyInput on the update-one builder.
+func (u *ProjectTechnologyUpdateOne) SetInput(i UpdateProjectTechnologyInput) *ProjectTechnologyUpdateOne {
 	i.Mutate(u.Mutation())
 	return u
 }
@@ -804,6 +877,7 @@ type CreateTechnologyInput struct {
 	Type               technology.Type
 	ParentTechnologies []int
 	ChildTechnologies  []int
+	Projects           []int
 }
 
 // Mutate applies the CreateTechnologyInput on the TechnologyCreate builder.
@@ -821,6 +895,9 @@ func (i *CreateTechnologyInput) Mutate(m *TechnologyCreate) {
 	}
 	if ids := i.ChildTechnologies; len(ids) > 0 {
 		m.AddChildTechnologyIDs(ids...)
+	}
+	if ids := i.Projects; len(ids) > 0 {
+		m.AddProjectIDs(ids...)
 	}
 }
 
@@ -842,6 +919,8 @@ type UpdateTechnologyInput struct {
 	RemoveParentTechnologyIDs []int
 	AddChildTechnologyIDs     []int
 	RemoveChildTechnologyIDs  []int
+	AddProjectIDs             []int
+	RemoveProjectIDs          []int
 }
 
 // Mutate applies the UpdateTechnologyInput on the TechnologyMutation.
@@ -875,6 +954,12 @@ func (i *UpdateTechnologyInput) Mutate(m *TechnologyMutation) {
 	}
 	if ids := i.RemoveChildTechnologyIDs; len(ids) > 0 {
 		m.RemoveChildTechnologyIDs(ids...)
+	}
+	if ids := i.AddProjectIDs; len(ids) > 0 {
+		m.AddProjectIDs(ids...)
+	}
+	if ids := i.RemoveProjectIDs; len(ids) > 0 {
+		m.RemoveProjectIDs(ids...)
 	}
 }
 

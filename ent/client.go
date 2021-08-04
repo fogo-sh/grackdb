@@ -17,6 +17,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
@@ -49,6 +50,8 @@ type Client struct {
 	ProjectAssociation *ProjectAssociationClient
 	// ProjectContributor is the client for interacting with the ProjectContributor builders.
 	ProjectContributor *ProjectContributorClient
+	// ProjectTechnology is the client for interacting with the ProjectTechnology builders.
+	ProjectTechnology *ProjectTechnologyClient
 	// Repository is the client for interacting with the Repository builders.
 	Repository *RepositoryClient
 	// Site is the client for interacting with the Site builders.
@@ -82,6 +85,7 @@ func (c *Client) init() {
 	c.Project = NewProjectClient(c.config)
 	c.ProjectAssociation = NewProjectAssociationClient(c.config)
 	c.ProjectContributor = NewProjectContributorClient(c.config)
+	c.ProjectTechnology = NewProjectTechnologyClient(c.config)
 	c.Repository = NewRepositoryClient(c.config)
 	c.Site = NewSiteClient(c.config)
 	c.Technology = NewTechnologyClient(c.config)
@@ -128,6 +132,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Project:                  NewProjectClient(cfg),
 		ProjectAssociation:       NewProjectAssociationClient(cfg),
 		ProjectContributor:       NewProjectContributorClient(cfg),
+		ProjectTechnology:        NewProjectTechnologyClient(cfg),
 		Repository:               NewRepositoryClient(cfg),
 		Site:                     NewSiteClient(cfg),
 		Technology:               NewTechnologyClient(cfg),
@@ -159,6 +164,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Project:                  NewProjectClient(cfg),
 		ProjectAssociation:       NewProjectAssociationClient(cfg),
 		ProjectContributor:       NewProjectContributorClient(cfg),
+		ProjectTechnology:        NewProjectTechnologyClient(cfg),
 		Repository:               NewRepositoryClient(cfg),
 		Site:                     NewSiteClient(cfg),
 		Technology:               NewTechnologyClient(cfg),
@@ -201,6 +207,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Project.Use(hooks...)
 	c.ProjectAssociation.Use(hooks...)
 	c.ProjectContributor.Use(hooks...)
+	c.ProjectTechnology.Use(hooks...)
 	c.Repository.Use(hooks...)
 	c.Site.Use(hooks...)
 	c.Technology.Use(hooks...)
@@ -1036,6 +1043,22 @@ func (c *ProjectClient) QuerySites(pr *Project) *SiteQuery {
 	return query
 }
 
+// QueryTechnologies queries the technologies edge of a Project.
+func (c *ProjectClient) QueryTechnologies(pr *Project) *ProjectTechnologyQuery {
+	query := &ProjectTechnologyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(projecttechnology.Table, projecttechnology.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.TechnologiesTable, project.TechnologiesColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProjectClient) Hooks() []Hook {
 	hooks := c.hooks.Project
@@ -1286,6 +1309,129 @@ func (c *ProjectContributorClient) QueryUser(pc *ProjectContributor) *UserQuery 
 func (c *ProjectContributorClient) Hooks() []Hook {
 	hooks := c.hooks.ProjectContributor
 	return append(hooks[:len(hooks):len(hooks)], projectcontributor.Hooks[:]...)
+}
+
+// ProjectTechnologyClient is a client for the ProjectTechnology schema.
+type ProjectTechnologyClient struct {
+	config
+}
+
+// NewProjectTechnologyClient returns a client for the ProjectTechnology from the given config.
+func NewProjectTechnologyClient(c config) *ProjectTechnologyClient {
+	return &ProjectTechnologyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `projecttechnology.Hooks(f(g(h())))`.
+func (c *ProjectTechnologyClient) Use(hooks ...Hook) {
+	c.hooks.ProjectTechnology = append(c.hooks.ProjectTechnology, hooks...)
+}
+
+// Create returns a create builder for ProjectTechnology.
+func (c *ProjectTechnologyClient) Create() *ProjectTechnologyCreate {
+	mutation := newProjectTechnologyMutation(c.config, OpCreate)
+	return &ProjectTechnologyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProjectTechnology entities.
+func (c *ProjectTechnologyClient) CreateBulk(builders ...*ProjectTechnologyCreate) *ProjectTechnologyCreateBulk {
+	return &ProjectTechnologyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProjectTechnology.
+func (c *ProjectTechnologyClient) Update() *ProjectTechnologyUpdate {
+	mutation := newProjectTechnologyMutation(c.config, OpUpdate)
+	return &ProjectTechnologyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectTechnologyClient) UpdateOne(pt *ProjectTechnology) *ProjectTechnologyUpdateOne {
+	mutation := newProjectTechnologyMutation(c.config, OpUpdateOne, withProjectTechnology(pt))
+	return &ProjectTechnologyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectTechnologyClient) UpdateOneID(id int) *ProjectTechnologyUpdateOne {
+	mutation := newProjectTechnologyMutation(c.config, OpUpdateOne, withProjectTechnologyID(id))
+	return &ProjectTechnologyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProjectTechnology.
+func (c *ProjectTechnologyClient) Delete() *ProjectTechnologyDelete {
+	mutation := newProjectTechnologyMutation(c.config, OpDelete)
+	return &ProjectTechnologyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ProjectTechnologyClient) DeleteOne(pt *ProjectTechnology) *ProjectTechnologyDeleteOne {
+	return c.DeleteOneID(pt.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ProjectTechnologyClient) DeleteOneID(id int) *ProjectTechnologyDeleteOne {
+	builder := c.Delete().Where(projecttechnology.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectTechnologyDeleteOne{builder}
+}
+
+// Query returns a query builder for ProjectTechnology.
+func (c *ProjectTechnologyClient) Query() *ProjectTechnologyQuery {
+	return &ProjectTechnologyQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ProjectTechnology entity by its id.
+func (c *ProjectTechnologyClient) Get(ctx context.Context, id int) (*ProjectTechnology, error) {
+	return c.Query().Where(projecttechnology.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectTechnologyClient) GetX(ctx context.Context, id int) *ProjectTechnology {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProject queries the project edge of a ProjectTechnology.
+func (c *ProjectTechnologyClient) QueryProject(pt *ProjectTechnology) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projecttechnology.Table, projecttechnology.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projecttechnology.ProjectTable, projecttechnology.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(pt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTechnology queries the technology edge of a ProjectTechnology.
+func (c *ProjectTechnologyClient) QueryTechnology(pt *ProjectTechnology) *TechnologyQuery {
+	query := &TechnologyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projecttechnology.Table, projecttechnology.FieldID, id),
+			sqlgraph.To(technology.Table, technology.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projecttechnology.TechnologyTable, projecttechnology.TechnologyColumn),
+		)
+		fromV = sqlgraph.Neighbors(pt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectTechnologyClient) Hooks() []Hook {
+	hooks := c.hooks.ProjectTechnology
+	return append(hooks[:len(hooks):len(hooks)], projecttechnology.Hooks[:]...)
 }
 
 // RepositoryClient is a client for the Repository schema.
@@ -1692,6 +1838,22 @@ func (c *TechnologyClient) QueryChildTechnologies(t *Technology) *TechnologyAsso
 			sqlgraph.From(technology.Table, technology.FieldID, id),
 			sqlgraph.To(technologyassociation.Table, technologyassociation.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, technology.ChildTechnologiesTable, technology.ChildTechnologiesColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjects queries the projects edge of a Technology.
+func (c *TechnologyClient) QueryProjects(t *Technology) *ProjectTechnologyQuery {
+	query := &ProjectTechnologyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(technology.Table, technology.FieldID, id),
+			sqlgraph.To(projecttechnology.Table, projecttechnology.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, technology.ProjectsTable, technology.ProjectsColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

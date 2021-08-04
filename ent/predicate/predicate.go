@@ -30,6 +30,9 @@ type ProjectAssociation func(*sql.Selector)
 // ProjectContributor is the predicate function for projectcontributor builders.
 type ProjectContributor func(*sql.Selector)
 
+// ProjectTechnology is the predicate function for projecttechnology builders.
+type ProjectTechnology func(*sql.Selector)
+
 // Repository is the predicate function for repository builders.
 type Repository func(*sql.Selector)
 

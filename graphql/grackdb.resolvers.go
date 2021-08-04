@@ -102,6 +102,13 @@ func (r *mutationResolver) CreateTechnologyAssociation(ctx context.Context, inpu
 		Save(ctx)
 }
 
+func (r *mutationResolver) CreateProjectTechnology(ctx context.Context, input ent.CreateProjectTechnologyInput) (*ent.ProjectTechnology, error) {
+	return r.client.ProjectTechnology.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
 func (r *queryResolver) Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error) {
 	return r.client.User.Query().
 		Paginate(ctx, after, first, before, last,
@@ -202,6 +209,14 @@ func (r *queryResolver) TechnologyAssociations(ctx context.Context, after *ent.C
 		Paginate(ctx, after, first, before, last,
 			ent.WithTechnologyAssociationOrder(orderBy),
 			ent.WithTechnologyAssociationFilter(where.Filter),
+		)
+}
+
+func (r *queryResolver) ProjectTechnologies(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectTechnologyOrder, where *ent.ProjectTechnologyWhereInput) (*ent.ProjectTechnologyConnection, error) {
+	return r.client.ProjectTechnology.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithProjectTechnologyOrder(orderBy),
+			ent.WithProjectTechnologyFilter(where.Filter),
 		)
 }
 

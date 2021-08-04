@@ -230,6 +230,7 @@ type Project implements Node {
     repositories: [Repository!]
     discordBots: [DiscordBot!]
     sites: [Site!]
+    technologies: [ProjectTechnology!]
 }
 
 enum ProjectContributorRole {
@@ -399,6 +400,7 @@ type Technology implements Node {
 
     parentTechnologies: [TechnologyAssociation!]
     childTechnologies: [TechnologyAssociation!]
+    projects: [ProjectTechnology!]
 }
 
 enum TechnologyAssociationType {
@@ -432,6 +434,40 @@ type TechnologyAssociation implements Node {
     type: TechnologyAssociationType!
     parent: Technology!
     child: Technology!
+}
+
+enum ProjectTechnologyType {
+    WRITTEN_IN
+    IMPLEMENTS
+    USES
+    CONTAINS
+}
+
+type ProjectTechnologyConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [ProjectTechnologyEdge]
+}
+
+type ProjectTechnologyEdge {
+    node: ProjectTechnology
+    cursor: Cursor!
+}
+
+enum ProjectTechnologyOrderField {
+    TYPE
+}
+
+input ProjectTechnologyOrder {
+    direction: OrderDirection!
+    field: ProjectTechnologyOrderField
+}
+
+type ProjectTechnology implements Node {
+    id: ID!
+    type: ProjectTechnologyType!
+    technology: Technology!
+    project: Project!
 }
 
 type Query {
@@ -541,6 +577,14 @@ type Query {
         orderBy: TechnologyAssociationOrder
         where: TechnologyAssociationWhereInput
     ): TechnologyAssociationConnection
+    projectTechnologies(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: ProjectTechnologyOrder
+        where: ProjectTechnologyWhereInput
+    ): ProjectTechnologyConnection
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
@@ -627,6 +671,12 @@ input CreateTechnologyAssociationInput {
     child: Int!
 }
 
+input CreateProjectTechnologyInput {
+    type: ProjectTechnologyType!
+    technology: Int!
+    project: Int!
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
@@ -641,4 +691,5 @@ type Mutation {
     createSite(input: CreateSiteInput!): Site!
     createTechnology(input: CreateTechnologyInput!): Technology!
     createTechnologyAssociation(input: CreateTechnologyAssociationInput!): TechnologyAssociation!
+    createProjectTechnology(input: CreateProjectTechnologyInput!): ProjectTechnology!
 }

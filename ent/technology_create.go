@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 )
@@ -88,6 +89,21 @@ func (tc *TechnologyCreate) AddChildTechnologies(t ...*TechnologyAssociation) *T
 		ids[i] = t[i].ID
 	}
 	return tc.AddChildTechnologyIDs(ids...)
+}
+
+// AddProjectIDs adds the "projects" edge to the ProjectTechnology entity by IDs.
+func (tc *TechnologyCreate) AddProjectIDs(ids ...int) *TechnologyCreate {
+	tc.mutation.AddProjectIDs(ids...)
+	return tc
+}
+
+// AddProjects adds the "projects" edges to the ProjectTechnology entity.
+func (tc *TechnologyCreate) AddProjects(p ...*ProjectTechnology) *TechnologyCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return tc.AddProjectIDs(ids...)
 }
 
 // Mutation returns the TechnologyMutation object of the builder.
@@ -249,6 +265,25 @@ func (tc *TechnologyCreate) createSpec() (*Technology, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: technologyassociation.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.ProjectsTable,
+			Columns: []string{technology.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projecttechnology.FieldID,
 				},
 			},
 		}

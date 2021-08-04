@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/predicate"
+	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 )
@@ -29,6 +30,7 @@ type TechnologyQuery struct {
 	// eager-loading edges.
 	withParentTechnologies *TechnologyAssociationQuery
 	withChildTechnologies  *TechnologyAssociationQuery
+	withProjects           *ProjectTechnologyQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -102,6 +104,28 @@ func (tq *TechnologyQuery) QueryChildTechnologies() *TechnologyAssociationQuery 
 			sqlgraph.From(technology.Table, technology.FieldID, selector),
 			sqlgraph.To(technologyassociation.Table, technologyassociation.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, technology.ChildTechnologiesTable, technology.ChildTechnologiesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProjects chains the current query on the "projects" edge.
+func (tq *TechnologyQuery) QueryProjects() *ProjectTechnologyQuery {
+	query := &ProjectTechnologyQuery{config: tq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(technology.Table, technology.FieldID, selector),
+			sqlgraph.To(projecttechnology.Table, projecttechnology.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, technology.ProjectsTable, technology.ProjectsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -292,6 +316,7 @@ func (tq *TechnologyQuery) Clone() *TechnologyQuery {
 		predicates:             append([]predicate.Technology{}, tq.predicates...),
 		withParentTechnologies: tq.withParentTechnologies.Clone(),
 		withChildTechnologies:  tq.withChildTechnologies.Clone(),
+		withProjects:           tq.withProjects.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -317,6 +342,17 @@ func (tq *TechnologyQuery) WithChildTechnologies(opts ...func(*TechnologyAssocia
 		opt(query)
 	}
 	tq.withChildTechnologies = query
+	return tq
+}
+
+// WithProjects tells the query-builder to eager-load the nodes that are connected to
+// the "projects" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TechnologyQuery) WithProjects(opts ...func(*ProjectTechnologyQuery)) *TechnologyQuery {
+	query := &ProjectTechnologyQuery{config: tq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withProjects = query
 	return tq
 }
 
@@ -391,9 +427,10 @@ func (tq *TechnologyQuery) sqlAll(ctx context.Context) ([]*Technology, error) {
 	var (
 		nodes       = []*Technology{}
 		_spec       = tq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			tq.withParentTechnologies != nil,
 			tq.withChildTechnologies != nil,
+			tq.withProjects != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -471,6 +508,35 @@ func (tq *TechnologyQuery) sqlAll(ctx context.Context) ([]*Technology, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "technology_child_technologies" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.ChildTechnologies = append(node.Edges.ChildTechnologies, n)
+		}
+	}
+
+	if query := tq.withProjects; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Technology)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Projects = []*ProjectTechnology{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ProjectTechnology(func(s *sql.Selector) {
+			s.Where(sql.InValues(technology.ProjectsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.technology_projects
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "technology_projects" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "technology_projects" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Projects = append(node.Edges.Projects, n)
 		}
 	}
 
