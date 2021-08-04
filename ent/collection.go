@@ -285,6 +285,18 @@ func (s *SiteQuery) collectField(ctx *graphql.OperationContext, field graphql.Co
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (t *TechnologyQuery) CollectFields(ctx context.Context, satisfies ...string) *TechnologyQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		t = t.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return t
+}
+
+func (t *TechnologyQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *TechnologyQuery {
+	return t
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (u *UserQuery) CollectFields(ctx context.Context, satisfies ...string) *UserQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		u = u.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

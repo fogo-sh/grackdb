@@ -18,6 +18,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
+	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -49,6 +50,7 @@ func columnChecker(table string) func(string) error {
 		projectcontributor.Table:       projectcontributor.ValidColumn,
 		repository.Table:               repository.ValidColumn,
 		site.Table:                     site.ValidColumn,
+		technology.Table:               technology.ValidColumn,
 		user.Table:                     user.ValidColumn,
 	}
 	check, ok := checks[table]

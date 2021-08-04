@@ -32,6 +32,8 @@ type Tx struct {
 	Repository *RepositoryClient
 	// Site is the client for interacting with the Site builders.
 	Site *SiteClient
+	// Technology is the client for interacting with the Technology builders.
+	Technology *TechnologyClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -179,6 +181,7 @@ func (tx *Tx) init() {
 	tx.ProjectContributor = NewProjectContributorClient(tx.config)
 	tx.Repository = NewRepositoryClient(tx.config)
 	tx.Site = NewSiteClient(tx.config)
+	tx.Technology = NewTechnologyClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

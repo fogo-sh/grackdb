@@ -358,6 +358,46 @@ type Site implements Node {
     repository: Repository
 }
 
+enum TechnologyType {
+    LIBRARY
+    LANGUAGE
+    ALGORITHM
+    DATABASE
+    PROTOCOL
+    SERVICE
+}
+
+type TechnologyConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [TechnologyEdge]
+}
+
+type TechnologyEdge {
+    node: Technology
+    cursor: Cursor!
+}
+
+enum TechnologyOrderField {
+    NAME
+    DESCRIPTION
+    COLOUR
+    TYPE
+}
+
+input TechnologyOrder {
+    direction: OrderDirection!
+    field: TechnologyOrderField
+}
+
+type Technology implements Node {
+    id: ID!
+    name: String!
+    description: String
+    colour: String
+    type: TechnologyType!
+}
+
 type Query {
     users(
         after: Cursor
@@ -449,6 +489,15 @@ type Query {
         where: SiteWhereInput
     ): SiteConnection
 
+    technologies(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: TechnologyOrder
+        where: TechnologyWhereInput
+    ): TechnologyConnection
+
     availableAuthProviders: [AuthProvider]
     currentUser: User
 }
@@ -521,6 +570,13 @@ input CreateSiteInput {
     repository: Int
 }
 
+input CreateTechnologyInput {
+    name: String!
+    description: String
+    colour: String
+    type: TechnologyType!
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
@@ -533,4 +589,5 @@ type Mutation {
     createProjectAssociation(input: CreateProjectAssociationInput!): ProjectAssociation!
     createRepository(input: CreateRepositoryInput!): Repository!
     createSite(input: CreateSiteInput!): Site!
+    createTechnology(input: CreateTechnologyInput!): Technology!
 }

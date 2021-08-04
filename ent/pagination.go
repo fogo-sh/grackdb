@@ -24,6 +24,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
+	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/user"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vmihailenco/msgpack/v5"
@@ -2994,6 +2995,318 @@ func (s *Site) ToEdge(order *SiteOrder) *SiteEdge {
 	return &SiteEdge{
 		Node:   s,
 		Cursor: order.Field.toCursor(s),
+	}
+}
+
+// TechnologyEdge is the edge representation of Technology.
+type TechnologyEdge struct {
+	Node   *Technology `json:"node"`
+	Cursor Cursor      `json:"cursor"`
+}
+
+// TechnologyConnection is the connection containing edges to Technology.
+type TechnologyConnection struct {
+	Edges      []*TechnologyEdge `json:"edges"`
+	PageInfo   PageInfo          `json:"pageInfo"`
+	TotalCount int               `json:"totalCount"`
+}
+
+// TechnologyPaginateOption enables pagination customization.
+type TechnologyPaginateOption func(*technologyPager) error
+
+// WithTechnologyOrder configures pagination ordering.
+func WithTechnologyOrder(order *TechnologyOrder) TechnologyPaginateOption {
+	if order == nil {
+		order = DefaultTechnologyOrder
+	}
+	o := *order
+	return func(pager *technologyPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultTechnologyOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithTechnologyFilter configures pagination filter.
+func WithTechnologyFilter(filter func(*TechnologyQuery) (*TechnologyQuery, error)) TechnologyPaginateOption {
+	return func(pager *technologyPager) error {
+		if filter == nil {
+			return errors.New("TechnologyQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type technologyPager struct {
+	order  *TechnologyOrder
+	filter func(*TechnologyQuery) (*TechnologyQuery, error)
+}
+
+func newTechnologyPager(opts []TechnologyPaginateOption) (*technologyPager, error) {
+	pager := &technologyPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultTechnologyOrder
+	}
+	return pager, nil
+}
+
+func (p *technologyPager) applyFilter(query *TechnologyQuery) (*TechnologyQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *technologyPager) toCursor(t *Technology) Cursor {
+	return p.order.Field.toCursor(t)
+}
+
+func (p *technologyPager) applyCursors(query *TechnologyQuery, after, before *Cursor) *TechnologyQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultTechnologyOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *technologyPager) applyOrder(query *TechnologyQuery, reverse bool) *TechnologyQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultTechnologyOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultTechnologyOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Technology.
+func (t *TechnologyQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...TechnologyPaginateOption,
+) (*TechnologyConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newTechnologyPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if t, err = pager.applyFilter(t); err != nil {
+		return nil, err
+	}
+
+	conn := &TechnologyConnection{Edges: []*TechnologyEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := t.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := t.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	t = pager.applyCursors(t, after, before)
+	t = pager.applyOrder(t, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		t = t.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		t = t.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := t.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Technology
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Technology {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Technology {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*TechnologyEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &TechnologyEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// TechnologyOrderFieldName orders Technology by name.
+	TechnologyOrderFieldName = &TechnologyOrderField{
+		field: technology.FieldName,
+		toCursor: func(t *Technology) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Name,
+			}
+		},
+	}
+	// TechnologyOrderFieldDescription orders Technology by description.
+	TechnologyOrderFieldDescription = &TechnologyOrderField{
+		field: technology.FieldDescription,
+		toCursor: func(t *Technology) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Description,
+			}
+		},
+	}
+	// TechnologyOrderFieldColour orders Technology by colour.
+	TechnologyOrderFieldColour = &TechnologyOrderField{
+		field: technology.FieldColour,
+		toCursor: func(t *Technology) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Colour,
+			}
+		},
+	}
+	// TechnologyOrderFieldType orders Technology by type.
+	TechnologyOrderFieldType = &TechnologyOrderField{
+		field: technology.FieldType,
+		toCursor: func(t *Technology) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Type,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f TechnologyOrderField) String() string {
+	var str string
+	switch f.field {
+	case technology.FieldName:
+		str = "NAME"
+	case technology.FieldDescription:
+		str = "DESCRIPTION"
+	case technology.FieldColour:
+		str = "COLOUR"
+	case technology.FieldType:
+		str = "TYPE"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f TechnologyOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *TechnologyOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("TechnologyOrderField %T must be a string", v)
+	}
+	switch str {
+	case "NAME":
+		*f = *TechnologyOrderFieldName
+	case "DESCRIPTION":
+		*f = *TechnologyOrderFieldDescription
+	case "COLOUR":
+		*f = *TechnologyOrderFieldColour
+	case "TYPE":
+		*f = *TechnologyOrderFieldType
+	default:
+		return fmt.Errorf("%s is not a valid TechnologyOrderField", str)
+	}
+	return nil
+}
+
+// TechnologyOrderField defines the ordering field of Technology.
+type TechnologyOrderField struct {
+	field    string
+	toCursor func(*Technology) Cursor
+}
+
+// TechnologyOrder defines the ordering of Technology.
+type TechnologyOrder struct {
+	Direction OrderDirection        `json:"direction"`
+	Field     *TechnologyOrderField `json:"field"`
+}
+
+// DefaultTechnologyOrder is the default ordering of Technology.
+var DefaultTechnologyOrder = &TechnologyOrder{
+	Direction: OrderDirectionAsc,
+	Field: &TechnologyOrderField{
+		field: technology.FieldID,
+		toCursor: func(t *Technology) Cursor {
+			return Cursor{ID: t.ID}
+		},
+	},
+}
+
+// ToEdge converts Technology into TechnologyEdge.
+func (t *Technology) ToEdge(order *TechnologyOrder) *TechnologyEdge {
+	if order == nil {
+		order = DefaultTechnologyOrder
+	}
+	return &TechnologyEdge{
+		Node:   t,
+		Cursor: order.Field.toCursor(t),
 	}
 }
 

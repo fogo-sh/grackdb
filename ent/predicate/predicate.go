@@ -36,5 +36,8 @@ type Repository func(*sql.Selector)
 // Site is the predicate function for site builders.
 type Site func(*sql.Selector)
 
+// Technology is the predicate function for technology builders.
+type Technology func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

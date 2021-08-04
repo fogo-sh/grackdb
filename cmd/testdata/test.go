@@ -35,6 +35,7 @@ const (
 	ProjectContributor       TestItemType = "ProjectContributor"
 	Repository               TestItemType = "Repository"
 	Site                     TestItemType = "Site"
+	Technology               TestItemType = "Technology"
 	User                     TestItemType = "User"
 )
 
@@ -214,6 +215,16 @@ func main() {
 			_, err = client.Site.Create().SetInput(*input).Save(ctx)
 			if err != nil {
 				log.Fatalf("failed creating Site: %v", err)
+			}
+		case Technology:
+			input := new(ent.CreateTechnologyInput)
+			err = Decode(item.Params, input)
+			if err != nil {
+				log.Fatalf("failed decoding Technology: %v", err)
+			}
+			_, err = client.Technology.Create().SetInput(*input).Save(ctx)
+			if err != nil {
+				log.Fatalf("failed creating Technology: %v", err)
 			}
 		case User:
 			input := new(ent.CreateUserInput)

@@ -24,6 +24,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
+	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/user"
 	"github.com/hashicorp/go-multierror"
 	"golang.org/x/sync/semaphore"
@@ -583,6 +584,49 @@ func (s *Site) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
+func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     t.ID,
+		Type:   "Technology",
+		Fields: make([]*Field, 4),
+		Edges:  make([]*Edge, 0),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(t.Name); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(t.Description); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "description",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(t.Colour); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "string",
+		Name:  "colour",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(t.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "technology.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	return node, nil
+}
+
 func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     u.ID,
@@ -797,6 +841,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
+	case technology.Table:
+		n, err := c.Technology.Query().
+			Where(technology.ID(id)).
+			CollectFields(ctx, "Technology").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case user.Table:
 		n, err := c.User.Query().
 			Where(user.ID(id)).
@@ -1000,6 +1053,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.Site.Query().
 			Where(site.IDIn(ids...)).
 			CollectFields(ctx, "Site").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case technology.Table:
+		nodes, err := c.Technology.Query().
+			Where(technology.IDIn(ids...)).
+			CollectFields(ctx, "Technology").
 			All(ctx)
 		if err != nil {
 			return nil, err

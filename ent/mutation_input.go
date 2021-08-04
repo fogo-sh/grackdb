@@ -8,6 +8,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githuborganizationmember"
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
+	"github.com/fogo-sh/grackdb/ent/technology"
 )
 
 // CreateDiscordAccountInput represents a mutation input for creating discordaccounts.
@@ -790,6 +791,76 @@ func (u *SiteUpdate) SetInput(i UpdateSiteInput) *SiteUpdate {
 
 // SetInput applies the change-set in the UpdateSiteInput on the update-one builder.
 func (u *SiteUpdateOne) SetInput(i UpdateSiteInput) *SiteUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// CreateTechnologyInput represents a mutation input for creating technologies.
+type CreateTechnologyInput struct {
+	Name        string
+	Description *string
+	Colour      *string
+	Type        technology.Type
+}
+
+// Mutate applies the CreateTechnologyInput on the TechnologyCreate builder.
+func (i *CreateTechnologyInput) Mutate(m *TechnologyCreate) {
+	m.SetName(i.Name)
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
+	if v := i.Colour; v != nil {
+		m.SetColour(*v)
+	}
+	m.SetType(i.Type)
+}
+
+// SetInput applies the change-set in the CreateTechnologyInput on the create builder.
+func (c *TechnologyCreate) SetInput(i CreateTechnologyInput) *TechnologyCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateTechnologyInput represents a mutation input for updating technologies.
+type UpdateTechnologyInput struct {
+	Name             *string
+	Description      *string
+	ClearDescription bool
+	Colour           *string
+	ClearColour      bool
+	Type             *technology.Type
+}
+
+// Mutate applies the UpdateTechnologyInput on the TechnologyMutation.
+func (i *UpdateTechnologyInput) Mutate(m *TechnologyMutation) {
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if i.ClearDescription {
+		m.ClearDescription()
+	}
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
+	if i.ClearColour {
+		m.ClearColour()
+	}
+	if v := i.Colour; v != nil {
+		m.SetColour(*v)
+	}
+	if v := i.Type; v != nil {
+		m.SetType(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateTechnologyInput on the update builder.
+func (u *TechnologyUpdate) SetInput(i UpdateTechnologyInput) *TechnologyUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateTechnologyInput on the update-one builder.
+func (u *TechnologyUpdateOne) SetInput(i UpdateTechnologyInput) *TechnologyUpdateOne {
 	i.Mutate(u.Mutation())
 	return u
 }

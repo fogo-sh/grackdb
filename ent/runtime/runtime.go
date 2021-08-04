@@ -16,6 +16,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/schema"
 	"github.com/fogo-sh/grackdb/ent/site"
+	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/user"
 
 	"entgo.io/ent"
@@ -172,6 +173,21 @@ func init() {
 	siteDescURL := siteFields[0].Descriptor()
 	// site.URLValidator is a validator for the "url" field. It is called by the builders before save.
 	site.URLValidator = siteDescURL.Validators[0].(func(string) error)
+	technology.Policy = privacy.NewPolicies(schema.Technology{})
+	technology.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := technology.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	technologyFields := schema.Technology{}.Fields()
+	_ = technologyFields
+	// technologyDescName is the schema descriptor for name field.
+	technologyDescName := technologyFields[0].Descriptor()
+	// technology.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	technology.NameValidator = technologyDescName.Validators[0].(func(string) error)
 	user.Policy = privacy.NewPolicies(schema.User{})
 	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {

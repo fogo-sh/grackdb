@@ -51,6 +51,20 @@ Items:
       Organization: 1
       Account: 2
   
+  - Name: Go
+    Type: Technology
+    Params:
+      Name: Go
+      Description: Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.
+      Colour: "#00ADD8"
+      Type: LANGUAGE
+  - Name: Crystal
+    Type: Technology
+    Params:
+      Name: Crystal
+      Colour: "#000100"
+      Type: LANGUAGE
+  
   - Name: Gik
     Type: Project
     Params:

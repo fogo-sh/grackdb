@@ -175,6 +175,14 @@ func (r *queryResolver) Sites(ctx context.Context, after *ent.Cursor, first *int
 		)
 }
 
+func (r *queryResolver) Technologies(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.TechnologyOrder, where *ent.TechnologyWhereInput) (*ent.TechnologyConnection, error) {
+	return r.client.Technology.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithTechnologyOrder(orderBy),
+			ent.WithTechnologyFilter(where.Filter),
+		)
+}
+
 func (r *queryResolver) AvailableAuthProviders(ctx context.Context) ([]*AuthProvider, error) {
 	availableAuthProviders := []*AuthProvider{}
 

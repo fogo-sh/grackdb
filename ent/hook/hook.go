@@ -139,6 +139,19 @@ func (f SiteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return f(ctx, mv)
 }
 
+// The TechnologyFunc type is an adapter to allow the use of ordinary
+// function as Technology mutator.
+type TechnologyFunc func(context.Context, *ent.TechnologyMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TechnologyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.TechnologyMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TechnologyMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

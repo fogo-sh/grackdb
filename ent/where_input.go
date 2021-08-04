@@ -17,6 +17,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
+	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -2513,6 +2514,313 @@ func (i *SiteWhereInput) P() (predicate.Site, error) {
 		return predicates[0], nil
 	default:
 		return site.And(predicates...), nil
+	}
+}
+
+// TechnologyWhereInput represents a where input for filtering Technology queries.
+type TechnologyWhereInput struct {
+	Not *TechnologyWhereInput   `json:"not,omitempty"`
+	Or  []*TechnologyWhereInput `json:"or,omitempty"`
+	And []*TechnologyWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *int  `json:"id,omitempty"`
+	IDNEQ   *int  `json:"idNEQ,omitempty"`
+	IDIn    []int `json:"idIn,omitempty"`
+	IDNotIn []int `json:"idNotIn,omitempty"`
+	IDGT    *int  `json:"idGT,omitempty"`
+	IDGTE   *int  `json:"idGTE,omitempty"`
+	IDLT    *int  `json:"idLT,omitempty"`
+	IDLTE   *int  `json:"idLTE,omitempty"`
+
+	// "name" field predicates.
+	Name             *string  `json:"name,omitempty"`
+	NameNEQ          *string  `json:"nameNEQ,omitempty"`
+	NameIn           []string `json:"nameIn,omitempty"`
+	NameNotIn        []string `json:"nameNotIn,omitempty"`
+	NameGT           *string  `json:"nameGT,omitempty"`
+	NameGTE          *string  `json:"nameGTE,omitempty"`
+	NameLT           *string  `json:"nameLT,omitempty"`
+	NameLTE          *string  `json:"nameLTE,omitempty"`
+	NameContains     *string  `json:"nameContains,omitempty"`
+	NameHasPrefix    *string  `json:"nameHasPrefix,omitempty"`
+	NameHasSuffix    *string  `json:"nameHasSuffix,omitempty"`
+	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
+	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
+
+	// "description" field predicates.
+	Description             *string  `json:"description,omitempty"`
+	DescriptionNEQ          *string  `json:"descriptionNEQ,omitempty"`
+	DescriptionIn           []string `json:"descriptionIn,omitempty"`
+	DescriptionNotIn        []string `json:"descriptionNotIn,omitempty"`
+	DescriptionGT           *string  `json:"descriptionGT,omitempty"`
+	DescriptionGTE          *string  `json:"descriptionGTE,omitempty"`
+	DescriptionLT           *string  `json:"descriptionLT,omitempty"`
+	DescriptionLTE          *string  `json:"descriptionLTE,omitempty"`
+	DescriptionContains     *string  `json:"descriptionContains,omitempty"`
+	DescriptionHasPrefix    *string  `json:"descriptionHasPrefix,omitempty"`
+	DescriptionHasSuffix    *string  `json:"descriptionHasSuffix,omitempty"`
+	DescriptionIsNil        bool     `json:"descriptionIsNil,omitempty"`
+	DescriptionNotNil       bool     `json:"descriptionNotNil,omitempty"`
+	DescriptionEqualFold    *string  `json:"descriptionEqualFold,omitempty"`
+	DescriptionContainsFold *string  `json:"descriptionContainsFold,omitempty"`
+
+	// "colour" field predicates.
+	Colour             *string  `json:"colour,omitempty"`
+	ColourNEQ          *string  `json:"colourNEQ,omitempty"`
+	ColourIn           []string `json:"colourIn,omitempty"`
+	ColourNotIn        []string `json:"colourNotIn,omitempty"`
+	ColourGT           *string  `json:"colourGT,omitempty"`
+	ColourGTE          *string  `json:"colourGTE,omitempty"`
+	ColourLT           *string  `json:"colourLT,omitempty"`
+	ColourLTE          *string  `json:"colourLTE,omitempty"`
+	ColourContains     *string  `json:"colourContains,omitempty"`
+	ColourHasPrefix    *string  `json:"colourHasPrefix,omitempty"`
+	ColourHasSuffix    *string  `json:"colourHasSuffix,omitempty"`
+	ColourIsNil        bool     `json:"colourIsNil,omitempty"`
+	ColourNotNil       bool     `json:"colourNotNil,omitempty"`
+	ColourEqualFold    *string  `json:"colourEqualFold,omitempty"`
+	ColourContainsFold *string  `json:"colourContainsFold,omitempty"`
+
+	// "type" field predicates.
+	Type      *technology.Type  `json:"type,omitempty"`
+	TypeNEQ   *technology.Type  `json:"typeNEQ,omitempty"`
+	TypeIn    []technology.Type `json:"typeIn,omitempty"`
+	TypeNotIn []technology.Type `json:"typeNotIn,omitempty"`
+}
+
+// Filter applies the TechnologyWhereInput filter on the TechnologyQuery builder.
+func (i *TechnologyWhereInput) Filter(q *TechnologyQuery) (*TechnologyQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// P returns a predicate for filtering technologies.
+// An error is returned if the input is empty or invalid.
+func (i *TechnologyWhereInput) P() (predicate.Technology, error) {
+	var predicates []predicate.Technology
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, technology.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.Technology, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, technology.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.Technology, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, technology.And(and...))
+	}
+	if i.ID != nil {
+		predicates = append(predicates, technology.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, technology.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, technology.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, technology.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, technology.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, technology.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, technology.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, technology.IDLTE(*i.IDLTE))
+	}
+	if i.Name != nil {
+		predicates = append(predicates, technology.NameEQ(*i.Name))
+	}
+	if i.NameNEQ != nil {
+		predicates = append(predicates, technology.NameNEQ(*i.NameNEQ))
+	}
+	if len(i.NameIn) > 0 {
+		predicates = append(predicates, technology.NameIn(i.NameIn...))
+	}
+	if len(i.NameNotIn) > 0 {
+		predicates = append(predicates, technology.NameNotIn(i.NameNotIn...))
+	}
+	if i.NameGT != nil {
+		predicates = append(predicates, technology.NameGT(*i.NameGT))
+	}
+	if i.NameGTE != nil {
+		predicates = append(predicates, technology.NameGTE(*i.NameGTE))
+	}
+	if i.NameLT != nil {
+		predicates = append(predicates, technology.NameLT(*i.NameLT))
+	}
+	if i.NameLTE != nil {
+		predicates = append(predicates, technology.NameLTE(*i.NameLTE))
+	}
+	if i.NameContains != nil {
+		predicates = append(predicates, technology.NameContains(*i.NameContains))
+	}
+	if i.NameHasPrefix != nil {
+		predicates = append(predicates, technology.NameHasPrefix(*i.NameHasPrefix))
+	}
+	if i.NameHasSuffix != nil {
+		predicates = append(predicates, technology.NameHasSuffix(*i.NameHasSuffix))
+	}
+	if i.NameEqualFold != nil {
+		predicates = append(predicates, technology.NameEqualFold(*i.NameEqualFold))
+	}
+	if i.NameContainsFold != nil {
+		predicates = append(predicates, technology.NameContainsFold(*i.NameContainsFold))
+	}
+	if i.Description != nil {
+		predicates = append(predicates, technology.DescriptionEQ(*i.Description))
+	}
+	if i.DescriptionNEQ != nil {
+		predicates = append(predicates, technology.DescriptionNEQ(*i.DescriptionNEQ))
+	}
+	if len(i.DescriptionIn) > 0 {
+		predicates = append(predicates, technology.DescriptionIn(i.DescriptionIn...))
+	}
+	if len(i.DescriptionNotIn) > 0 {
+		predicates = append(predicates, technology.DescriptionNotIn(i.DescriptionNotIn...))
+	}
+	if i.DescriptionGT != nil {
+		predicates = append(predicates, technology.DescriptionGT(*i.DescriptionGT))
+	}
+	if i.DescriptionGTE != nil {
+		predicates = append(predicates, technology.DescriptionGTE(*i.DescriptionGTE))
+	}
+	if i.DescriptionLT != nil {
+		predicates = append(predicates, technology.DescriptionLT(*i.DescriptionLT))
+	}
+	if i.DescriptionLTE != nil {
+		predicates = append(predicates, technology.DescriptionLTE(*i.DescriptionLTE))
+	}
+	if i.DescriptionContains != nil {
+		predicates = append(predicates, technology.DescriptionContains(*i.DescriptionContains))
+	}
+	if i.DescriptionHasPrefix != nil {
+		predicates = append(predicates, technology.DescriptionHasPrefix(*i.DescriptionHasPrefix))
+	}
+	if i.DescriptionHasSuffix != nil {
+		predicates = append(predicates, technology.DescriptionHasSuffix(*i.DescriptionHasSuffix))
+	}
+	if i.DescriptionIsNil {
+		predicates = append(predicates, technology.DescriptionIsNil())
+	}
+	if i.DescriptionNotNil {
+		predicates = append(predicates, technology.DescriptionNotNil())
+	}
+	if i.DescriptionEqualFold != nil {
+		predicates = append(predicates, technology.DescriptionEqualFold(*i.DescriptionEqualFold))
+	}
+	if i.DescriptionContainsFold != nil {
+		predicates = append(predicates, technology.DescriptionContainsFold(*i.DescriptionContainsFold))
+	}
+	if i.Colour != nil {
+		predicates = append(predicates, technology.ColourEQ(*i.Colour))
+	}
+	if i.ColourNEQ != nil {
+		predicates = append(predicates, technology.ColourNEQ(*i.ColourNEQ))
+	}
+	if len(i.ColourIn) > 0 {
+		predicates = append(predicates, technology.ColourIn(i.ColourIn...))
+	}
+	if len(i.ColourNotIn) > 0 {
+		predicates = append(predicates, technology.ColourNotIn(i.ColourNotIn...))
+	}
+	if i.ColourGT != nil {
+		predicates = append(predicates, technology.ColourGT(*i.ColourGT))
+	}
+	if i.ColourGTE != nil {
+		predicates = append(predicates, technology.ColourGTE(*i.ColourGTE))
+	}
+	if i.ColourLT != nil {
+		predicates = append(predicates, technology.ColourLT(*i.ColourLT))
+	}
+	if i.ColourLTE != nil {
+		predicates = append(predicates, technology.ColourLTE(*i.ColourLTE))
+	}
+	if i.ColourContains != nil {
+		predicates = append(predicates, technology.ColourContains(*i.ColourContains))
+	}
+	if i.ColourHasPrefix != nil {
+		predicates = append(predicates, technology.ColourHasPrefix(*i.ColourHasPrefix))
+	}
+	if i.ColourHasSuffix != nil {
+		predicates = append(predicates, technology.ColourHasSuffix(*i.ColourHasSuffix))
+	}
+	if i.ColourIsNil {
+		predicates = append(predicates, technology.ColourIsNil())
+	}
+	if i.ColourNotNil {
+		predicates = append(predicates, technology.ColourNotNil())
+	}
+	if i.ColourEqualFold != nil {
+		predicates = append(predicates, technology.ColourEqualFold(*i.ColourEqualFold))
+	}
+	if i.ColourContainsFold != nil {
+		predicates = append(predicates, technology.ColourContainsFold(*i.ColourContainsFold))
+	}
+	if i.Type != nil {
+		predicates = append(predicates, technology.TypeEQ(*i.Type))
+	}
+	if i.TypeNEQ != nil {
+		predicates = append(predicates, technology.TypeNEQ(*i.TypeNEQ))
+	}
+	if len(i.TypeIn) > 0 {
+		predicates = append(predicates, technology.TypeIn(i.TypeIn...))
+	}
+	if len(i.TypeNotIn) > 0 {
+		predicates = append(predicates, technology.TypeNotIn(i.TypeNotIn...))
+	}
+
+	switch len(predicates) {
+	case 0:
+		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate TechnologyWhereInput")
+	case 1:
+		return predicates[0], nil
+	default:
+		return technology.And(predicates...), nil
 	}
 }
 

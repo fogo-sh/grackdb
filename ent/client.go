@@ -19,6 +19,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
 	"github.com/fogo-sh/grackdb/ent/site"
+	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -51,6 +52,8 @@ type Client struct {
 	Repository *RepositoryClient
 	// Site is the client for interacting with the Site builders.
 	Site *SiteClient
+	// Technology is the client for interacting with the Technology builders.
+	Technology *TechnologyClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// additional fields for node api
@@ -78,6 +81,7 @@ func (c *Client) init() {
 	c.ProjectContributor = NewProjectContributorClient(c.config)
 	c.Repository = NewRepositoryClient(c.config)
 	c.Site = NewSiteClient(c.config)
+	c.Technology = NewTechnologyClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -122,6 +126,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ProjectContributor:       NewProjectContributorClient(cfg),
 		Repository:               NewRepositoryClient(cfg),
 		Site:                     NewSiteClient(cfg),
+		Technology:               NewTechnologyClient(cfg),
 		User:                     NewUserClient(cfg),
 	}, nil
 }
@@ -151,6 +156,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ProjectContributor:       NewProjectContributorClient(cfg),
 		Repository:               NewRepositoryClient(cfg),
 		Site:                     NewSiteClient(cfg),
+		Technology:               NewTechnologyClient(cfg),
 		User:                     NewUserClient(cfg),
 	}, nil
 }
@@ -191,6 +197,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.ProjectContributor.Use(hooks...)
 	c.Repository.Use(hooks...)
 	c.Site.Use(hooks...)
+	c.Technology.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -1566,6 +1573,97 @@ func (c *SiteClient) QueryRepository(s *Site) *RepositoryQuery {
 func (c *SiteClient) Hooks() []Hook {
 	hooks := c.hooks.Site
 	return append(hooks[:len(hooks):len(hooks)], site.Hooks[:]...)
+}
+
+// TechnologyClient is a client for the Technology schema.
+type TechnologyClient struct {
+	config
+}
+
+// NewTechnologyClient returns a client for the Technology from the given config.
+func NewTechnologyClient(c config) *TechnologyClient {
+	return &TechnologyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `technology.Hooks(f(g(h())))`.
+func (c *TechnologyClient) Use(hooks ...Hook) {
+	c.hooks.Technology = append(c.hooks.Technology, hooks...)
+}
+
+// Create returns a create builder for Technology.
+func (c *TechnologyClient) Create() *TechnologyCreate {
+	mutation := newTechnologyMutation(c.config, OpCreate)
+	return &TechnologyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Technology entities.
+func (c *TechnologyClient) CreateBulk(builders ...*TechnologyCreate) *TechnologyCreateBulk {
+	return &TechnologyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Technology.
+func (c *TechnologyClient) Update() *TechnologyUpdate {
+	mutation := newTechnologyMutation(c.config, OpUpdate)
+	return &TechnologyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TechnologyClient) UpdateOne(t *Technology) *TechnologyUpdateOne {
+	mutation := newTechnologyMutation(c.config, OpUpdateOne, withTechnology(t))
+	return &TechnologyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TechnologyClient) UpdateOneID(id int) *TechnologyUpdateOne {
+	mutation := newTechnologyMutation(c.config, OpUpdateOne, withTechnologyID(id))
+	return &TechnologyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Technology.
+func (c *TechnologyClient) Delete() *TechnologyDelete {
+	mutation := newTechnologyMutation(c.config, OpDelete)
+	return &TechnologyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *TechnologyClient) DeleteOne(t *Technology) *TechnologyDeleteOne {
+	return c.DeleteOneID(t.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *TechnologyClient) DeleteOneID(id int) *TechnologyDeleteOne {
+	builder := c.Delete().Where(technology.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TechnologyDeleteOne{builder}
+}
+
+// Query returns a query builder for Technology.
+func (c *TechnologyClient) Query() *TechnologyQuery {
+	return &TechnologyQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Technology entity by its id.
+func (c *TechnologyClient) Get(ctx context.Context, id int) (*Technology, error) {
+	return c.Query().Where(technology.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TechnologyClient) GetX(ctx context.Context, id int) *Technology {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TechnologyClient) Hooks() []Hook {
+	hooks := c.hooks.Technology
+	return append(hooks[:len(hooks):len(hooks)], technology.Hooks[:]...)
 }
 
 // UserClient is a client for the User schema.

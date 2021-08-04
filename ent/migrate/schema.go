@@ -252,6 +252,20 @@ var (
 			},
 		},
 	}
+	// TechnologiesColumns holds the columns for the "technologies" table.
+	TechnologiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "colour", Type: field.TypeString, Nullable: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"LIBRARY", "LANGUAGE", "ALGORITHM", "DATABASE", "PROTOCOL", "SERVICE"}},
+	}
+	// TechnologiesTable holds the schema information for the "technologies" table.
+	TechnologiesTable = &schema.Table{
+		Name:       "technologies",
+		Columns:    TechnologiesColumns,
+		PrimaryKey: []*schema.Column{TechnologiesColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -276,6 +290,7 @@ var (
 		ProjectContributorsTable,
 		RepositoriesTable,
 		SitesTable,
+		TechnologiesTable,
 		UsersTable,
 	}
 )
