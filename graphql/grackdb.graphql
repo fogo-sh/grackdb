@@ -359,9 +359,6 @@ type Site implements Node {
 }
 
 type Query {
-    node(id: ID!): Node
-    nodes(ids: [ID!]!): [Node]!
-
     users(
         after: Cursor
         first: Int
