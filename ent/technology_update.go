@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/projecttechnology"
+	"github.com/fogo-sh/grackdb/ent/repositorytechnology"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 )
@@ -125,6 +126,21 @@ func (tu *TechnologyUpdate) AddProjects(p ...*ProjectTechnology) *TechnologyUpda
 	return tu.AddProjectIDs(ids...)
 }
 
+// AddRepositoryIDs adds the "repositories" edge to the RepositoryTechnology entity by IDs.
+func (tu *TechnologyUpdate) AddRepositoryIDs(ids ...int) *TechnologyUpdate {
+	tu.mutation.AddRepositoryIDs(ids...)
+	return tu
+}
+
+// AddRepositories adds the "repositories" edges to the RepositoryTechnology entity.
+func (tu *TechnologyUpdate) AddRepositories(r ...*RepositoryTechnology) *TechnologyUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tu.AddRepositoryIDs(ids...)
+}
+
 // Mutation returns the TechnologyMutation object of the builder.
 func (tu *TechnologyUpdate) Mutation() *TechnologyMutation {
 	return tu.mutation
@@ -191,6 +207,27 @@ func (tu *TechnologyUpdate) RemoveProjects(p ...*ProjectTechnology) *TechnologyU
 		ids[i] = p[i].ID
 	}
 	return tu.RemoveProjectIDs(ids...)
+}
+
+// ClearRepositories clears all "repositories" edges to the RepositoryTechnology entity.
+func (tu *TechnologyUpdate) ClearRepositories() *TechnologyUpdate {
+	tu.mutation.ClearRepositories()
+	return tu
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to RepositoryTechnology entities by IDs.
+func (tu *TechnologyUpdate) RemoveRepositoryIDs(ids ...int) *TechnologyUpdate {
+	tu.mutation.RemoveRepositoryIDs(ids...)
+	return tu
+}
+
+// RemoveRepositories removes "repositories" edges to RepositoryTechnology entities.
+func (tu *TechnologyUpdate) RemoveRepositories(r ...*RepositoryTechnology) *TechnologyUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tu.RemoveRepositoryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -485,6 +522,60 @@ func (tu *TechnologyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if tu.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.RepositoriesTable,
+			Columns: []string{technology.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repositorytechnology.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedRepositoriesIDs(); len(nodes) > 0 && !tu.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.RepositoriesTable,
+			Columns: []string{technology.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repositorytechnology.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RepositoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.RepositoriesTable,
+			Columns: []string{technology.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repositorytechnology.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{technology.Label}
@@ -601,6 +692,21 @@ func (tuo *TechnologyUpdateOne) AddProjects(p ...*ProjectTechnology) *Technology
 	return tuo.AddProjectIDs(ids...)
 }
 
+// AddRepositoryIDs adds the "repositories" edge to the RepositoryTechnology entity by IDs.
+func (tuo *TechnologyUpdateOne) AddRepositoryIDs(ids ...int) *TechnologyUpdateOne {
+	tuo.mutation.AddRepositoryIDs(ids...)
+	return tuo
+}
+
+// AddRepositories adds the "repositories" edges to the RepositoryTechnology entity.
+func (tuo *TechnologyUpdateOne) AddRepositories(r ...*RepositoryTechnology) *TechnologyUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tuo.AddRepositoryIDs(ids...)
+}
+
 // Mutation returns the TechnologyMutation object of the builder.
 func (tuo *TechnologyUpdateOne) Mutation() *TechnologyMutation {
 	return tuo.mutation
@@ -667,6 +773,27 @@ func (tuo *TechnologyUpdateOne) RemoveProjects(p ...*ProjectTechnology) *Technol
 		ids[i] = p[i].ID
 	}
 	return tuo.RemoveProjectIDs(ids...)
+}
+
+// ClearRepositories clears all "repositories" edges to the RepositoryTechnology entity.
+func (tuo *TechnologyUpdateOne) ClearRepositories() *TechnologyUpdateOne {
+	tuo.mutation.ClearRepositories()
+	return tuo
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to RepositoryTechnology entities by IDs.
+func (tuo *TechnologyUpdateOne) RemoveRepositoryIDs(ids ...int) *TechnologyUpdateOne {
+	tuo.mutation.RemoveRepositoryIDs(ids...)
+	return tuo
+}
+
+// RemoveRepositories removes "repositories" edges to RepositoryTechnology entities.
+func (tuo *TechnologyUpdateOne) RemoveRepositories(r ...*RepositoryTechnology) *TechnologyUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tuo.RemoveRepositoryIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -977,6 +1104,60 @@ func (tuo *TechnologyUpdateOne) sqlSave(ctx context.Context) (_node *Technology,
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: projecttechnology.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.RepositoriesTable,
+			Columns: []string{technology.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repositorytechnology.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedRepositoriesIDs(); len(nodes) > 0 && !tuo.mutation.RepositoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.RepositoriesTable,
+			Columns: []string{technology.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repositorytechnology.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RepositoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   technology.RepositoriesTable,
+			Columns: []string{technology.RepositoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: repositorytechnology.FieldID,
 				},
 			},
 		}

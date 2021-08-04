@@ -34,6 +34,7 @@ type hooks struct {
 	ProjectContributor       []ent.Hook
 	ProjectTechnology        []ent.Hook
 	Repository               []ent.Hook
+	RepositoryTechnology     []ent.Hook
 	Site                     []ent.Hook
 	Technology               []ent.Hook
 	TechnologyAssociation    []ent.Hook

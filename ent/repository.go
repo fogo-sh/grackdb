@@ -42,9 +42,11 @@ type RepositoryEdges struct {
 	DiscordBots []*DiscordBot `json:"discord_bots,omitempty"`
 	// Sites holds the value of the sites edge.
 	Sites []*Site `json:"sites,omitempty"`
+	// Technologies holds the value of the technologies edge.
+	Technologies []*RepositoryTechnology `json:"technologies,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // ProjectOrErr returns the Project value or an error if the edge
@@ -105,6 +107,15 @@ func (e RepositoryEdges) SitesOrErr() ([]*Site, error) {
 		return e.Sites, nil
 	}
 	return nil, &NotLoadedError{edge: "sites"}
+}
+
+// TechnologiesOrErr returns the Technologies value or an error if the edge
+// was not loaded in eager-loading.
+func (e RepositoryEdges) TechnologiesOrErr() ([]*RepositoryTechnology, error) {
+	if e.loadedTypes[5] {
+		return e.Technologies, nil
+	}
+	return nil, &NotLoadedError{edge: "technologies"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -205,6 +216,11 @@ func (r *Repository) QueryDiscordBots() *DiscordBotQuery {
 // QuerySites queries the "sites" edge of the Repository entity.
 func (r *Repository) QuerySites() *SiteQuery {
 	return (&RepositoryClient{config: r.config}).QuerySites(r)
+}
+
+// QueryTechnologies queries the "technologies" edge of the Repository entity.
+func (r *Repository) QueryTechnologies() *RepositoryTechnologyQuery {
+	return (&RepositoryClient{config: r.config}).QueryTechnologies(r)
 }
 
 // Update returns a builder for updating this Repository.

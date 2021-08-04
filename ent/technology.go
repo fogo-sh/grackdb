@@ -36,9 +36,11 @@ type TechnologyEdges struct {
 	ChildTechnologies []*TechnologyAssociation `json:"child_technologies,omitempty"`
 	// Projects holds the value of the projects edge.
 	Projects []*ProjectTechnology `json:"projects,omitempty"`
+	// Repositories holds the value of the repositories edge.
+	Repositories []*RepositoryTechnology `json:"repositories,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // ParentTechnologiesOrErr returns the ParentTechnologies value or an error if the edge
@@ -66,6 +68,15 @@ func (e TechnologyEdges) ProjectsOrErr() ([]*ProjectTechnology, error) {
 		return e.Projects, nil
 	}
 	return nil, &NotLoadedError{edge: "projects"}
+}
+
+// RepositoriesOrErr returns the Repositories value or an error if the edge
+// was not loaded in eager-loading.
+func (e TechnologyEdges) RepositoriesOrErr() ([]*RepositoryTechnology, error) {
+	if e.loadedTypes[3] {
+		return e.Repositories, nil
+	}
+	return nil, &NotLoadedError{edge: "repositories"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -142,6 +153,11 @@ func (t *Technology) QueryChildTechnologies() *TechnologyAssociationQuery {
 // QueryProjects queries the "projects" edge of the Technology entity.
 func (t *Technology) QueryProjects() *ProjectTechnologyQuery {
 	return (&TechnologyClient{config: t.config}).QueryProjects(t)
+}
+
+// QueryRepositories queries the "repositories" edge of the Technology entity.
+func (t *Technology) QueryRepositories() *RepositoryTechnologyQuery {
+	return (&TechnologyClient{config: t.config}).QueryRepositories(t)
 }
 
 // Update returns a builder for updating this Technology.

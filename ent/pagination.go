@@ -24,6 +24,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/repositorytechnology"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
@@ -2997,6 +2998,276 @@ func (r *Repository) ToEdge(order *RepositoryOrder) *RepositoryEdge {
 	return &RepositoryEdge{
 		Node:   r,
 		Cursor: order.Field.toCursor(r),
+	}
+}
+
+// RepositoryTechnologyEdge is the edge representation of RepositoryTechnology.
+type RepositoryTechnologyEdge struct {
+	Node   *RepositoryTechnology `json:"node"`
+	Cursor Cursor                `json:"cursor"`
+}
+
+// RepositoryTechnologyConnection is the connection containing edges to RepositoryTechnology.
+type RepositoryTechnologyConnection struct {
+	Edges      []*RepositoryTechnologyEdge `json:"edges"`
+	PageInfo   PageInfo                    `json:"pageInfo"`
+	TotalCount int                         `json:"totalCount"`
+}
+
+// RepositoryTechnologyPaginateOption enables pagination customization.
+type RepositoryTechnologyPaginateOption func(*repositoryTechnologyPager) error
+
+// WithRepositoryTechnologyOrder configures pagination ordering.
+func WithRepositoryTechnologyOrder(order *RepositoryTechnologyOrder) RepositoryTechnologyPaginateOption {
+	if order == nil {
+		order = DefaultRepositoryTechnologyOrder
+	}
+	o := *order
+	return func(pager *repositoryTechnologyPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultRepositoryTechnologyOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithRepositoryTechnologyFilter configures pagination filter.
+func WithRepositoryTechnologyFilter(filter func(*RepositoryTechnologyQuery) (*RepositoryTechnologyQuery, error)) RepositoryTechnologyPaginateOption {
+	return func(pager *repositoryTechnologyPager) error {
+		if filter == nil {
+			return errors.New("RepositoryTechnologyQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type repositoryTechnologyPager struct {
+	order  *RepositoryTechnologyOrder
+	filter func(*RepositoryTechnologyQuery) (*RepositoryTechnologyQuery, error)
+}
+
+func newRepositoryTechnologyPager(opts []RepositoryTechnologyPaginateOption) (*repositoryTechnologyPager, error) {
+	pager := &repositoryTechnologyPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultRepositoryTechnologyOrder
+	}
+	return pager, nil
+}
+
+func (p *repositoryTechnologyPager) applyFilter(query *RepositoryTechnologyQuery) (*RepositoryTechnologyQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *repositoryTechnologyPager) toCursor(rt *RepositoryTechnology) Cursor {
+	return p.order.Field.toCursor(rt)
+}
+
+func (p *repositoryTechnologyPager) applyCursors(query *RepositoryTechnologyQuery, after, before *Cursor) *RepositoryTechnologyQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultRepositoryTechnologyOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *repositoryTechnologyPager) applyOrder(query *RepositoryTechnologyQuery, reverse bool) *RepositoryTechnologyQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultRepositoryTechnologyOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultRepositoryTechnologyOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to RepositoryTechnology.
+func (rt *RepositoryTechnologyQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...RepositoryTechnologyPaginateOption,
+) (*RepositoryTechnologyConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newRepositoryTechnologyPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if rt, err = pager.applyFilter(rt); err != nil {
+		return nil, err
+	}
+
+	conn := &RepositoryTechnologyConnection{Edges: []*RepositoryTechnologyEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := rt.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := rt.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	rt = pager.applyCursors(rt, after, before)
+	rt = pager.applyOrder(rt, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		rt = rt.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		rt = rt.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := rt.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *RepositoryTechnology
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *RepositoryTechnology {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *RepositoryTechnology {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*RepositoryTechnologyEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &RepositoryTechnologyEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// RepositoryTechnologyOrderFieldType orders RepositoryTechnology by type.
+	RepositoryTechnologyOrderFieldType = &RepositoryTechnologyOrderField{
+		field: repositorytechnology.FieldType,
+		toCursor: func(rt *RepositoryTechnology) Cursor {
+			return Cursor{
+				ID:    rt.ID,
+				Value: rt.Type,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f RepositoryTechnologyOrderField) String() string {
+	var str string
+	switch f.field {
+	case repositorytechnology.FieldType:
+		str = "TYPE"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f RepositoryTechnologyOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *RepositoryTechnologyOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("RepositoryTechnologyOrderField %T must be a string", v)
+	}
+	switch str {
+	case "TYPE":
+		*f = *RepositoryTechnologyOrderFieldType
+	default:
+		return fmt.Errorf("%s is not a valid RepositoryTechnologyOrderField", str)
+	}
+	return nil
+}
+
+// RepositoryTechnologyOrderField defines the ordering field of RepositoryTechnology.
+type RepositoryTechnologyOrderField struct {
+	field    string
+	toCursor func(*RepositoryTechnology) Cursor
+}
+
+// RepositoryTechnologyOrder defines the ordering of RepositoryTechnology.
+type RepositoryTechnologyOrder struct {
+	Direction OrderDirection                  `json:"direction"`
+	Field     *RepositoryTechnologyOrderField `json:"field"`
+}
+
+// DefaultRepositoryTechnologyOrder is the default ordering of RepositoryTechnology.
+var DefaultRepositoryTechnologyOrder = &RepositoryTechnologyOrder{
+	Direction: OrderDirectionAsc,
+	Field: &RepositoryTechnologyOrderField{
+		field: repositorytechnology.FieldID,
+		toCursor: func(rt *RepositoryTechnology) Cursor {
+			return Cursor{ID: rt.ID}
+		},
+	},
+}
+
+// ToEdge converts RepositoryTechnology into RepositoryTechnologyEdge.
+func (rt *RepositoryTechnology) ToEdge(order *RepositoryTechnologyOrder) *RepositoryTechnologyEdge {
+	if order == nil {
+		order = DefaultRepositoryTechnologyOrder
+	}
+	return &RepositoryTechnologyEdge{
+		Node:   rt,
+		Cursor: order.Field.toCursor(rt),
 	}
 }
 

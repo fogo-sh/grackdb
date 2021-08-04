@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/projecttechnology"
+	"github.com/fogo-sh/grackdb/ent/repositorytechnology"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 )
@@ -31,6 +32,7 @@ type TechnologyQuery struct {
 	withParentTechnologies *TechnologyAssociationQuery
 	withChildTechnologies  *TechnologyAssociationQuery
 	withProjects           *ProjectTechnologyQuery
+	withRepositories       *RepositoryTechnologyQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -126,6 +128,28 @@ func (tq *TechnologyQuery) QueryProjects() *ProjectTechnologyQuery {
 			sqlgraph.From(technology.Table, technology.FieldID, selector),
 			sqlgraph.To(projecttechnology.Table, projecttechnology.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, technology.ProjectsTable, technology.ProjectsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRepositories chains the current query on the "repositories" edge.
+func (tq *TechnologyQuery) QueryRepositories() *RepositoryTechnologyQuery {
+	query := &RepositoryTechnologyQuery{config: tq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(technology.Table, technology.FieldID, selector),
+			sqlgraph.To(repositorytechnology.Table, repositorytechnology.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, technology.RepositoriesTable, technology.RepositoriesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -317,6 +341,7 @@ func (tq *TechnologyQuery) Clone() *TechnologyQuery {
 		withParentTechnologies: tq.withParentTechnologies.Clone(),
 		withChildTechnologies:  tq.withChildTechnologies.Clone(),
 		withProjects:           tq.withProjects.Clone(),
+		withRepositories:       tq.withRepositories.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -353,6 +378,17 @@ func (tq *TechnologyQuery) WithProjects(opts ...func(*ProjectTechnologyQuery)) *
 		opt(query)
 	}
 	tq.withProjects = query
+	return tq
+}
+
+// WithRepositories tells the query-builder to eager-load the nodes that are connected to
+// the "repositories" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TechnologyQuery) WithRepositories(opts ...func(*RepositoryTechnologyQuery)) *TechnologyQuery {
+	query := &RepositoryTechnologyQuery{config: tq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withRepositories = query
 	return tq
 }
 
@@ -427,10 +463,11 @@ func (tq *TechnologyQuery) sqlAll(ctx context.Context) ([]*Technology, error) {
 	var (
 		nodes       = []*Technology{}
 		_spec       = tq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			tq.withParentTechnologies != nil,
 			tq.withChildTechnologies != nil,
 			tq.withProjects != nil,
+			tq.withRepositories != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -537,6 +574,35 @@ func (tq *TechnologyQuery) sqlAll(ctx context.Context) ([]*Technology, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "technology_projects" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Projects = append(node.Edges.Projects, n)
+		}
+	}
+
+	if query := tq.withRepositories; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Technology)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Repositories = []*RepositoryTechnology{}
+		}
+		query.withFKs = true
+		query.Where(predicate.RepositoryTechnology(func(s *sql.Selector) {
+			s.Where(sql.InValues(technology.RepositoriesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.technology_repositories
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "technology_repositories" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "technology_repositories" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Repositories = append(node.Edges.Repositories, n)
 		}
 	}
 

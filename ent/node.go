@@ -24,6 +24,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/repositorytechnology"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
@@ -524,7 +525,7 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 		ID:     r.ID,
 		Type:   "Repository",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 5),
+		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(r.Name); err != nil {
@@ -593,6 +594,55 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[5] = &Edge{
+		Type: "RepositoryTechnology",
+		Name: "technologies",
+	}
+	node.Edges[5].IDs, err = r.QueryTechnologies().
+		Select(repositorytechnology.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (rt *RepositoryTechnology) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     rt.ID,
+		Type:   "RepositoryTechnology",
+		Fields: make([]*Field, 1),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(rt.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "repositorytechnology.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Repository",
+		Name: "repository",
+	}
+	node.Edges[0].IDs, err = rt.QueryRepository().
+		Select(repository.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Technology",
+		Name: "technology",
+	}
+	node.Edges[1].IDs, err = rt.QueryTechnology().
+		Select(technology.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -640,7 +690,7 @@ func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
 		ID:     t.ID,
 		Type:   "Technology",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(t.Name); err != nil {
@@ -701,6 +751,16 @@ func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[2].IDs, err = t.QueryProjects().
 		Select(projecttechnology.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
+		Type: "RepositoryTechnology",
+		Name: "repositories",
+	}
+	node.Edges[3].IDs, err = t.QueryRepositories().
+		Select(repositorytechnology.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -961,6 +1021,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
+	case repositorytechnology.Table:
+		n, err := c.RepositoryTechnology.Query().
+			Where(repositorytechnology.ID(id)).
+			CollectFields(ctx, "RepositoryTechnology").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case site.Table:
 		n, err := c.Site.Query().
 			Where(site.ID(id)).
@@ -1191,6 +1260,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.Repository.Query().
 			Where(repository.IDIn(ids...)).
 			CollectFields(ctx, "Repository").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case repositorytechnology.Table:
+		nodes, err := c.RepositoryTechnology.Query().
+			Where(repositorytechnology.IDIn(ids...)).
+			CollectFields(ctx, "RepositoryTechnology").
 			All(ctx)
 		if err != nil {
 			return nil, err

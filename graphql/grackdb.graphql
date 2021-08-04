@@ -401,6 +401,7 @@ type Technology implements Node {
     parentTechnologies: [TechnologyAssociation!]
     childTechnologies: [TechnologyAssociation!]
     projects: [ProjectTechnology!]
+    repositories: [RepositoryTechnology!]
 }
 
 enum TechnologyAssociationType {
@@ -436,7 +437,7 @@ type TechnologyAssociation implements Node {
     child: Technology!
 }
 
-enum ProjectTechnologyType {
+enum ProjectTechnologyAssociationType {
     WRITTEN_IN
     IMPLEMENTS
     USES
@@ -465,9 +466,43 @@ input ProjectTechnologyOrder {
 
 type ProjectTechnology implements Node {
     id: ID!
-    type: ProjectTechnologyType!
+    type: ProjectTechnologyAssociationType!
     technology: Technology!
     project: Project!
+}
+
+enum RepositoryTechnologyAssociationType {
+    WRITTEN_IN
+    IMPLEMENTS
+    USES
+    CONTAINS
+}
+
+type RepositoryTechnologyConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [RepositoryTechnologyEdge]
+}
+
+type RepositoryTechnologyEdge {
+    node: RepositoryTechnology
+    cursor: Cursor!
+}
+
+enum RepositoryTechnologyOrderField {
+    TYPE
+}
+
+input RepositoryTechnologyOrder {
+    direction: OrderDirection!
+    field: RepositoryTechnologyOrderField
+}
+
+type RepositoryTechnology implements Node {
+    id: ID!
+    type: RepositoryTechnologyAssociationType!
+    technology: Technology!
+    repository: Repository!
 }
 
 type Query {
@@ -585,6 +620,14 @@ type Query {
         orderBy: ProjectTechnologyOrder
         where: ProjectTechnologyWhereInput
     ): ProjectTechnologyConnection
+    repositoryTechnologies(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: RepositoryTechnologyOrder
+        where: RepositoryTechnologyWhereInput
+    ): RepositoryTechnologyConnection
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
@@ -672,9 +715,15 @@ input CreateTechnologyAssociationInput {
 }
 
 input CreateProjectTechnologyInput {
-    type: ProjectTechnologyType!
+    type: ProjectTechnologyAssociationType!
     technology: Int!
     project: Int!
+}
+
+input CreateRepositoryTechnologyInput {
+    type: RepositoryTechnologyAssociationType!
+    technology: Int!
+    repository: Int!
 }
 
 type Mutation {
@@ -692,4 +741,5 @@ type Mutation {
     createTechnology(input: CreateTechnologyInput!): Technology!
     createTechnologyAssociation(input: CreateTechnologyAssociationInput!): TechnologyAssociation!
     createProjectTechnology(input: CreateProjectTechnologyInput!): ProjectTechnology!
+    createRepositoryTechnology(input: CreateRepositoryTechnologyInput!): RepositoryTechnology!
 }

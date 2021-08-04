@@ -25,6 +25,8 @@ const (
 	EdgeDiscordBots = "discord_bots"
 	// EdgeSites holds the string denoting the sites edge name in mutations.
 	EdgeSites = "sites"
+	// EdgeTechnologies holds the string denoting the technologies edge name in mutations.
+	EdgeTechnologies = "technologies"
 	// Table holds the table name of the repository in the database.
 	Table = "repositories"
 	// ProjectTable is the table the holds the project relation/edge.
@@ -62,6 +64,13 @@ const (
 	SitesInverseTable = "sites"
 	// SitesColumn is the table column denoting the sites relation/edge.
 	SitesColumn = "repository_sites"
+	// TechnologiesTable is the table the holds the technologies relation/edge.
+	TechnologiesTable = "repository_technologies"
+	// TechnologiesInverseTable is the table name for the RepositoryTechnology entity.
+	// It exists in this package in order to avoid circular dependency with the "repositorytechnology" package.
+	TechnologiesInverseTable = "repository_technologies"
+	// TechnologiesColumn is the table column denoting the technologies relation/edge.
+	TechnologiesColumn = "repository_technologies"
 )
 
 // Columns holds all SQL columns for repository fields.

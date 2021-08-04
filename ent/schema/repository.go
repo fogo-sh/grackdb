@@ -47,6 +47,8 @@ func (Repository) Edges() []ent.Edge {
 			Annotations(entgql.MapsTo("discordBots")),
 		edge.To("sites", Site.Type).
 			Annotations(entgql.Bind()),
+		edge.To("technologies", RepositoryTechnology.Type).
+			Annotations(entgql.Bind()),
 	}
 }
 

@@ -109,6 +109,13 @@ func (r *mutationResolver) CreateProjectTechnology(ctx context.Context, input en
 		Save(ctx)
 }
 
+func (r *mutationResolver) CreateRepositoryTechnology(ctx context.Context, input ent.CreateRepositoryTechnologyInput) (*ent.RepositoryTechnology, error) {
+	return r.client.RepositoryTechnology.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
 func (r *queryResolver) Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error) {
 	return r.client.User.Query().
 		Paginate(ctx, after, first, before, last,
@@ -217,6 +224,14 @@ func (r *queryResolver) ProjectTechnologies(ctx context.Context, after *ent.Curs
 		Paginate(ctx, after, first, before, last,
 			ent.WithProjectTechnologyOrder(orderBy),
 			ent.WithProjectTechnologyFilter(where.Filter),
+		)
+}
+
+func (r *queryResolver) RepositoryTechnologies(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryTechnologyOrder, where *ent.RepositoryTechnologyWhereInput) (*ent.RepositoryTechnologyConnection, error) {
+	return r.client.RepositoryTechnology.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithRepositoryTechnologyOrder(orderBy),
+			ent.WithRepositoryTechnologyFilter(where.Filter),
 		)
 }
 

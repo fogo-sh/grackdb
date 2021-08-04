@@ -244,6 +244,30 @@ func (r *Repository) Sites(ctx context.Context) ([]*Site, error) {
 	return result, err
 }
 
+func (r *Repository) Technologies(ctx context.Context) ([]*RepositoryTechnology, error) {
+	result, err := r.Edges.TechnologiesOrErr()
+	if IsNotLoaded(err) {
+		result, err = r.QueryTechnologies().All(ctx)
+	}
+	return result, err
+}
+
+func (rt *RepositoryTechnology) Repository(ctx context.Context) (*Repository, error) {
+	result, err := rt.Edges.RepositoryOrErr()
+	if IsNotLoaded(err) {
+		result, err = rt.QueryRepository().Only(ctx)
+	}
+	return result, err
+}
+
+func (rt *RepositoryTechnology) Technology(ctx context.Context) (*Technology, error) {
+	result, err := rt.Edges.TechnologyOrErr()
+	if IsNotLoaded(err) {
+		result, err = rt.QueryTechnology().Only(ctx)
+	}
+	return result, err
+}
+
 func (s *Site) Project(ctx context.Context) (*Project, error) {
 	result, err := s.Edges.ProjectOrErr()
 	if IsNotLoaded(err) {
@@ -280,6 +304,14 @@ func (t *Technology) Projects(ctx context.Context) ([]*ProjectTechnology, error)
 	result, err := t.Edges.ProjectsOrErr()
 	if IsNotLoaded(err) {
 		result, err = t.QueryProjects().All(ctx)
+	}
+	return result, err
+}
+
+func (t *Technology) Repositories(ctx context.Context) ([]*RepositoryTechnology, error) {
+	result, err := t.Edges.RepositoriesOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryRepositories().All(ctx)
 	}
 	return result, err
 }

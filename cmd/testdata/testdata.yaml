@@ -114,6 +114,12 @@ Items:
       Type: WRITTEN_IN
       Project: 1
       Technology: 2
+  - Name: Gik -> Crystal
+    Type: RepositoryTechnology
+    Params:
+      Type: WRITTEN_IN
+      Repository: 1
+      Technology: 2
   
   - Name: Borik
     Type: Project
@@ -158,11 +164,17 @@ Items:
       Account: 4
       Project: 2
       Repository: 2
-  - Name: Borik -> Crystal
+  - Name: Borik -> Go
     Type: ProjectTechnology
     Params:
       Type: WRITTEN_IN
       Project: 2
+      Technology: 1
+  - Name: Borik -> Go
+    Type: RepositoryTechnology
+    Params:
+      Type: WRITTEN_IN
+      Repository: 2
       Technology: 1
   
   - Name: GrackDB
@@ -199,10 +211,22 @@ Items:
     Params:
       Type: WRITTEN_IN
       Project: 3
-      Technology: 2
+      Technology: 1
   - Name: GrackDB -> Ent
     Type: ProjectTechnology
     Params:
       Type: USES
       Project: 3
+      Technology: 3
+  - Name: GrackDB -> Go
+    Type: RepositoryTechnology
+    Params:
+      Type: WRITTEN_IN
+      Repository: 3
+      Technology: 1
+  - Name: GrackDB -> Ent
+    Type: RepositoryTechnology
+    Params:
+      Type: USES
+      Repository: 3
       Technology: 3

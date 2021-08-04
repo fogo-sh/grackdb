@@ -283,9 +283,37 @@ func (r *RepositoryQuery) collectField(ctx *graphql.OperationContext, field grap
 			r = r.WithSites(func(query *SiteQuery) {
 				query.collectField(ctx, field)
 			})
+		case "technologies":
+			r = r.WithTechnologies(func(query *RepositoryTechnologyQuery) {
+				query.collectField(ctx, field)
+			})
 		}
 	}
 	return r
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (rt *RepositoryTechnologyQuery) CollectFields(ctx context.Context, satisfies ...string) *RepositoryTechnologyQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		rt = rt.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return rt
+}
+
+func (rt *RepositoryTechnologyQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *RepositoryTechnologyQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "repository":
+			rt = rt.WithRepository(func(query *RepositoryQuery) {
+				query.collectField(ctx, field)
+			})
+		case "technology":
+			rt = rt.WithTechnology(func(query *TechnologyQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
+	return rt
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
@@ -333,6 +361,10 @@ func (t *TechnologyQuery) collectField(ctx *graphql.OperationContext, field grap
 			})
 		case "projects":
 			t = t.WithProjects(func(query *ProjectTechnologyQuery) {
+				query.collectField(ctx, field)
+			})
+		case "repositories":
+			t = t.WithRepositories(func(query *RepositoryTechnologyQuery) {
 				query.collectField(ctx, field)
 			})
 		}

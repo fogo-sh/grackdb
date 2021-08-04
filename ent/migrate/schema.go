@@ -252,6 +252,33 @@ var (
 			},
 		},
 	}
+	// RepositoryTechnologiesColumns holds the columns for the "repository_technologies" table.
+	RepositoryTechnologiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"WRITTEN_IN", "IMPLEMENTS", "USES", "CONTAINS"}},
+		{Name: "repository_technologies", Type: field.TypeInt, Nullable: true},
+		{Name: "technology_repositories", Type: field.TypeInt, Nullable: true},
+	}
+	// RepositoryTechnologiesTable holds the schema information for the "repository_technologies" table.
+	RepositoryTechnologiesTable = &schema.Table{
+		Name:       "repository_technologies",
+		Columns:    RepositoryTechnologiesColumns,
+		PrimaryKey: []*schema.Column{RepositoryTechnologiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "repository_technologies_repositories_technologies",
+				Columns:    []*schema.Column{RepositoryTechnologiesColumns[2]},
+				RefColumns: []*schema.Column{RepositoriesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "repository_technologies_technologies_repositories",
+				Columns:    []*schema.Column{RepositoryTechnologiesColumns[3]},
+				RefColumns: []*schema.Column{TechnologiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// SitesColumns holds the columns for the "sites" table.
 	SitesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -344,6 +371,7 @@ var (
 		ProjectContributorsTable,
 		ProjectTechnologiesTable,
 		RepositoriesTable,
+		RepositoryTechnologiesTable,
 		SitesTable,
 		TechnologiesTable,
 		TechnologyAssociationsTable,
@@ -368,6 +396,8 @@ func init() {
 	RepositoriesTable.ForeignKeys[0].RefTable = GithubAccountsTable
 	RepositoriesTable.ForeignKeys[1].RefTable = GithubOrganizationsTable
 	RepositoriesTable.ForeignKeys[2].RefTable = ProjectsTable
+	RepositoryTechnologiesTable.ForeignKeys[0].RefTable = RepositoriesTable
+	RepositoryTechnologiesTable.ForeignKeys[1].RefTable = TechnologiesTable
 	SitesTable.ForeignKeys[0].RefTable = ProjectsTable
 	SitesTable.ForeignKeys[1].RefTable = RepositoriesTable
 	TechnologyAssociationsTable.ForeignKeys[0].RefTable = TechnologiesTable

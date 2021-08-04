@@ -17,6 +17,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/repositorytechnology"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
@@ -2235,6 +2236,10 @@ type RepositoryWhereInput struct {
 	// "sites" edge predicates.
 	HasSites     *bool             `json:"hasSites,omitempty"`
 	HasSitesWith []*SiteWhereInput `json:"hasSitesWith,omitempty"`
+
+	// "technologies" edge predicates.
+	HasTechnologies     *bool                             `json:"hasTechnologies,omitempty"`
+	HasTechnologiesWith []*RepositoryTechnologyWhereInput `json:"hasTechnologiesWith,omitempty"`
 }
 
 // Filter applies the RepositoryWhereInput filter on the RepositoryQuery builder.
@@ -2495,6 +2500,24 @@ func (i *RepositoryWhereInput) P() (predicate.Repository, error) {
 		}
 		predicates = append(predicates, repository.HasSitesWith(with...))
 	}
+	if i.HasTechnologies != nil {
+		p := repository.HasTechnologies()
+		if !*i.HasTechnologies {
+			p = repository.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasTechnologiesWith) > 0 {
+		with := make([]predicate.RepositoryTechnology, 0, len(i.HasTechnologiesWith))
+		for _, w := range i.HasTechnologiesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, repository.HasTechnologiesWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate RepositoryWhereInput")
@@ -2502,6 +2525,179 @@ func (i *RepositoryWhereInput) P() (predicate.Repository, error) {
 		return predicates[0], nil
 	default:
 		return repository.And(predicates...), nil
+	}
+}
+
+// RepositoryTechnologyWhereInput represents a where input for filtering RepositoryTechnology queries.
+type RepositoryTechnologyWhereInput struct {
+	Not *RepositoryTechnologyWhereInput   `json:"not,omitempty"`
+	Or  []*RepositoryTechnologyWhereInput `json:"or,omitempty"`
+	And []*RepositoryTechnologyWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *int  `json:"id,omitempty"`
+	IDNEQ   *int  `json:"idNEQ,omitempty"`
+	IDIn    []int `json:"idIn,omitempty"`
+	IDNotIn []int `json:"idNotIn,omitempty"`
+	IDGT    *int  `json:"idGT,omitempty"`
+	IDGTE   *int  `json:"idGTE,omitempty"`
+	IDLT    *int  `json:"idLT,omitempty"`
+	IDLTE   *int  `json:"idLTE,omitempty"`
+
+	// "type" field predicates.
+	Type      *repositorytechnology.Type  `json:"type,omitempty"`
+	TypeNEQ   *repositorytechnology.Type  `json:"typeNEQ,omitempty"`
+	TypeIn    []repositorytechnology.Type `json:"typeIn,omitempty"`
+	TypeNotIn []repositorytechnology.Type `json:"typeNotIn,omitempty"`
+
+	// "repository" edge predicates.
+	HasRepository     *bool                   `json:"hasRepository,omitempty"`
+	HasRepositoryWith []*RepositoryWhereInput `json:"hasRepositoryWith,omitempty"`
+
+	// "technology" edge predicates.
+	HasTechnology     *bool                   `json:"hasTechnology,omitempty"`
+	HasTechnologyWith []*TechnologyWhereInput `json:"hasTechnologyWith,omitempty"`
+}
+
+// Filter applies the RepositoryTechnologyWhereInput filter on the RepositoryTechnologyQuery builder.
+func (i *RepositoryTechnologyWhereInput) Filter(q *RepositoryTechnologyQuery) (*RepositoryTechnologyQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// P returns a predicate for filtering repositorytechnologies.
+// An error is returned if the input is empty or invalid.
+func (i *RepositoryTechnologyWhereInput) P() (predicate.RepositoryTechnology, error) {
+	var predicates []predicate.RepositoryTechnology
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, repositorytechnology.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.RepositoryTechnology, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, repositorytechnology.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.RepositoryTechnology, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, repositorytechnology.And(and...))
+	}
+	if i.ID != nil {
+		predicates = append(predicates, repositorytechnology.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, repositorytechnology.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, repositorytechnology.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, repositorytechnology.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, repositorytechnology.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, repositorytechnology.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, repositorytechnology.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, repositorytechnology.IDLTE(*i.IDLTE))
+	}
+	if i.Type != nil {
+		predicates = append(predicates, repositorytechnology.TypeEQ(*i.Type))
+	}
+	if i.TypeNEQ != nil {
+		predicates = append(predicates, repositorytechnology.TypeNEQ(*i.TypeNEQ))
+	}
+	if len(i.TypeIn) > 0 {
+		predicates = append(predicates, repositorytechnology.TypeIn(i.TypeIn...))
+	}
+	if len(i.TypeNotIn) > 0 {
+		predicates = append(predicates, repositorytechnology.TypeNotIn(i.TypeNotIn...))
+	}
+
+	if i.HasRepository != nil {
+		p := repositorytechnology.HasRepository()
+		if !*i.HasRepository {
+			p = repositorytechnology.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasRepositoryWith) > 0 {
+		with := make([]predicate.Repository, 0, len(i.HasRepositoryWith))
+		for _, w := range i.HasRepositoryWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, repositorytechnology.HasRepositoryWith(with...))
+	}
+	if i.HasTechnology != nil {
+		p := repositorytechnology.HasTechnology()
+		if !*i.HasTechnology {
+			p = repositorytechnology.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasTechnologyWith) > 0 {
+		with := make([]predicate.Technology, 0, len(i.HasTechnologyWith))
+		for _, w := range i.HasTechnologyWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, repositorytechnology.HasTechnologyWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate RepositoryTechnologyWhereInput")
+	case 1:
+		return predicates[0], nil
+	default:
+		return repositorytechnology.And(predicates...), nil
 	}
 }
 
@@ -2796,6 +2992,10 @@ type TechnologyWhereInput struct {
 	// "projects" edge predicates.
 	HasProjects     *bool                          `json:"hasProjects,omitempty"`
 	HasProjectsWith []*ProjectTechnologyWhereInput `json:"hasProjectsWith,omitempty"`
+
+	// "repositories" edge predicates.
+	HasRepositories     *bool                             `json:"hasRepositories,omitempty"`
+	HasRepositoriesWith []*RepositoryTechnologyWhereInput `json:"hasRepositoriesWith,omitempty"`
 }
 
 // Filter applies the TechnologyWhereInput filter on the TechnologyQuery builder.
@@ -3076,6 +3276,24 @@ func (i *TechnologyWhereInput) P() (predicate.Technology, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, technology.HasProjectsWith(with...))
+	}
+	if i.HasRepositories != nil {
+		p := technology.HasRepositories()
+		if !*i.HasRepositories {
+			p = technology.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasRepositoriesWith) > 0 {
+		with := make([]predicate.RepositoryTechnology, 0, len(i.HasRepositoriesWith))
+		for _, w := range i.HasRepositoriesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, technology.HasRepositoriesWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

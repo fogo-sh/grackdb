@@ -481,6 +481,34 @@ func HasSitesWith(preds ...predicate.Site) predicate.Repository {
 	})
 }
 
+// HasTechnologies applies the HasEdge predicate on the "technologies" edge.
+func HasTechnologies() predicate.Repository {
+	return predicate.Repository(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TechnologiesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TechnologiesTable, TechnologiesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTechnologiesWith applies the HasEdge predicate on the "technologies" edge with a given conditions (other predicates).
+func HasTechnologiesWith(preds ...predicate.RepositoryTechnology) predicate.Repository {
+	return predicate.Repository(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TechnologiesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TechnologiesTable, TechnologiesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Repository) predicate.Repository {
 	return predicate.Repository(func(s *sql.Selector) {

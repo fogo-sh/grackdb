@@ -139,6 +139,19 @@ func (f RepositoryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return f(ctx, mv)
 }
 
+// The RepositoryTechnologyFunc type is an adapter to allow the use of ordinary
+// function as RepositoryTechnology mutator.
+type RepositoryTechnologyFunc func(context.Context, *ent.RepositoryTechnologyMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RepositoryTechnologyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.RepositoryTechnologyMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RepositoryTechnologyMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The SiteFunc type is an adapter to allow the use of ordinary
 // function as Site mutator.
 type SiteFunc func(context.Context, *ent.SiteMutation) (ent.Value, error)

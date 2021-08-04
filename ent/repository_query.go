@@ -18,6 +18,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/repositorytechnology"
 	"github.com/fogo-sh/grackdb/ent/site"
 )
 
@@ -36,6 +37,7 @@ type RepositoryQuery struct {
 	withGithubOrganization *GithubOrganizationQuery
 	withDiscordBots        *DiscordBotQuery
 	withSites              *SiteQuery
+	withTechnologies       *RepositoryTechnologyQuery
 	withFKs                bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -176,6 +178,28 @@ func (rq *RepositoryQuery) QuerySites() *SiteQuery {
 			sqlgraph.From(repository.Table, repository.FieldID, selector),
 			sqlgraph.To(site.Table, site.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, repository.SitesTable, repository.SitesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTechnologies chains the current query on the "technologies" edge.
+func (rq *RepositoryQuery) QueryTechnologies() *RepositoryTechnologyQuery {
+	query := &RepositoryTechnologyQuery{config: rq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repository.Table, repository.FieldID, selector),
+			sqlgraph.To(repositorytechnology.Table, repositorytechnology.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, repository.TechnologiesTable, repository.TechnologiesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -369,6 +393,7 @@ func (rq *RepositoryQuery) Clone() *RepositoryQuery {
 		withGithubOrganization: rq.withGithubOrganization.Clone(),
 		withDiscordBots:        rq.withDiscordBots.Clone(),
 		withSites:              rq.withSites.Clone(),
+		withTechnologies:       rq.withTechnologies.Clone(),
 		// clone intermediate query.
 		sql:  rq.sql.Clone(),
 		path: rq.path,
@@ -427,6 +452,17 @@ func (rq *RepositoryQuery) WithSites(opts ...func(*SiteQuery)) *RepositoryQuery 
 		opt(query)
 	}
 	rq.withSites = query
+	return rq
+}
+
+// WithTechnologies tells the query-builder to eager-load the nodes that are connected to
+// the "technologies" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RepositoryQuery) WithTechnologies(opts ...func(*RepositoryTechnologyQuery)) *RepositoryQuery {
+	query := &RepositoryTechnologyQuery{config: rq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withTechnologies = query
 	return rq
 }
 
@@ -502,12 +538,13 @@ func (rq *RepositoryQuery) sqlAll(ctx context.Context) ([]*Repository, error) {
 		nodes       = []*Repository{}
 		withFKs     = rq.withFKs
 		_spec       = rq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			rq.withProject != nil,
 			rq.withGithubAccount != nil,
 			rq.withGithubOrganization != nil,
 			rq.withDiscordBots != nil,
 			rq.withSites != nil,
+			rq.withTechnologies != nil,
 		}
 	)
 	if rq.withProject != nil || rq.withGithubAccount != nil || rq.withGithubOrganization != nil {
@@ -678,6 +715,35 @@ func (rq *RepositoryQuery) sqlAll(ctx context.Context) ([]*Repository, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "repository_sites" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Sites = append(node.Edges.Sites, n)
+		}
+	}
+
+	if query := rq.withTechnologies; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Repository)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Technologies = []*RepositoryTechnology{}
+		}
+		query.withFKs = true
+		query.Where(predicate.RepositoryTechnology(func(s *sql.Selector) {
+			s.Where(sql.InValues(repository.TechnologiesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.repository_technologies
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "repository_technologies" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "repository_technologies" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Technologies = append(node.Edges.Technologies, n)
 		}
 	}
 

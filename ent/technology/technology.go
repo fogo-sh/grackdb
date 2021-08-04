@@ -29,6 +29,8 @@ const (
 	EdgeChildTechnologies = "child_technologies"
 	// EdgeProjects holds the string denoting the projects edge name in mutations.
 	EdgeProjects = "projects"
+	// EdgeRepositories holds the string denoting the repositories edge name in mutations.
+	EdgeRepositories = "repositories"
 	// Table holds the table name of the technology in the database.
 	Table = "technologies"
 	// ParentTechnologiesTable is the table the holds the parent_technologies relation/edge.
@@ -52,6 +54,13 @@ const (
 	ProjectsInverseTable = "project_technologies"
 	// ProjectsColumn is the table column denoting the projects relation/edge.
 	ProjectsColumn = "technology_projects"
+	// RepositoriesTable is the table the holds the repositories relation/edge.
+	RepositoriesTable = "repository_technologies"
+	// RepositoriesInverseTable is the table name for the RepositoryTechnology entity.
+	// It exists in this package in order to avoid circular dependency with the "repositorytechnology" package.
+	RepositoriesInverseTable = "repository_technologies"
+	// RepositoriesColumn is the table column denoting the repositories relation/edge.
+	RepositoriesColumn = "technology_repositories"
 )
 
 // Columns holds all SQL columns for technology fields.

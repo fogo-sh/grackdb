@@ -19,6 +19,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/repositorytechnology"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
@@ -54,6 +55,8 @@ type Client struct {
 	ProjectTechnology *ProjectTechnologyClient
 	// Repository is the client for interacting with the Repository builders.
 	Repository *RepositoryClient
+	// RepositoryTechnology is the client for interacting with the RepositoryTechnology builders.
+	RepositoryTechnology *RepositoryTechnologyClient
 	// Site is the client for interacting with the Site builders.
 	Site *SiteClient
 	// Technology is the client for interacting with the Technology builders.
@@ -87,6 +90,7 @@ func (c *Client) init() {
 	c.ProjectContributor = NewProjectContributorClient(c.config)
 	c.ProjectTechnology = NewProjectTechnologyClient(c.config)
 	c.Repository = NewRepositoryClient(c.config)
+	c.RepositoryTechnology = NewRepositoryTechnologyClient(c.config)
 	c.Site = NewSiteClient(c.config)
 	c.Technology = NewTechnologyClient(c.config)
 	c.TechnologyAssociation = NewTechnologyAssociationClient(c.config)
@@ -134,6 +138,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ProjectContributor:       NewProjectContributorClient(cfg),
 		ProjectTechnology:        NewProjectTechnologyClient(cfg),
 		Repository:               NewRepositoryClient(cfg),
+		RepositoryTechnology:     NewRepositoryTechnologyClient(cfg),
 		Site:                     NewSiteClient(cfg),
 		Technology:               NewTechnologyClient(cfg),
 		TechnologyAssociation:    NewTechnologyAssociationClient(cfg),
@@ -166,6 +171,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ProjectContributor:       NewProjectContributorClient(cfg),
 		ProjectTechnology:        NewProjectTechnologyClient(cfg),
 		Repository:               NewRepositoryClient(cfg),
+		RepositoryTechnology:     NewRepositoryTechnologyClient(cfg),
 		Site:                     NewSiteClient(cfg),
 		Technology:               NewTechnologyClient(cfg),
 		TechnologyAssociation:    NewTechnologyAssociationClient(cfg),
@@ -209,6 +215,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.ProjectContributor.Use(hooks...)
 	c.ProjectTechnology.Use(hooks...)
 	c.Repository.Use(hooks...)
+	c.RepositoryTechnology.Use(hooks...)
 	c.Site.Use(hooks...)
 	c.Technology.Use(hooks...)
 	c.TechnologyAssociation.Use(hooks...)
@@ -1599,10 +1606,149 @@ func (c *RepositoryClient) QuerySites(r *Repository) *SiteQuery {
 	return query
 }
 
+// QueryTechnologies queries the technologies edge of a Repository.
+func (c *RepositoryClient) QueryTechnologies(r *Repository) *RepositoryTechnologyQuery {
+	query := &RepositoryTechnologyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repository.Table, repository.FieldID, id),
+			sqlgraph.To(repositorytechnology.Table, repositorytechnology.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, repository.TechnologiesTable, repository.TechnologiesColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *RepositoryClient) Hooks() []Hook {
 	hooks := c.hooks.Repository
 	return append(hooks[:len(hooks):len(hooks)], repository.Hooks[:]...)
+}
+
+// RepositoryTechnologyClient is a client for the RepositoryTechnology schema.
+type RepositoryTechnologyClient struct {
+	config
+}
+
+// NewRepositoryTechnologyClient returns a client for the RepositoryTechnology from the given config.
+func NewRepositoryTechnologyClient(c config) *RepositoryTechnologyClient {
+	return &RepositoryTechnologyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `repositorytechnology.Hooks(f(g(h())))`.
+func (c *RepositoryTechnologyClient) Use(hooks ...Hook) {
+	c.hooks.RepositoryTechnology = append(c.hooks.RepositoryTechnology, hooks...)
+}
+
+// Create returns a create builder for RepositoryTechnology.
+func (c *RepositoryTechnologyClient) Create() *RepositoryTechnologyCreate {
+	mutation := newRepositoryTechnologyMutation(c.config, OpCreate)
+	return &RepositoryTechnologyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of RepositoryTechnology entities.
+func (c *RepositoryTechnologyClient) CreateBulk(builders ...*RepositoryTechnologyCreate) *RepositoryTechnologyCreateBulk {
+	return &RepositoryTechnologyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for RepositoryTechnology.
+func (c *RepositoryTechnologyClient) Update() *RepositoryTechnologyUpdate {
+	mutation := newRepositoryTechnologyMutation(c.config, OpUpdate)
+	return &RepositoryTechnologyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RepositoryTechnologyClient) UpdateOne(rt *RepositoryTechnology) *RepositoryTechnologyUpdateOne {
+	mutation := newRepositoryTechnologyMutation(c.config, OpUpdateOne, withRepositoryTechnology(rt))
+	return &RepositoryTechnologyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RepositoryTechnologyClient) UpdateOneID(id int) *RepositoryTechnologyUpdateOne {
+	mutation := newRepositoryTechnologyMutation(c.config, OpUpdateOne, withRepositoryTechnologyID(id))
+	return &RepositoryTechnologyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for RepositoryTechnology.
+func (c *RepositoryTechnologyClient) Delete() *RepositoryTechnologyDelete {
+	mutation := newRepositoryTechnologyMutation(c.config, OpDelete)
+	return &RepositoryTechnologyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *RepositoryTechnologyClient) DeleteOne(rt *RepositoryTechnology) *RepositoryTechnologyDeleteOne {
+	return c.DeleteOneID(rt.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *RepositoryTechnologyClient) DeleteOneID(id int) *RepositoryTechnologyDeleteOne {
+	builder := c.Delete().Where(repositorytechnology.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RepositoryTechnologyDeleteOne{builder}
+}
+
+// Query returns a query builder for RepositoryTechnology.
+func (c *RepositoryTechnologyClient) Query() *RepositoryTechnologyQuery {
+	return &RepositoryTechnologyQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a RepositoryTechnology entity by its id.
+func (c *RepositoryTechnologyClient) Get(ctx context.Context, id int) (*RepositoryTechnology, error) {
+	return c.Query().Where(repositorytechnology.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RepositoryTechnologyClient) GetX(ctx context.Context, id int) *RepositoryTechnology {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryRepository queries the repository edge of a RepositoryTechnology.
+func (c *RepositoryTechnologyClient) QueryRepository(rt *RepositoryTechnology) *RepositoryQuery {
+	query := &RepositoryQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := rt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repositorytechnology.Table, repositorytechnology.FieldID, id),
+			sqlgraph.To(repository.Table, repository.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, repositorytechnology.RepositoryTable, repositorytechnology.RepositoryColumn),
+		)
+		fromV = sqlgraph.Neighbors(rt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTechnology queries the technology edge of a RepositoryTechnology.
+func (c *RepositoryTechnologyClient) QueryTechnology(rt *RepositoryTechnology) *TechnologyQuery {
+	query := &TechnologyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := rt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repositorytechnology.Table, repositorytechnology.FieldID, id),
+			sqlgraph.To(technology.Table, technology.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, repositorytechnology.TechnologyTable, repositorytechnology.TechnologyColumn),
+		)
+		fromV = sqlgraph.Neighbors(rt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *RepositoryTechnologyClient) Hooks() []Hook {
+	hooks := c.hooks.RepositoryTechnology
+	return append(hooks[:len(hooks):len(hooks)], repositorytechnology.Hooks[:]...)
 }
 
 // SiteClient is a client for the Site schema.
@@ -1854,6 +2000,22 @@ func (c *TechnologyClient) QueryProjects(t *Technology) *ProjectTechnologyQuery 
 			sqlgraph.From(technology.Table, technology.FieldID, id),
 			sqlgraph.To(projecttechnology.Table, projecttechnology.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, technology.ProjectsTable, technology.ProjectsColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRepositories queries the repositories edge of a Technology.
+func (c *TechnologyClient) QueryRepositories(t *Technology) *RepositoryTechnologyQuery {
+	query := &RepositoryTechnologyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(technology.Table, technology.FieldID, id),
+			sqlgraph.To(repositorytechnology.Table, repositorytechnology.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, technology.RepositoriesTable, technology.RepositoriesColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

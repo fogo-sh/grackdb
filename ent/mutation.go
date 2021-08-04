@@ -19,6 +19,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/projecttechnology"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/repositorytechnology"
 	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
@@ -46,6 +47,7 @@ const (
 	TypeProjectContributor       = "ProjectContributor"
 	TypeProjectTechnology        = "ProjectTechnology"
 	TypeRepository               = "Repository"
+	TypeRepositoryTechnology     = "RepositoryTechnology"
 	TypeSite                     = "Site"
 	TypeTechnology               = "Technology"
 	TypeTechnologyAssociation    = "TechnologyAssociation"
@@ -4810,6 +4812,9 @@ type RepositoryMutation struct {
 	sites                      map[int]struct{}
 	removedsites               map[int]struct{}
 	clearedsites               bool
+	technologies               map[int]struct{}
+	removedtechnologies        map[int]struct{}
+	clearedtechnologies        bool
 	done                       bool
 	oldValue                   func(context.Context) (*Repository, error)
 	predicates                 []predicate.Repository
@@ -5204,6 +5209,60 @@ func (m *RepositoryMutation) ResetSites() {
 	m.removedsites = nil
 }
 
+// AddTechnologyIDs adds the "technologies" edge to the RepositoryTechnology entity by ids.
+func (m *RepositoryMutation) AddTechnologyIDs(ids ...int) {
+	if m.technologies == nil {
+		m.technologies = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.technologies[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTechnologies clears the "technologies" edge to the RepositoryTechnology entity.
+func (m *RepositoryMutation) ClearTechnologies() {
+	m.clearedtechnologies = true
+}
+
+// TechnologiesCleared reports if the "technologies" edge to the RepositoryTechnology entity was cleared.
+func (m *RepositoryMutation) TechnologiesCleared() bool {
+	return m.clearedtechnologies
+}
+
+// RemoveTechnologyIDs removes the "technologies" edge to the RepositoryTechnology entity by IDs.
+func (m *RepositoryMutation) RemoveTechnologyIDs(ids ...int) {
+	if m.removedtechnologies == nil {
+		m.removedtechnologies = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.technologies, ids[i])
+		m.removedtechnologies[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTechnologies returns the removed IDs of the "technologies" edge to the RepositoryTechnology entity.
+func (m *RepositoryMutation) RemovedTechnologiesIDs() (ids []int) {
+	for id := range m.removedtechnologies {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TechnologiesIDs returns the "technologies" edge IDs in the mutation.
+func (m *RepositoryMutation) TechnologiesIDs() (ids []int) {
+	for id := range m.technologies {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTechnologies resets all changes to the "technologies" edge.
+func (m *RepositoryMutation) ResetTechnologies() {
+	m.technologies = nil
+	m.clearedtechnologies = false
+	m.removedtechnologies = nil
+}
+
 // Op returns the operation name.
 func (m *RepositoryMutation) Op() Op {
 	return m.op
@@ -5343,7 +5402,7 @@ func (m *RepositoryMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RepositoryMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.project != nil {
 		edges = append(edges, repository.EdgeProject)
 	}
@@ -5358,6 +5417,9 @@ func (m *RepositoryMutation) AddedEdges() []string {
 	}
 	if m.sites != nil {
 		edges = append(edges, repository.EdgeSites)
+	}
+	if m.technologies != nil {
+		edges = append(edges, repository.EdgeTechnologies)
 	}
 	return edges
 }
@@ -5390,18 +5452,27 @@ func (m *RepositoryMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case repository.EdgeTechnologies:
+		ids := make([]ent.Value, 0, len(m.technologies))
+		for id := range m.technologies {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RepositoryMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removeddiscord_bots != nil {
 		edges = append(edges, repository.EdgeDiscordBots)
 	}
 	if m.removedsites != nil {
 		edges = append(edges, repository.EdgeSites)
+	}
+	if m.removedtechnologies != nil {
+		edges = append(edges, repository.EdgeTechnologies)
 	}
 	return edges
 }
@@ -5422,13 +5493,19 @@ func (m *RepositoryMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case repository.EdgeTechnologies:
+		ids := make([]ent.Value, 0, len(m.removedtechnologies))
+		for id := range m.removedtechnologies {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RepositoryMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedproject {
 		edges = append(edges, repository.EdgeProject)
 	}
@@ -5443,6 +5520,9 @@ func (m *RepositoryMutation) ClearedEdges() []string {
 	}
 	if m.clearedsites {
 		edges = append(edges, repository.EdgeSites)
+	}
+	if m.clearedtechnologies {
+		edges = append(edges, repository.EdgeTechnologies)
 	}
 	return edges
 }
@@ -5461,6 +5541,8 @@ func (m *RepositoryMutation) EdgeCleared(name string) bool {
 		return m.cleareddiscord_bots
 	case repository.EdgeSites:
 		return m.clearedsites
+	case repository.EdgeTechnologies:
+		return m.clearedtechnologies
 	}
 	return false
 }
@@ -5501,8 +5583,426 @@ func (m *RepositoryMutation) ResetEdge(name string) error {
 	case repository.EdgeSites:
 		m.ResetSites()
 		return nil
+	case repository.EdgeTechnologies:
+		m.ResetTechnologies()
+		return nil
 	}
 	return fmt.Errorf("unknown Repository edge %s", name)
+}
+
+// RepositoryTechnologyMutation represents an operation that mutates the RepositoryTechnology nodes in the graph.
+type RepositoryTechnologyMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int
+	_type             *repositorytechnology.Type
+	clearedFields     map[string]struct{}
+	repository        *int
+	clearedrepository bool
+	technology        *int
+	clearedtechnology bool
+	done              bool
+	oldValue          func(context.Context) (*RepositoryTechnology, error)
+	predicates        []predicate.RepositoryTechnology
+}
+
+var _ ent.Mutation = (*RepositoryTechnologyMutation)(nil)
+
+// repositorytechnologyOption allows management of the mutation configuration using functional options.
+type repositorytechnologyOption func(*RepositoryTechnologyMutation)
+
+// newRepositoryTechnologyMutation creates new mutation for the RepositoryTechnology entity.
+func newRepositoryTechnologyMutation(c config, op Op, opts ...repositorytechnologyOption) *RepositoryTechnologyMutation {
+	m := &RepositoryTechnologyMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRepositoryTechnology,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRepositoryTechnologyID sets the ID field of the mutation.
+func withRepositoryTechnologyID(id int) repositorytechnologyOption {
+	return func(m *RepositoryTechnologyMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *RepositoryTechnology
+		)
+		m.oldValue = func(ctx context.Context) (*RepositoryTechnology, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().RepositoryTechnology.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRepositoryTechnology sets the old RepositoryTechnology of the mutation.
+func withRepositoryTechnology(node *RepositoryTechnology) repositorytechnologyOption {
+	return func(m *RepositoryTechnologyMutation) {
+		m.oldValue = func(context.Context) (*RepositoryTechnology, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RepositoryTechnologyMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RepositoryTechnologyMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RepositoryTechnologyMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetType sets the "type" field.
+func (m *RepositoryTechnologyMutation) SetType(r repositorytechnology.Type) {
+	m._type = &r
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *RepositoryTechnologyMutation) GetType() (r repositorytechnology.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the RepositoryTechnology entity.
+// If the RepositoryTechnology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryTechnologyMutation) OldType(ctx context.Context) (v repositorytechnology.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *RepositoryTechnologyMutation) ResetType() {
+	m._type = nil
+}
+
+// SetRepositoryID sets the "repository" edge to the Repository entity by id.
+func (m *RepositoryTechnologyMutation) SetRepositoryID(id int) {
+	m.repository = &id
+}
+
+// ClearRepository clears the "repository" edge to the Repository entity.
+func (m *RepositoryTechnologyMutation) ClearRepository() {
+	m.clearedrepository = true
+}
+
+// RepositoryCleared reports if the "repository" edge to the Repository entity was cleared.
+func (m *RepositoryTechnologyMutation) RepositoryCleared() bool {
+	return m.clearedrepository
+}
+
+// RepositoryID returns the "repository" edge ID in the mutation.
+func (m *RepositoryTechnologyMutation) RepositoryID() (id int, exists bool) {
+	if m.repository != nil {
+		return *m.repository, true
+	}
+	return
+}
+
+// RepositoryIDs returns the "repository" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RepositoryID instead. It exists only for internal usage by the builders.
+func (m *RepositoryTechnologyMutation) RepositoryIDs() (ids []int) {
+	if id := m.repository; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRepository resets all changes to the "repository" edge.
+func (m *RepositoryTechnologyMutation) ResetRepository() {
+	m.repository = nil
+	m.clearedrepository = false
+}
+
+// SetTechnologyID sets the "technology" edge to the Technology entity by id.
+func (m *RepositoryTechnologyMutation) SetTechnologyID(id int) {
+	m.technology = &id
+}
+
+// ClearTechnology clears the "technology" edge to the Technology entity.
+func (m *RepositoryTechnologyMutation) ClearTechnology() {
+	m.clearedtechnology = true
+}
+
+// TechnologyCleared reports if the "technology" edge to the Technology entity was cleared.
+func (m *RepositoryTechnologyMutation) TechnologyCleared() bool {
+	return m.clearedtechnology
+}
+
+// TechnologyID returns the "technology" edge ID in the mutation.
+func (m *RepositoryTechnologyMutation) TechnologyID() (id int, exists bool) {
+	if m.technology != nil {
+		return *m.technology, true
+	}
+	return
+}
+
+// TechnologyIDs returns the "technology" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TechnologyID instead. It exists only for internal usage by the builders.
+func (m *RepositoryTechnologyMutation) TechnologyIDs() (ids []int) {
+	if id := m.technology; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTechnology resets all changes to the "technology" edge.
+func (m *RepositoryTechnologyMutation) ResetTechnology() {
+	m.technology = nil
+	m.clearedtechnology = false
+}
+
+// Op returns the operation name.
+func (m *RepositoryTechnologyMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (RepositoryTechnology).
+func (m *RepositoryTechnologyMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RepositoryTechnologyMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m._type != nil {
+		fields = append(fields, repositorytechnology.FieldType)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RepositoryTechnologyMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case repositorytechnology.FieldType:
+		return m.GetType()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RepositoryTechnologyMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case repositorytechnology.FieldType:
+		return m.OldType(ctx)
+	}
+	return nil, fmt.Errorf("unknown RepositoryTechnology field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RepositoryTechnologyMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case repositorytechnology.FieldType:
+		v, ok := value.(repositorytechnology.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RepositoryTechnology field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RepositoryTechnologyMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RepositoryTechnologyMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RepositoryTechnologyMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown RepositoryTechnology numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RepositoryTechnologyMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RepositoryTechnologyMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RepositoryTechnologyMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown RepositoryTechnology nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RepositoryTechnologyMutation) ResetField(name string) error {
+	switch name {
+	case repositorytechnology.FieldType:
+		m.ResetType()
+		return nil
+	}
+	return fmt.Errorf("unknown RepositoryTechnology field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RepositoryTechnologyMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.repository != nil {
+		edges = append(edges, repositorytechnology.EdgeRepository)
+	}
+	if m.technology != nil {
+		edges = append(edges, repositorytechnology.EdgeTechnology)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RepositoryTechnologyMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case repositorytechnology.EdgeRepository:
+		if id := m.repository; id != nil {
+			return []ent.Value{*id}
+		}
+	case repositorytechnology.EdgeTechnology:
+		if id := m.technology; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RepositoryTechnologyMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RepositoryTechnologyMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RepositoryTechnologyMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedrepository {
+		edges = append(edges, repositorytechnology.EdgeRepository)
+	}
+	if m.clearedtechnology {
+		edges = append(edges, repositorytechnology.EdgeTechnology)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RepositoryTechnologyMutation) EdgeCleared(name string) bool {
+	switch name {
+	case repositorytechnology.EdgeRepository:
+		return m.clearedrepository
+	case repositorytechnology.EdgeTechnology:
+		return m.clearedtechnology
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RepositoryTechnologyMutation) ClearEdge(name string) error {
+	switch name {
+	case repositorytechnology.EdgeRepository:
+		m.ClearRepository()
+		return nil
+	case repositorytechnology.EdgeTechnology:
+		m.ClearTechnology()
+		return nil
+	}
+	return fmt.Errorf("unknown RepositoryTechnology unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RepositoryTechnologyMutation) ResetEdge(name string) error {
+	switch name {
+	case repositorytechnology.EdgeRepository:
+		m.ResetRepository()
+		return nil
+	case repositorytechnology.EdgeTechnology:
+		m.ResetTechnology()
+		return nil
+	}
+	return fmt.Errorf("unknown RepositoryTechnology edge %s", name)
 }
 
 // SiteMutation represents an operation that mutates the Site nodes in the graph.
@@ -5940,6 +6440,9 @@ type TechnologyMutation struct {
 	projects                   map[int]struct{}
 	removedprojects            map[int]struct{}
 	clearedprojects            bool
+	repositories               map[int]struct{}
+	removedrepositories        map[int]struct{}
+	clearedrepositories        bool
 	done                       bool
 	oldValue                   func(context.Context) (*Technology, error)
 	predicates                 []predicate.Technology
@@ -6356,6 +6859,60 @@ func (m *TechnologyMutation) ResetProjects() {
 	m.removedprojects = nil
 }
 
+// AddRepositoryIDs adds the "repositories" edge to the RepositoryTechnology entity by ids.
+func (m *TechnologyMutation) AddRepositoryIDs(ids ...int) {
+	if m.repositories == nil {
+		m.repositories = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.repositories[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRepositories clears the "repositories" edge to the RepositoryTechnology entity.
+func (m *TechnologyMutation) ClearRepositories() {
+	m.clearedrepositories = true
+}
+
+// RepositoriesCleared reports if the "repositories" edge to the RepositoryTechnology entity was cleared.
+func (m *TechnologyMutation) RepositoriesCleared() bool {
+	return m.clearedrepositories
+}
+
+// RemoveRepositoryIDs removes the "repositories" edge to the RepositoryTechnology entity by IDs.
+func (m *TechnologyMutation) RemoveRepositoryIDs(ids ...int) {
+	if m.removedrepositories == nil {
+		m.removedrepositories = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.repositories, ids[i])
+		m.removedrepositories[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRepositories returns the removed IDs of the "repositories" edge to the RepositoryTechnology entity.
+func (m *TechnologyMutation) RemovedRepositoriesIDs() (ids []int) {
+	for id := range m.removedrepositories {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RepositoriesIDs returns the "repositories" edge IDs in the mutation.
+func (m *TechnologyMutation) RepositoriesIDs() (ids []int) {
+	for id := range m.repositories {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRepositories resets all changes to the "repositories" edge.
+func (m *TechnologyMutation) ResetRepositories() {
+	m.repositories = nil
+	m.clearedrepositories = false
+	m.removedrepositories = nil
+}
+
 // Op returns the operation name.
 func (m *TechnologyMutation) Op() Op {
 	return m.op
@@ -6535,7 +7092,7 @@ func (m *TechnologyMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TechnologyMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.parent_technologies != nil {
 		edges = append(edges, technology.EdgeParentTechnologies)
 	}
@@ -6544,6 +7101,9 @@ func (m *TechnologyMutation) AddedEdges() []string {
 	}
 	if m.projects != nil {
 		edges = append(edges, technology.EdgeProjects)
+	}
+	if m.repositories != nil {
+		edges = append(edges, technology.EdgeRepositories)
 	}
 	return edges
 }
@@ -6570,13 +7130,19 @@ func (m *TechnologyMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case technology.EdgeRepositories:
+		ids := make([]ent.Value, 0, len(m.repositories))
+		for id := range m.repositories {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TechnologyMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedparent_technologies != nil {
 		edges = append(edges, technology.EdgeParentTechnologies)
 	}
@@ -6585,6 +7151,9 @@ func (m *TechnologyMutation) RemovedEdges() []string {
 	}
 	if m.removedprojects != nil {
 		edges = append(edges, technology.EdgeProjects)
+	}
+	if m.removedrepositories != nil {
+		edges = append(edges, technology.EdgeRepositories)
 	}
 	return edges
 }
@@ -6611,13 +7180,19 @@ func (m *TechnologyMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case technology.EdgeRepositories:
+		ids := make([]ent.Value, 0, len(m.removedrepositories))
+		for id := range m.removedrepositories {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TechnologyMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedparent_technologies {
 		edges = append(edges, technology.EdgeParentTechnologies)
 	}
@@ -6626,6 +7201,9 @@ func (m *TechnologyMutation) ClearedEdges() []string {
 	}
 	if m.clearedprojects {
 		edges = append(edges, technology.EdgeProjects)
+	}
+	if m.clearedrepositories {
+		edges = append(edges, technology.EdgeRepositories)
 	}
 	return edges
 }
@@ -6640,6 +7218,8 @@ func (m *TechnologyMutation) EdgeCleared(name string) bool {
 		return m.clearedchild_technologies
 	case technology.EdgeProjects:
 		return m.clearedprojects
+	case technology.EdgeRepositories:
+		return m.clearedrepositories
 	}
 	return false
 }
@@ -6664,6 +7244,9 @@ func (m *TechnologyMutation) ResetEdge(name string) error {
 		return nil
 	case technology.EdgeProjects:
 		m.ResetProjects()
+		return nil
+	case technology.EdgeRepositories:
+		m.ResetRepositories()
 		return nil
 	}
 	return fmt.Errorf("unknown Technology edge %s", name)

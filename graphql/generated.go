@@ -19,6 +19,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/projecttechnology"
+	"github.com/fogo-sh/grackdb/ent/repositorytechnology"
 	"github.com/fogo-sh/grackdb/ent/technology"
 	"github.com/fogo-sh/grackdb/ent/technologyassociation"
 	gqlparser "github.com/vektah/gqlparser/v2"
@@ -161,6 +162,7 @@ type ComplexityRoot struct {
 		CreateProjectContributor       func(childComplexity int, input ent.CreateProjectContributorInput) int
 		CreateProjectTechnology        func(childComplexity int, input ent.CreateProjectTechnologyInput) int
 		CreateRepository               func(childComplexity int, input ent.CreateRepositoryInput) int
+		CreateRepositoryTechnology     func(childComplexity int, input ent.CreateRepositoryTechnologyInput) int
 		CreateSite                     func(childComplexity int, input ent.CreateSiteInput) int
 		CreateTechnology               func(childComplexity int, input ent.CreateTechnologyInput) int
 		CreateTechnologyAssociation    func(childComplexity int, input ent.CreateTechnologyAssociationInput) int
@@ -267,6 +269,7 @@ type ComplexityRoot struct {
 		ProjectTechnologies       func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectTechnologyOrder, where *ent.ProjectTechnologyWhereInput) int
 		Projects                  func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectOrder, where *ent.ProjectWhereInput) int
 		Repositories              func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryOrder, where *ent.RepositoryWhereInput) int
+		RepositoryTechnologies    func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryTechnologyOrder, where *ent.RepositoryTechnologyWhereInput) int
 		Sites                     func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.SiteOrder, where *ent.SiteWhereInput) int
 		Technologies              func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.TechnologyOrder, where *ent.TechnologyWhereInput) int
 		TechnologyAssociations    func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.TechnologyAssociationOrder, where *ent.TechnologyAssociationWhereInput) int
@@ -291,6 +294,24 @@ type ComplexityRoot struct {
 	}
 
 	RepositoryEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	RepositoryTechnology struct {
+		ID         func(childComplexity int) int
+		Repository func(childComplexity int) int
+		Technology func(childComplexity int) int
+		Type       func(childComplexity int) int
+	}
+
+	RepositoryTechnologyConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	RepositoryTechnologyEdge struct {
 		Cursor func(childComplexity int) int
 		Node   func(childComplexity int) int
 	}
@@ -321,6 +342,7 @@ type ComplexityRoot struct {
 		Name               func(childComplexity int) int
 		ParentTechnologies func(childComplexity int) int
 		Projects           func(childComplexity int) int
+		Repositories       func(childComplexity int) int
 		Type               func(childComplexity int) int
 	}
 
@@ -389,6 +411,7 @@ type MutationResolver interface {
 	CreateTechnology(ctx context.Context, input ent.CreateTechnologyInput) (*ent.Technology, error)
 	CreateTechnologyAssociation(ctx context.Context, input ent.CreateTechnologyAssociationInput) (*ent.TechnologyAssociation, error)
 	CreateProjectTechnology(ctx context.Context, input ent.CreateProjectTechnologyInput) (*ent.ProjectTechnology, error)
+	CreateRepositoryTechnology(ctx context.Context, input ent.CreateRepositoryTechnologyInput) (*ent.RepositoryTechnology, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error)
@@ -405,6 +428,7 @@ type QueryResolver interface {
 	Technologies(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.TechnologyOrder, where *ent.TechnologyWhereInput) (*ent.TechnologyConnection, error)
 	TechnologyAssociations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.TechnologyAssociationOrder, where *ent.TechnologyAssociationWhereInput) (*ent.TechnologyAssociationConnection, error)
 	ProjectTechnologies(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectTechnologyOrder, where *ent.ProjectTechnologyWhereInput) (*ent.ProjectTechnologyConnection, error)
+	RepositoryTechnologies(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryTechnologyOrder, where *ent.RepositoryTechnologyWhereInput) (*ent.RepositoryTechnologyConnection, error)
 	AvailableAuthProviders(ctx context.Context) ([]*AuthProvider, error)
 	CurrentUser(ctx context.Context) (*ent.User, error)
 }
@@ -900,6 +924,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateRepository(childComplexity, args["input"].(ent.CreateRepositoryInput)), true
+
+	case "Mutation.createRepositoryTechnology":
+		if e.complexity.Mutation.CreateRepositoryTechnology == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createRepositoryTechnology_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateRepositoryTechnology(childComplexity, args["input"].(ent.CreateRepositoryTechnologyInput)), true
 
 	case "Mutation.createSite":
 		if e.complexity.Mutation.CreateSite == nil {
@@ -1419,6 +1455,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Repositories(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.RepositoryOrder), args["where"].(*ent.RepositoryWhereInput)), true
 
+	case "Query.repositoryTechnologies":
+		if e.complexity.Query.RepositoryTechnologies == nil {
+			break
+		}
+
+		args, err := ec.field_Query_repositoryTechnologies_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.RepositoryTechnologies(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.RepositoryTechnologyOrder), args["where"].(*ent.RepositoryTechnologyWhereInput)), true
+
 	case "Query.sites":
 		if e.complexity.Query.Sites == nil {
 			break
@@ -1558,6 +1606,69 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RepositoryEdge.Node(childComplexity), true
 
+	case "RepositoryTechnology.id":
+		if e.complexity.RepositoryTechnology.ID == nil {
+			break
+		}
+
+		return e.complexity.RepositoryTechnology.ID(childComplexity), true
+
+	case "RepositoryTechnology.repository":
+		if e.complexity.RepositoryTechnology.Repository == nil {
+			break
+		}
+
+		return e.complexity.RepositoryTechnology.Repository(childComplexity), true
+
+	case "RepositoryTechnology.technology":
+		if e.complexity.RepositoryTechnology.Technology == nil {
+			break
+		}
+
+		return e.complexity.RepositoryTechnology.Technology(childComplexity), true
+
+	case "RepositoryTechnology.type":
+		if e.complexity.RepositoryTechnology.Type == nil {
+			break
+		}
+
+		return e.complexity.RepositoryTechnology.Type(childComplexity), true
+
+	case "RepositoryTechnologyConnection.edges":
+		if e.complexity.RepositoryTechnologyConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.RepositoryTechnologyConnection.Edges(childComplexity), true
+
+	case "RepositoryTechnologyConnection.pageInfo":
+		if e.complexity.RepositoryTechnologyConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.RepositoryTechnologyConnection.PageInfo(childComplexity), true
+
+	case "RepositoryTechnologyConnection.totalCount":
+		if e.complexity.RepositoryTechnologyConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.RepositoryTechnologyConnection.TotalCount(childComplexity), true
+
+	case "RepositoryTechnologyEdge.cursor":
+		if e.complexity.RepositoryTechnologyEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.RepositoryTechnologyEdge.Cursor(childComplexity), true
+
+	case "RepositoryTechnologyEdge.node":
+		if e.complexity.RepositoryTechnologyEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.RepositoryTechnologyEdge.Node(childComplexity), true
+
 	case "Site.id":
 		if e.complexity.Site.ID == nil {
 			break
@@ -1669,6 +1780,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Technology.Projects(childComplexity), true
+
+	case "Technology.repositories":
+		if e.complexity.Technology.Repositories == nil {
+			break
+		}
+
+		return e.complexity.Technology.Repositories(childComplexity), true
 
 	case "Technology.type":
 		if e.complexity.Technology.Type == nil {
@@ -2319,6 +2437,7 @@ type Technology implements Node {
     parentTechnologies: [TechnologyAssociation!]
     childTechnologies: [TechnologyAssociation!]
     projects: [ProjectTechnology!]
+    repositories: [RepositoryTechnology!]
 }
 
 enum TechnologyAssociationType {
@@ -2354,7 +2473,7 @@ type TechnologyAssociation implements Node {
     child: Technology!
 }
 
-enum ProjectTechnologyType {
+enum ProjectTechnologyAssociationType {
     WRITTEN_IN
     IMPLEMENTS
     USES
@@ -2383,9 +2502,43 @@ input ProjectTechnologyOrder {
 
 type ProjectTechnology implements Node {
     id: ID!
-    type: ProjectTechnologyType!
+    type: ProjectTechnologyAssociationType!
     technology: Technology!
     project: Project!
+}
+
+enum RepositoryTechnologyAssociationType {
+    WRITTEN_IN
+    IMPLEMENTS
+    USES
+    CONTAINS
+}
+
+type RepositoryTechnologyConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [RepositoryTechnologyEdge]
+}
+
+type RepositoryTechnologyEdge {
+    node: RepositoryTechnology
+    cursor: Cursor!
+}
+
+enum RepositoryTechnologyOrderField {
+    TYPE
+}
+
+input RepositoryTechnologyOrder {
+    direction: OrderDirection!
+    field: RepositoryTechnologyOrderField
+}
+
+type RepositoryTechnology implements Node {
+    id: ID!
+    type: RepositoryTechnologyAssociationType!
+    technology: Technology!
+    repository: Repository!
 }
 
 type Query {
@@ -2503,6 +2656,14 @@ type Query {
         orderBy: ProjectTechnologyOrder
         where: ProjectTechnologyWhereInput
     ): ProjectTechnologyConnection
+    repositoryTechnologies(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: RepositoryTechnologyOrder
+        where: RepositoryTechnologyWhereInput
+    ): RepositoryTechnologyConnection
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
@@ -2590,9 +2751,15 @@ input CreateTechnologyAssociationInput {
 }
 
 input CreateProjectTechnologyInput {
-    type: ProjectTechnologyType!
+    type: ProjectTechnologyAssociationType!
     technology: Int!
     project: Int!
+}
+
+input CreateRepositoryTechnologyInput {
+    type: RepositoryTechnologyAssociationType!
+    technology: Int!
+    repository: Int!
 }
 
 type Mutation {
@@ -2610,6 +2777,7 @@ type Mutation {
     createTechnology(input: CreateTechnologyInput!): Technology!
     createTechnologyAssociation(input: CreateTechnologyAssociationInput!): TechnologyAssociation!
     createProjectTechnology(input: CreateProjectTechnologyInput!): ProjectTechnology!
+    createRepositoryTechnology(input: CreateRepositoryTechnologyInput!): RepositoryTechnology!
 }
 `, BuiltIn: false},
 	{Name: "ent.graphql", Input: `"""
@@ -3130,6 +3298,10 @@ input RepositoryWhereInput {
   """sites edge predicates"""
   hasSites: Boolean
   hasSitesWith: [SiteWhereInput!]
+  
+  """technologies edge predicates"""
+  hasTechnologies: Boolean
+  hasTechnologiesWith: [RepositoryTechnologyWhereInput!]
 }
 
 """
@@ -3292,6 +3464,10 @@ input TechnologyWhereInput {
   """projects edge predicates"""
   hasProjects: Boolean
   hasProjectsWith: [ProjectTechnologyWhereInput!]
+  
+  """repositories edge predicates"""
+  hasRepositories: Boolean
+  hasRepositoriesWith: [RepositoryTechnologyWhereInput!]
 }
 
 """
@@ -3338,10 +3514,10 @@ input ProjectTechnologyWhereInput {
   or: [ProjectTechnologyWhereInput!]
   
   """type field predicates"""
-  type: ProjectTechnologyType
-  typeNEQ: ProjectTechnologyType
-  typeIn: [ProjectTechnologyType!]
-  typeNotIn: [ProjectTechnologyType!]
+  type: ProjectTechnologyAssociationType
+  typeNEQ: ProjectTechnologyAssociationType
+  typeIn: [ProjectTechnologyAssociationType!]
+  typeNotIn: [ProjectTechnologyAssociationType!]
   
   """id field predicates"""
   id: ID
@@ -3356,6 +3532,40 @@ input ProjectTechnologyWhereInput {
   """project edge predicates"""
   hasProject: Boolean
   hasProjectWith: [ProjectWhereInput!]
+  
+  """technology edge predicates"""
+  hasTechnology: Boolean
+  hasTechnologyWith: [TechnologyWhereInput!]
+}
+
+"""
+RepositoryTechnologyWhereInput is used for filtering RepositoryTechnology objects.
+Input was generated by ent.
+"""
+input RepositoryTechnologyWhereInput {
+  not: RepositoryTechnologyWhereInput
+  and: [RepositoryTechnologyWhereInput!]
+  or: [RepositoryTechnologyWhereInput!]
+  
+  """type field predicates"""
+  type: RepositoryTechnologyAssociationType
+  typeNEQ: RepositoryTechnologyAssociationType
+  typeIn: [RepositoryTechnologyAssociationType!]
+  typeNotIn: [RepositoryTechnologyAssociationType!]
+  
+  """id field predicates"""
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
+  
+  """repository edge predicates"""
+  hasRepository: Boolean
+  hasRepositoryWith: [RepositoryWhereInput!]
   
   """technology edge predicates"""
   hasTechnology: Boolean
@@ -3496,6 +3706,21 @@ func (ec *executionContext) field_Mutation_createProject_args(ctx context.Contex
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateProjectInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateProjectInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createRepositoryTechnology_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateRepositoryTechnologyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateRepositoryTechnologyInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateRepositoryTechnologyInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4177,6 +4402,66 @@ func (ec *executionContext) field_Query_repositories_args(ctx context.Context, r
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
 		arg5, err = ec.unmarshalORepositoryWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_repositoryTechnologies_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.Cursor
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *ent.Cursor
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.RepositoryTechnologyOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalORepositoryTechnologyOrder2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *ent.RepositoryTechnologyWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalORepositoryTechnologyWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -6782,6 +7067,48 @@ func (ec *executionContext) _Mutation_createProjectTechnology(ctx context.Contex
 	return ec.marshalNProjectTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectTechnology(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createRepositoryTechnology(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createRepositoryTechnology_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateRepositoryTechnology(rctx, args["input"].(ent.CreateRepositoryTechnologyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.RepositoryTechnology)
+	fc.Result = res
+	return ec.marshalNRepositoryTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnology(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8163,7 +8490,7 @@ func (ec *executionContext) _ProjectTechnology_type(ctx context.Context, field g
 	}
 	res := resTmp.(projecttechnology.Type)
 	fc.Result = res
-	return ec.marshalNProjectTechnologyType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, field.Selections, res)
+	return ec.marshalNProjectTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ProjectTechnology_technology(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectTechnology) (ret graphql.Marshaler) {
@@ -8951,6 +9278,45 @@ func (ec *executionContext) _Query_projectTechnologies(ctx context.Context, fiel
 	return ec.marshalOProjectTechnologyConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectTechnologyConnection(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_repositoryTechnologies(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_repositoryTechnologies_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().RepositoryTechnologies(rctx, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.RepositoryTechnologyOrder), args["where"].(*ent.RepositoryTechnologyWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.RepositoryTechnologyConnection)
+	fc.Result = res
+	return ec.marshalORepositoryTechnologyConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyConnection(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_availableAuthProviders(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -9494,6 +9860,315 @@ func (ec *executionContext) _RepositoryEdge_cursor(ctx context.Context, field gr
 	}()
 	fc := &graphql.FieldContext{
 		Object:     "RepositoryEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.Cursor)
+	fc.Result = res
+	return ec.marshalNCursor2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryTechnology_id(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryTechnology) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryTechnology",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryTechnology_type(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryTechnology) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryTechnology",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(repositorytechnology.Type)
+	fc.Result = res
+	return ec.marshalNRepositoryTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryTechnology_technology(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryTechnology) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryTechnology",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Technology(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Technology)
+	fc.Result = res
+	return ec.marshalNTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐTechnology(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryTechnology_repository(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryTechnology) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryTechnology",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Repository(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Repository)
+	fc.Result = res
+	return ec.marshalNRepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryTechnologyConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryTechnologyConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryTechnologyConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryTechnologyConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryTechnologyConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryTechnologyConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryTechnologyConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryTechnologyConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryTechnologyConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.RepositoryTechnologyEdge)
+	fc.Result = res
+	return ec.marshalORepositoryTechnologyEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryTechnologyEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryTechnologyEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryTechnologyEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.RepositoryTechnology)
+	fc.Result = res
+	return ec.marshalORepositoryTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnology(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RepositoryTechnologyEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryTechnologyEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RepositoryTechnologyEdge",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -10089,6 +10764,38 @@ func (ec *executionContext) _Technology_projects(ctx context.Context, field grap
 	res := resTmp.([]*ent.ProjectTechnology)
 	fc.Result = res
 	return ec.marshalOProjectTechnology2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectTechnologyᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Technology_repositories(ctx context.Context, field graphql.CollectedField, obj *ent.Technology) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Technology",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Repositories(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.RepositoryTechnology)
+	fc.Result = res
+	return ec.marshalORepositoryTechnology2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _TechnologyAssociation_id(ctx context.Context, field graphql.CollectedField, obj *ent.TechnologyAssociation) (ret graphql.Marshaler) {
@@ -12329,7 +13036,7 @@ func (ec *executionContext) unmarshalInputCreateProjectTechnologyInput(ctx conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			it.Type, err = ec.unmarshalNProjectTechnologyType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, v)
+			it.Type, err = ec.unmarshalNProjectTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12398,6 +13105,42 @@ func (ec *executionContext) unmarshalInputCreateRepositoryInput(ctx context.Cont
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("githubOrganization"))
 			it.GithubOrganization, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateRepositoryTechnologyInput(ctx context.Context, obj interface{}) (ent.CreateRepositoryTechnologyInput, error) {
+	var it ent.CreateRepositoryTechnologyInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalNRepositoryTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "technology":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("technology"))
+			it.Technology, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "repository":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("repository"))
+			it.Repository, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14501,7 +15244,7 @@ func (ec *executionContext) unmarshalInputProjectTechnologyWhereInput(ctx contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			it.Type, err = ec.unmarshalOProjectTechnologyType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, v)
+			it.Type, err = ec.unmarshalOProjectTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14509,7 +15252,7 @@ func (ec *executionContext) unmarshalInputProjectTechnologyWhereInput(ctx contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNEQ"))
-			it.TypeNEQ, err = ec.unmarshalOProjectTechnologyType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, v)
+			it.TypeNEQ, err = ec.unmarshalOProjectTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14517,7 +15260,7 @@ func (ec *executionContext) unmarshalInputProjectTechnologyWhereInput(ctx contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeIn"))
-			it.TypeIn, err = ec.unmarshalOProjectTechnologyType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐTypeᚄ(ctx, v)
+			it.TypeIn, err = ec.unmarshalOProjectTechnologyAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14525,7 +15268,7 @@ func (ec *executionContext) unmarshalInputProjectTechnologyWhereInput(ctx contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNotIn"))
-			it.TypeNotIn, err = ec.unmarshalOProjectTechnologyType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐTypeᚄ(ctx, v)
+			it.TypeNotIn, err = ec.unmarshalOProjectTechnologyAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15239,6 +15982,198 @@ func (ec *executionContext) unmarshalInputRepositoryOrder(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputRepositoryTechnologyOrder(ctx context.Context, obj interface{}) (ent.RepositoryTechnologyOrder, error) {
+	var it ent.RepositoryTechnologyOrder
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNOrderDirection2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			it.Field, err = ec.unmarshalORepositoryTechnologyOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputRepositoryTechnologyWhereInput(ctx context.Context, obj interface{}) (ent.RepositoryTechnologyWhereInput, error) {
+	var it ent.RepositoryTechnologyWhereInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "not":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			it.Not, err = ec.unmarshalORepositoryTechnologyWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "and":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			it.And, err = ec.unmarshalORepositoryTechnologyWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "or":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			it.Or, err = ec.unmarshalORepositoryTechnologyWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalORepositoryTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "typeNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNEQ"))
+			it.TypeNEQ, err = ec.unmarshalORepositoryTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "typeIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeIn"))
+			it.TypeIn, err = ec.unmarshalORepositoryTechnologyAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐTypeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "typeNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNotIn"))
+			it.TypeNotIn, err = ec.unmarshalORepositoryTechnologyAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐTypeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			it.IDNEQ, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			it.IDIn, err = ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			it.IDNotIn, err = ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			it.IDGT, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			it.IDGTE, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			it.IDLT, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			it.IDLTE, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepository":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepository"))
+			it.HasRepository, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepositoryWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositoryWith"))
+			it.HasRepositoryWith, err = ec.unmarshalORepositoryWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasTechnology":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTechnology"))
+			it.HasTechnology, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasTechnologyWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTechnologyWith"))
+			it.HasTechnologyWith, err = ec.unmarshalOTechnologyWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐTechnologyWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputRepositoryWhereInput(ctx context.Context, obj interface{}) (ent.RepositoryWhereInput, error) {
 	var it ent.RepositoryWhereInput
 	var asMap = obj.(map[string]interface{})
@@ -15634,6 +16569,22 @@ func (ec *executionContext) unmarshalInputRepositoryWhereInput(ctx context.Conte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSitesWith"))
 			it.HasSitesWith, err = ec.unmarshalOSiteWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasTechnologies":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTechnologies"))
+			it.HasTechnologies, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasTechnologiesWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTechnologiesWith"))
+			it.HasTechnologiesWith, err = ec.unmarshalORepositoryTechnologyWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16645,6 +17596,22 @@ func (ec *executionContext) unmarshalInputTechnologyWhereInput(ctx context.Conte
 			if err != nil {
 				return it, err
 			}
+		case "hasRepositories":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositories"))
+			it.HasRepositories, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepositoriesWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositoriesWith"))
+			it.HasRepositoriesWith, err = ec.unmarshalORepositoryTechnologyWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -17129,6 +18096,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._ProjectTechnology(ctx, sel, obj)
+	case *ent.RepositoryTechnology:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._RepositoryTechnology(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -17881,6 +18853,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "createProjectTechnology":
 			out.Values[i] = ec._Mutation_createProjectTechnology(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createRepositoryTechnology":
+			out.Values[i] = ec._Mutation_createRepositoryTechnology(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -18650,6 +19627,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_projectTechnologies(ctx, field)
 				return res
 			})
+		case "repositoryTechnologies":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_repositoryTechnologies(ctx, field)
+				return res
+			})
 		case "availableAuthProviders":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -18828,6 +19816,129 @@ func (ec *executionContext) _RepositoryEdge(ctx context.Context, sel ast.Selecti
 			out.Values[i] = ec._RepositoryEdge_node(ctx, field, obj)
 		case "cursor":
 			out.Values[i] = ec._RepositoryEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var repositoryTechnologyImplementors = []string{"RepositoryTechnology", "Node"}
+
+func (ec *executionContext) _RepositoryTechnology(ctx context.Context, sel ast.SelectionSet, obj *ent.RepositoryTechnology) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, repositoryTechnologyImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RepositoryTechnology")
+		case "id":
+			out.Values[i] = ec._RepositoryTechnology_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "type":
+			out.Values[i] = ec._RepositoryTechnology_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "technology":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._RepositoryTechnology_technology(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "repository":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._RepositoryTechnology_repository(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var repositoryTechnologyConnectionImplementors = []string{"RepositoryTechnologyConnection"}
+
+func (ec *executionContext) _RepositoryTechnologyConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.RepositoryTechnologyConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, repositoryTechnologyConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RepositoryTechnologyConnection")
+		case "totalCount":
+			out.Values[i] = ec._RepositoryTechnologyConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._RepositoryTechnologyConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "edges":
+			out.Values[i] = ec._RepositoryTechnologyConnection_edges(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var repositoryTechnologyEdgeImplementors = []string{"RepositoryTechnologyEdge"}
+
+func (ec *executionContext) _RepositoryTechnologyEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.RepositoryTechnologyEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, repositoryTechnologyEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RepositoryTechnologyEdge")
+		case "node":
+			out.Values[i] = ec._RepositoryTechnologyEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._RepositoryTechnologyEdge_cursor(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -19023,6 +20134,17 @@ func (ec *executionContext) _Technology(ctx context.Context, sel ast.SelectionSe
 					}
 				}()
 				res = ec._Technology_projects(ctx, field, obj)
+				return res
+			})
+		case "repositories":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Technology_repositories(ctx, field, obj)
 				return res
 			})
 		default:
@@ -19672,6 +20794,11 @@ func (ec *executionContext) unmarshalNCreateRepositoryInput2githubᚗcomᚋfogo�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateRepositoryTechnologyInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateRepositoryTechnologyInput(ctx context.Context, v interface{}) (ent.CreateRepositoryTechnologyInput, error) {
+	res, err := ec.unmarshalInputCreateRepositoryTechnologyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateSiteInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateSiteInput(ctx context.Context, v interface{}) (ent.CreateSiteInput, error) {
 	res, err := ec.unmarshalInputCreateSiteInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -19953,13 +21080,13 @@ func (ec *executionContext) marshalNProjectTechnology2ᚖgithubᚗcomᚋfogoᚑs
 	return ec._ProjectTechnology(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNProjectTechnologyType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx context.Context, v interface{}) (projecttechnology.Type, error) {
+func (ec *executionContext) unmarshalNProjectTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx context.Context, v interface{}) (projecttechnology.Type, error) {
 	var res projecttechnology.Type
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNProjectTechnologyType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx context.Context, sel ast.SelectionSet, v projecttechnology.Type) graphql.Marshaler {
+func (ec *executionContext) marshalNProjectTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx context.Context, sel ast.SelectionSet, v projecttechnology.Type) graphql.Marshaler {
 	return v
 }
 
@@ -19985,6 +21112,35 @@ func (ec *executionContext) marshalNRepository2ᚖgithubᚗcomᚋfogoᚑshᚋgra
 		return graphql.Null
 	}
 	return ec._Repository(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNRepositoryTechnology2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnology(ctx context.Context, sel ast.SelectionSet, v ent.RepositoryTechnology) graphql.Marshaler {
+	return ec._RepositoryTechnology(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNRepositoryTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnology(ctx context.Context, sel ast.SelectionSet, v *ent.RepositoryTechnology) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._RepositoryTechnology(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNRepositoryTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx context.Context, v interface{}) (repositorytechnology.Type, error) {
+	var res repositorytechnology.Type
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNRepositoryTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx context.Context, sel ast.SelectionSet, v repositorytechnology.Type) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNRepositoryTechnologyWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyWhereInput(ctx context.Context, v interface{}) (*ent.RepositoryTechnologyWhereInput, error) {
+	res, err := ec.unmarshalInputRepositoryTechnologyWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNRepositoryWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInput(ctx context.Context, v interface{}) (*ent.RepositoryWhereInput, error) {
@@ -21907,6 +23063,86 @@ func (ec *executionContext) marshalOProjectTechnology2ᚖgithubᚗcomᚋfogoᚑs
 	return ec._ProjectTechnology(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOProjectTechnologyAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐTypeᚄ(ctx context.Context, v interface{}) ([]projecttechnology.Type, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]projecttechnology.Type, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNProjectTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOProjectTechnologyAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []projecttechnology.Type) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNProjectTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) unmarshalOProjectTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx context.Context, v interface{}) (*projecttechnology.Type, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(projecttechnology.Type)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOProjectTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx context.Context, sel ast.SelectionSet, v *projecttechnology.Type) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) marshalOProjectTechnologyConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectTechnologyConnection(ctx context.Context, sel ast.SelectionSet, v *ent.ProjectTechnologyConnection) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -21979,86 +23215,6 @@ func (ec *executionContext) unmarshalOProjectTechnologyOrderField2ᚖgithubᚗco
 }
 
 func (ec *executionContext) marshalOProjectTechnologyOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectTechnologyOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.ProjectTechnologyOrderField) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
-}
-
-func (ec *executionContext) unmarshalOProjectTechnologyType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐTypeᚄ(ctx context.Context, v interface{}) ([]projecttechnology.Type, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]projecttechnology.Type, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNProjectTechnologyType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOProjectTechnologyType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []projecttechnology.Type) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNProjectTechnologyType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
-func (ec *executionContext) unmarshalOProjectTechnologyType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx context.Context, v interface{}) (*projecttechnology.Type, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(projecttechnology.Type)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOProjectTechnologyType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx context.Context, sel ast.SelectionSet, v *projecttechnology.Type) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -22252,6 +23408,243 @@ func (ec *executionContext) marshalORepositoryOrderField2ᚖgithubᚗcomᚋfogo�
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) marshalORepositoryTechnology2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.RepositoryTechnology) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNRepositoryTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnology(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalORepositoryTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnology(ctx context.Context, sel ast.SelectionSet, v *ent.RepositoryTechnology) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._RepositoryTechnology(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalORepositoryTechnologyAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐTypeᚄ(ctx context.Context, v interface{}) ([]repositorytechnology.Type, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]repositorytechnology.Type, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNRepositoryTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalORepositoryTechnologyAssociationType2ᚕgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []repositorytechnology.Type) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNRepositoryTechnologyAssociationType2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) unmarshalORepositoryTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx context.Context, v interface{}) (*repositorytechnology.Type, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(repositorytechnology.Type)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalORepositoryTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx context.Context, sel ast.SelectionSet, v *repositorytechnology.Type) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) marshalORepositoryTechnologyConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyConnection(ctx context.Context, sel ast.SelectionSet, v *ent.RepositoryTechnologyConnection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._RepositoryTechnologyConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalORepositoryTechnologyEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.RepositoryTechnologyEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalORepositoryTechnologyEdge2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalORepositoryTechnologyEdge2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyEdge(ctx context.Context, sel ast.SelectionSet, v *ent.RepositoryTechnologyEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._RepositoryTechnologyEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalORepositoryTechnologyOrder2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyOrder(ctx context.Context, v interface{}) (*ent.RepositoryTechnologyOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputRepositoryTechnologyOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalORepositoryTechnologyOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyOrderField(ctx context.Context, v interface{}) (*ent.RepositoryTechnologyOrderField, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(ent.RepositoryTechnologyOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalORepositoryTechnologyOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.RepositoryTechnologyOrderField) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalORepositoryTechnologyWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.RepositoryTechnologyWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*ent.RepositoryTechnologyWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNRepositoryTechnologyWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalORepositoryTechnologyWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnologyWhereInput(ctx context.Context, v interface{}) (*ent.RepositoryTechnologyWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputRepositoryTechnologyWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalORepositoryWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.RepositoryWhereInput, error) {
