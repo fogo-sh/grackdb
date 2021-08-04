@@ -18,6 +18,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/user"
 
 	"entgo.io/ent"
@@ -41,6 +42,7 @@ const (
 	TypeProjectAssociation       = "ProjectAssociation"
 	TypeProjectContributor       = "ProjectContributor"
 	TypeRepository               = "Repository"
+	TypeSite                     = "Site"
 	TypeUser                     = "User"
 )
 
@@ -2481,6 +2483,9 @@ type ProjectMutation struct {
 	discord_bots           map[int]struct{}
 	removeddiscord_bots    map[int]struct{}
 	cleareddiscord_bots    bool
+	sites                  map[int]struct{}
+	removedsites           map[int]struct{}
+	clearedsites           bool
 	done                   bool
 	oldValue               func(context.Context) (*Project, error)
 	predicates             []predicate.Project
@@ -3005,6 +3010,60 @@ func (m *ProjectMutation) ResetDiscordBots() {
 	m.removeddiscord_bots = nil
 }
 
+// AddSiteIDs adds the "sites" edge to the Site entity by ids.
+func (m *ProjectMutation) AddSiteIDs(ids ...int) {
+	if m.sites == nil {
+		m.sites = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.sites[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSites clears the "sites" edge to the Site entity.
+func (m *ProjectMutation) ClearSites() {
+	m.clearedsites = true
+}
+
+// SitesCleared reports if the "sites" edge to the Site entity was cleared.
+func (m *ProjectMutation) SitesCleared() bool {
+	return m.clearedsites
+}
+
+// RemoveSiteIDs removes the "sites" edge to the Site entity by IDs.
+func (m *ProjectMutation) RemoveSiteIDs(ids ...int) {
+	if m.removedsites == nil {
+		m.removedsites = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.sites, ids[i])
+		m.removedsites[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSites returns the removed IDs of the "sites" edge to the Site entity.
+func (m *ProjectMutation) RemovedSitesIDs() (ids []int) {
+	for id := range m.removedsites {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SitesIDs returns the "sites" edge IDs in the mutation.
+func (m *ProjectMutation) SitesIDs() (ids []int) {
+	for id := range m.sites {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSites resets all changes to the "sites" edge.
+func (m *ProjectMutation) ResetSites() {
+	m.sites = nil
+	m.clearedsites = false
+	m.removedsites = nil
+}
+
 // Op returns the operation name.
 func (m *ProjectMutation) Op() Op {
 	return m.op
@@ -3184,7 +3243,7 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.contributors != nil {
 		edges = append(edges, project.EdgeContributors)
 	}
@@ -3199,6 +3258,9 @@ func (m *ProjectMutation) AddedEdges() []string {
 	}
 	if m.discord_bots != nil {
 		edges = append(edges, project.EdgeDiscordBots)
+	}
+	if m.sites != nil {
+		edges = append(edges, project.EdgeSites)
 	}
 	return edges
 }
@@ -3237,13 +3299,19 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeSites:
+		ids := make([]ent.Value, 0, len(m.sites))
+		for id := range m.sites {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedcontributors != nil {
 		edges = append(edges, project.EdgeContributors)
 	}
@@ -3258,6 +3326,9 @@ func (m *ProjectMutation) RemovedEdges() []string {
 	}
 	if m.removeddiscord_bots != nil {
 		edges = append(edges, project.EdgeDiscordBots)
+	}
+	if m.removedsites != nil {
+		edges = append(edges, project.EdgeSites)
 	}
 	return edges
 }
@@ -3296,13 +3367,19 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeSites:
+		ids := make([]ent.Value, 0, len(m.removedsites))
+		for id := range m.removedsites {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedcontributors {
 		edges = append(edges, project.EdgeContributors)
 	}
@@ -3317,6 +3394,9 @@ func (m *ProjectMutation) ClearedEdges() []string {
 	}
 	if m.cleareddiscord_bots {
 		edges = append(edges, project.EdgeDiscordBots)
+	}
+	if m.clearedsites {
+		edges = append(edges, project.EdgeSites)
 	}
 	return edges
 }
@@ -3335,6 +3415,8 @@ func (m *ProjectMutation) EdgeCleared(name string) bool {
 		return m.clearedrepositories
 	case project.EdgeDiscordBots:
 		return m.cleareddiscord_bots
+	case project.EdgeSites:
+		return m.clearedsites
 	}
 	return false
 }
@@ -3365,6 +3447,9 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 		return nil
 	case project.EdgeDiscordBots:
 		m.ResetDiscordBots()
+		return nil
+	case project.EdgeSites:
+		m.ResetSites()
 		return nil
 	}
 	return fmt.Errorf("unknown Project edge %s", name)
@@ -4218,6 +4303,9 @@ type RepositoryMutation struct {
 	discord_bots               map[int]struct{}
 	removeddiscord_bots        map[int]struct{}
 	cleareddiscord_bots        bool
+	sites                      map[int]struct{}
+	removedsites               map[int]struct{}
+	clearedsites               bool
 	done                       bool
 	oldValue                   func(context.Context) (*Repository, error)
 	predicates                 []predicate.Repository
@@ -4558,6 +4646,60 @@ func (m *RepositoryMutation) ResetDiscordBots() {
 	m.removeddiscord_bots = nil
 }
 
+// AddSiteIDs adds the "sites" edge to the Site entity by ids.
+func (m *RepositoryMutation) AddSiteIDs(ids ...int) {
+	if m.sites == nil {
+		m.sites = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.sites[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSites clears the "sites" edge to the Site entity.
+func (m *RepositoryMutation) ClearSites() {
+	m.clearedsites = true
+}
+
+// SitesCleared reports if the "sites" edge to the Site entity was cleared.
+func (m *RepositoryMutation) SitesCleared() bool {
+	return m.clearedsites
+}
+
+// RemoveSiteIDs removes the "sites" edge to the Site entity by IDs.
+func (m *RepositoryMutation) RemoveSiteIDs(ids ...int) {
+	if m.removedsites == nil {
+		m.removedsites = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.sites, ids[i])
+		m.removedsites[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSites returns the removed IDs of the "sites" edge to the Site entity.
+func (m *RepositoryMutation) RemovedSitesIDs() (ids []int) {
+	for id := range m.removedsites {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SitesIDs returns the "sites" edge IDs in the mutation.
+func (m *RepositoryMutation) SitesIDs() (ids []int) {
+	for id := range m.sites {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSites resets all changes to the "sites" edge.
+func (m *RepositoryMutation) ResetSites() {
+	m.sites = nil
+	m.clearedsites = false
+	m.removedsites = nil
+}
+
 // Op returns the operation name.
 func (m *RepositoryMutation) Op() Op {
 	return m.op
@@ -4697,7 +4839,7 @@ func (m *RepositoryMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RepositoryMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.project != nil {
 		edges = append(edges, repository.EdgeProject)
 	}
@@ -4709,6 +4851,9 @@ func (m *RepositoryMutation) AddedEdges() []string {
 	}
 	if m.discord_bots != nil {
 		edges = append(edges, repository.EdgeDiscordBots)
+	}
+	if m.sites != nil {
+		edges = append(edges, repository.EdgeSites)
 	}
 	return edges
 }
@@ -4735,15 +4880,24 @@ func (m *RepositoryMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case repository.EdgeSites:
+		ids := make([]ent.Value, 0, len(m.sites))
+		for id := range m.sites {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RepositoryMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removeddiscord_bots != nil {
 		edges = append(edges, repository.EdgeDiscordBots)
+	}
+	if m.removedsites != nil {
+		edges = append(edges, repository.EdgeSites)
 	}
 	return edges
 }
@@ -4758,13 +4912,19 @@ func (m *RepositoryMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case repository.EdgeSites:
+		ids := make([]ent.Value, 0, len(m.removedsites))
+		for id := range m.removedsites {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RepositoryMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedproject {
 		edges = append(edges, repository.EdgeProject)
 	}
@@ -4776,6 +4936,9 @@ func (m *RepositoryMutation) ClearedEdges() []string {
 	}
 	if m.cleareddiscord_bots {
 		edges = append(edges, repository.EdgeDiscordBots)
+	}
+	if m.clearedsites {
+		edges = append(edges, repository.EdgeSites)
 	}
 	return edges
 }
@@ -4792,6 +4955,8 @@ func (m *RepositoryMutation) EdgeCleared(name string) bool {
 		return m.clearedgithub_organization
 	case repository.EdgeDiscordBots:
 		return m.cleareddiscord_bots
+	case repository.EdgeSites:
+		return m.clearedsites
 	}
 	return false
 }
@@ -4829,8 +4994,426 @@ func (m *RepositoryMutation) ResetEdge(name string) error {
 	case repository.EdgeDiscordBots:
 		m.ResetDiscordBots()
 		return nil
+	case repository.EdgeSites:
+		m.ResetSites()
+		return nil
 	}
 	return fmt.Errorf("unknown Repository edge %s", name)
+}
+
+// SiteMutation represents an operation that mutates the Site nodes in the graph.
+type SiteMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int
+	url               *string
+	clearedFields     map[string]struct{}
+	project           *int
+	clearedproject    bool
+	repository        *int
+	clearedrepository bool
+	done              bool
+	oldValue          func(context.Context) (*Site, error)
+	predicates        []predicate.Site
+}
+
+var _ ent.Mutation = (*SiteMutation)(nil)
+
+// siteOption allows management of the mutation configuration using functional options.
+type siteOption func(*SiteMutation)
+
+// newSiteMutation creates new mutation for the Site entity.
+func newSiteMutation(c config, op Op, opts ...siteOption) *SiteMutation {
+	m := &SiteMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSite,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSiteID sets the ID field of the mutation.
+func withSiteID(id int) siteOption {
+	return func(m *SiteMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Site
+		)
+		m.oldValue = func(ctx context.Context) (*Site, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Site.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSite sets the old Site of the mutation.
+func withSite(node *Site) siteOption {
+	return func(m *SiteMutation) {
+		m.oldValue = func(context.Context) (*Site, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SiteMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SiteMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SiteMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetURL sets the "url" field.
+func (m *SiteMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *SiteMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Site entity.
+// If the Site object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SiteMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *SiteMutation) ResetURL() {
+	m.url = nil
+}
+
+// SetProjectID sets the "project" edge to the Project entity by id.
+func (m *SiteMutation) SetProjectID(id int) {
+	m.project = &id
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (m *SiteMutation) ClearProject() {
+	m.clearedproject = true
+}
+
+// ProjectCleared reports if the "project" edge to the Project entity was cleared.
+func (m *SiteMutation) ProjectCleared() bool {
+	return m.clearedproject
+}
+
+// ProjectID returns the "project" edge ID in the mutation.
+func (m *SiteMutation) ProjectID() (id int, exists bool) {
+	if m.project != nil {
+		return *m.project, true
+	}
+	return
+}
+
+// ProjectIDs returns the "project" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProjectID instead. It exists only for internal usage by the builders.
+func (m *SiteMutation) ProjectIDs() (ids []int) {
+	if id := m.project; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProject resets all changes to the "project" edge.
+func (m *SiteMutation) ResetProject() {
+	m.project = nil
+	m.clearedproject = false
+}
+
+// SetRepositoryID sets the "repository" edge to the Repository entity by id.
+func (m *SiteMutation) SetRepositoryID(id int) {
+	m.repository = &id
+}
+
+// ClearRepository clears the "repository" edge to the Repository entity.
+func (m *SiteMutation) ClearRepository() {
+	m.clearedrepository = true
+}
+
+// RepositoryCleared reports if the "repository" edge to the Repository entity was cleared.
+func (m *SiteMutation) RepositoryCleared() bool {
+	return m.clearedrepository
+}
+
+// RepositoryID returns the "repository" edge ID in the mutation.
+func (m *SiteMutation) RepositoryID() (id int, exists bool) {
+	if m.repository != nil {
+		return *m.repository, true
+	}
+	return
+}
+
+// RepositoryIDs returns the "repository" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RepositoryID instead. It exists only for internal usage by the builders.
+func (m *SiteMutation) RepositoryIDs() (ids []int) {
+	if id := m.repository; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRepository resets all changes to the "repository" edge.
+func (m *SiteMutation) ResetRepository() {
+	m.repository = nil
+	m.clearedrepository = false
+}
+
+// Op returns the operation name.
+func (m *SiteMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Site).
+func (m *SiteMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SiteMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.url != nil {
+		fields = append(fields, site.FieldURL)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SiteMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case site.FieldURL:
+		return m.URL()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SiteMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case site.FieldURL:
+		return m.OldURL(ctx)
+	}
+	return nil, fmt.Errorf("unknown Site field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SiteMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case site.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Site field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SiteMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SiteMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SiteMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Site numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SiteMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SiteMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SiteMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Site nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SiteMutation) ResetField(name string) error {
+	switch name {
+	case site.FieldURL:
+		m.ResetURL()
+		return nil
+	}
+	return fmt.Errorf("unknown Site field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SiteMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.project != nil {
+		edges = append(edges, site.EdgeProject)
+	}
+	if m.repository != nil {
+		edges = append(edges, site.EdgeRepository)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SiteMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case site.EdgeProject:
+		if id := m.project; id != nil {
+			return []ent.Value{*id}
+		}
+	case site.EdgeRepository:
+		if id := m.repository; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SiteMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SiteMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SiteMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedproject {
+		edges = append(edges, site.EdgeProject)
+	}
+	if m.clearedrepository {
+		edges = append(edges, site.EdgeRepository)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SiteMutation) EdgeCleared(name string) bool {
+	switch name {
+	case site.EdgeProject:
+		return m.clearedproject
+	case site.EdgeRepository:
+		return m.clearedrepository
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SiteMutation) ClearEdge(name string) error {
+	switch name {
+	case site.EdgeProject:
+		m.ClearProject()
+		return nil
+	case site.EdgeRepository:
+		m.ClearRepository()
+		return nil
+	}
+	return fmt.Errorf("unknown Site unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SiteMutation) ResetEdge(name string) error {
+	switch name {
+	case site.EdgeProject:
+		m.ResetProject()
+		return nil
+	case site.EdgeRepository:
+		m.ResetRepository()
+		return nil
+	}
+	return fmt.Errorf("unknown Site edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.

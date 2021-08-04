@@ -15,6 +15,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/site"
 )
 
 // ProjectCreate is the builder for creating a Project entity.
@@ -137,6 +138,21 @@ func (pc *ProjectCreate) AddDiscordBots(d ...*DiscordBot) *ProjectCreate {
 		ids[i] = d[i].ID
 	}
 	return pc.AddDiscordBotIDs(ids...)
+}
+
+// AddSiteIDs adds the "sites" edge to the Site entity by IDs.
+func (pc *ProjectCreate) AddSiteIDs(ids ...int) *ProjectCreate {
+	pc.mutation.AddSiteIDs(ids...)
+	return pc
+}
+
+// AddSites adds the "sites" edges to the Site entity.
+func (pc *ProjectCreate) AddSites(s ...*Site) *ProjectCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return pc.AddSiteIDs(ids...)
 }
 
 // Mutation returns the ProjectMutation object of the builder.
@@ -350,6 +366,25 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: discordbot.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.SitesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SitesTable,
+			Columns: []string{project.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
 				},
 			},
 		}

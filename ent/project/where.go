@@ -663,6 +663,34 @@ func HasDiscordBotsWith(preds ...predicate.DiscordBot) predicate.Project {
 	})
 }
 
+// HasSites applies the HasEdge predicate on the "sites" edge.
+func HasSites() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(SitesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SitesTable, SitesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSitesWith applies the HasEdge predicate on the "sites" edge with a given conditions (other predicates).
+func HasSitesWith(preds ...predicate.Site) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(SitesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SitesTable, SitesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Project) predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {

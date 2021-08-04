@@ -18,6 +18,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/site"
 )
 
 // ProjectQuery is the builder for querying Project entities.
@@ -35,6 +36,7 @@ type ProjectQuery struct {
 	withChildProjects  *ProjectAssociationQuery
 	withRepositories   *RepositoryQuery
 	withDiscordBots    *DiscordBotQuery
+	withSites          *SiteQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -174,6 +176,28 @@ func (pq *ProjectQuery) QueryDiscordBots() *DiscordBotQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(discordbot.Table, discordbot.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.DiscordBotsTable, project.DiscordBotsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySites chains the current query on the "sites" edge.
+func (pq *ProjectQuery) QuerySites() *SiteQuery {
+	query := &SiteQuery{config: pq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(site.Table, site.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.SitesTable, project.SitesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -367,6 +391,7 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 		withChildProjects:  pq.withChildProjects.Clone(),
 		withRepositories:   pq.withRepositories.Clone(),
 		withDiscordBots:    pq.withDiscordBots.Clone(),
+		withSites:          pq.withSites.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -425,6 +450,17 @@ func (pq *ProjectQuery) WithDiscordBots(opts ...func(*DiscordBotQuery)) *Project
 		opt(query)
 	}
 	pq.withDiscordBots = query
+	return pq
+}
+
+// WithSites tells the query-builder to eager-load the nodes that are connected to
+// the "sites" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProjectQuery) WithSites(opts ...func(*SiteQuery)) *ProjectQuery {
+	query := &SiteQuery{config: pq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withSites = query
 	return pq
 }
 
@@ -499,12 +535,13 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context) ([]*Project, error) {
 	var (
 		nodes       = []*Project{}
 		_spec       = pq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			pq.withContributors != nil,
 			pq.withParentProjects != nil,
 			pq.withChildProjects != nil,
 			pq.withRepositories != nil,
 			pq.withDiscordBots != nil,
+			pq.withSites != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -669,6 +706,35 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context) ([]*Project, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "project_discord_bots" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.DiscordBots = append(node.Edges.DiscordBots, n)
+		}
+	}
+
+	if query := pq.withSites; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Project)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Sites = []*Site{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Site(func(s *sql.Selector) {
+			s.Where(sql.InValues(project.SitesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.project_sites
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "project_sites" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "project_sites" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Sites = append(node.Edges.Sites, n)
 		}
 	}
 

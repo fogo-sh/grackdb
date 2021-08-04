@@ -151,3 +151,9 @@ Items:
       Name: grackdb
       Project: 3
       GithubOrganization: 1
+  - Name: GrackDB
+    Type: Site
+    Params:
+      URL: https://grackdb.fogo.sh
+      Project: 3
+      Repository: 3

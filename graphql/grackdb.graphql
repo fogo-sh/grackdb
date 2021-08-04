@@ -223,11 +223,13 @@ type Project implements Node {
     description: String
     startDate: Time!
     endDate: Time
+
     contributors: [ProjectContributor!]
     parentProjects: [ProjectAssociation!]
     childProjects: [ProjectAssociation!]
     repositories: [Repository!]
     discordBots: [DiscordBot!]
+    sites: [Site!]
 }
 
 enum ProjectContributorRole {
@@ -324,7 +326,36 @@ type Repository implements Node {
     project: Project!
     githubAccount: GithubAccount
     githubOrganization: GithubOrganization
+
     discordBots: [DiscordBot!]
+    sites: [Site!]
+}
+
+type SiteConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [SiteEdge]
+}
+
+type SiteEdge {
+    node: Site
+    cursor: Cursor!
+}
+
+enum SiteOrderField {
+    URL
+}
+
+input SiteOrder {
+    direction: OrderDirection!
+    field: SiteOrderField
+}
+
+type Site implements Node {
+    id: ID!
+    url: String!
+    project: Project!
+    repository: Repository
 }
 
 type Query {
@@ -412,6 +443,14 @@ type Query {
         orderBy: RepositoryOrder
         where: RepositoryWhereInput
     ): RepositoryConnection
+    sites(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: SiteOrder
+        where: SiteWhereInput
+    ): SiteConnection
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
@@ -479,6 +518,12 @@ input CreateRepositoryInput {
     githubOrganization: Int
 }
 
+input CreateSiteInput {
+    url: String!
+    project: Int!
+    repository: Int
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
@@ -490,4 +535,5 @@ type Mutation {
     createProjectContributor(input: CreateProjectContributorInput!): ProjectContributor!
     createProjectAssociation(input: CreateProjectAssociationInput!): ProjectAssociation!
     createRepository(input: CreateRepositoryInput!): Repository!
+    createSite(input: CreateSiteInput!): Site!
 }

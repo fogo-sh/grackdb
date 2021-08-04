@@ -18,6 +18,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -48,6 +49,8 @@ type Client struct {
 	ProjectContributor *ProjectContributorClient
 	// Repository is the client for interacting with the Repository builders.
 	Repository *RepositoryClient
+	// Site is the client for interacting with the Site builders.
+	Site *SiteClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// additional fields for node api
@@ -74,6 +77,7 @@ func (c *Client) init() {
 	c.ProjectAssociation = NewProjectAssociationClient(c.config)
 	c.ProjectContributor = NewProjectContributorClient(c.config)
 	c.Repository = NewRepositoryClient(c.config)
+	c.Site = NewSiteClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -117,6 +121,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ProjectAssociation:       NewProjectAssociationClient(cfg),
 		ProjectContributor:       NewProjectContributorClient(cfg),
 		Repository:               NewRepositoryClient(cfg),
+		Site:                     NewSiteClient(cfg),
 		User:                     NewUserClient(cfg),
 	}, nil
 }
@@ -145,6 +150,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ProjectAssociation:       NewProjectAssociationClient(cfg),
 		ProjectContributor:       NewProjectContributorClient(cfg),
 		Repository:               NewRepositoryClient(cfg),
+		Site:                     NewSiteClient(cfg),
 		User:                     NewUserClient(cfg),
 	}, nil
 }
@@ -184,6 +190,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.ProjectAssociation.Use(hooks...)
 	c.ProjectContributor.Use(hooks...)
 	c.Repository.Use(hooks...)
+	c.Site.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -999,6 +1006,22 @@ func (c *ProjectClient) QueryDiscordBots(pr *Project) *DiscordBotQuery {
 	return query
 }
 
+// QuerySites queries the sites edge of a Project.
+func (c *ProjectClient) QuerySites(pr *Project) *SiteQuery {
+	query := &SiteQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(site.Table, site.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.SitesTable, project.SitesColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProjectClient) Hooks() []Hook {
 	hooks := c.hooks.Project
@@ -1400,10 +1423,149 @@ func (c *RepositoryClient) QueryDiscordBots(r *Repository) *DiscordBotQuery {
 	return query
 }
 
+// QuerySites queries the sites edge of a Repository.
+func (c *RepositoryClient) QuerySites(r *Repository) *SiteQuery {
+	query := &SiteQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(repository.Table, repository.FieldID, id),
+			sqlgraph.To(site.Table, site.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, repository.SitesTable, repository.SitesColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *RepositoryClient) Hooks() []Hook {
 	hooks := c.hooks.Repository
 	return append(hooks[:len(hooks):len(hooks)], repository.Hooks[:]...)
+}
+
+// SiteClient is a client for the Site schema.
+type SiteClient struct {
+	config
+}
+
+// NewSiteClient returns a client for the Site from the given config.
+func NewSiteClient(c config) *SiteClient {
+	return &SiteClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `site.Hooks(f(g(h())))`.
+func (c *SiteClient) Use(hooks ...Hook) {
+	c.hooks.Site = append(c.hooks.Site, hooks...)
+}
+
+// Create returns a create builder for Site.
+func (c *SiteClient) Create() *SiteCreate {
+	mutation := newSiteMutation(c.config, OpCreate)
+	return &SiteCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Site entities.
+func (c *SiteClient) CreateBulk(builders ...*SiteCreate) *SiteCreateBulk {
+	return &SiteCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Site.
+func (c *SiteClient) Update() *SiteUpdate {
+	mutation := newSiteMutation(c.config, OpUpdate)
+	return &SiteUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SiteClient) UpdateOne(s *Site) *SiteUpdateOne {
+	mutation := newSiteMutation(c.config, OpUpdateOne, withSite(s))
+	return &SiteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SiteClient) UpdateOneID(id int) *SiteUpdateOne {
+	mutation := newSiteMutation(c.config, OpUpdateOne, withSiteID(id))
+	return &SiteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Site.
+func (c *SiteClient) Delete() *SiteDelete {
+	mutation := newSiteMutation(c.config, OpDelete)
+	return &SiteDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *SiteClient) DeleteOne(s *Site) *SiteDeleteOne {
+	return c.DeleteOneID(s.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *SiteClient) DeleteOneID(id int) *SiteDeleteOne {
+	builder := c.Delete().Where(site.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SiteDeleteOne{builder}
+}
+
+// Query returns a query builder for Site.
+func (c *SiteClient) Query() *SiteQuery {
+	return &SiteQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Site entity by its id.
+func (c *SiteClient) Get(ctx context.Context, id int) (*Site, error) {
+	return c.Query().Where(site.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SiteClient) GetX(ctx context.Context, id int) *Site {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProject queries the project edge of a Site.
+func (c *SiteClient) QueryProject(s *Site) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(site.Table, site.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, site.ProjectTable, site.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRepository queries the repository edge of a Site.
+func (c *SiteClient) QueryRepository(s *Site) *RepositoryQuery {
+	query := &RepositoryQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(site.Table, site.FieldID, id),
+			sqlgraph.To(repository.Table, repository.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, site.RepositoryTable, site.RepositoryColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SiteClient) Hooks() []Hook {
+	hooks := c.hooks.Site
+	return append(hooks[:len(hooks):len(hooks)], site.Hooks[:]...)
 }
 
 // UserClient is a client for the User schema.

@@ -225,6 +225,33 @@ var (
 			},
 		},
 	}
+	// SitesColumns holds the columns for the "sites" table.
+	SitesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "url", Type: field.TypeString},
+		{Name: "project_sites", Type: field.TypeInt, Nullable: true},
+		{Name: "repository_sites", Type: field.TypeInt, Nullable: true},
+	}
+	// SitesTable holds the schema information for the "sites" table.
+	SitesTable = &schema.Table{
+		Name:       "sites",
+		Columns:    SitesColumns,
+		PrimaryKey: []*schema.Column{SitesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sites_projects_sites",
+				Columns:    []*schema.Column{SitesColumns[2]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "sites_repositories_sites",
+				Columns:    []*schema.Column{SitesColumns[3]},
+				RefColumns: []*schema.Column{RepositoriesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -248,6 +275,7 @@ var (
 		ProjectAssociationsTable,
 		ProjectContributorsTable,
 		RepositoriesTable,
+		SitesTable,
 		UsersTable,
 	}
 )
@@ -267,4 +295,6 @@ func init() {
 	RepositoriesTable.ForeignKeys[0].RefTable = GithubAccountsTable
 	RepositoriesTable.ForeignKeys[1].RefTable = GithubOrganizationsTable
 	RepositoriesTable.ForeignKeys[2].RefTable = ProjectsTable
+	SitesTable.ForeignKeys[0].RefTable = ProjectsTable
+	SitesTable.ForeignKeys[1].RefTable = RepositoriesTable
 }

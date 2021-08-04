@@ -371,6 +371,7 @@ type CreateProjectInput struct {
 	ChildProjects  []int
 	Repositories   []int
 	DiscordBots    []int
+	Sites          []int
 }
 
 // Mutate applies the CreateProjectInput on the ProjectCreate builder.
@@ -398,6 +399,9 @@ func (i *CreateProjectInput) Mutate(m *ProjectCreate) {
 	if ids := i.DiscordBots; len(ids) > 0 {
 		m.AddDiscordBotIDs(ids...)
 	}
+	if ids := i.Sites; len(ids) > 0 {
+		m.AddSiteIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the CreateProjectInput on the create builder.
@@ -424,6 +428,8 @@ type UpdateProjectInput struct {
 	RemoveRepositoryIDs    []int
 	AddDiscordBotIDs       []int
 	RemoveDiscordBotIDs    []int
+	AddSiteIDs             []int
+	RemoveSiteIDs          []int
 }
 
 // Mutate applies the UpdateProjectInput on the ProjectMutation.
@@ -475,6 +481,12 @@ func (i *UpdateProjectInput) Mutate(m *ProjectMutation) {
 	}
 	if ids := i.RemoveDiscordBotIDs; len(ids) > 0 {
 		m.RemoveDiscordBotIDs(ids...)
+	}
+	if ids := i.AddSiteIDs; len(ids) > 0 {
+		m.AddSiteIDs(ids...)
+	}
+	if ids := i.RemoveSiteIDs; len(ids) > 0 {
+		m.RemoveSiteIDs(ids...)
 	}
 }
 
@@ -618,6 +630,7 @@ type CreateRepositoryInput struct {
 	GithubAccount      *int
 	GithubOrganization *int
 	DiscordBots        []int
+	Sites              []int
 }
 
 // Mutate applies the CreateRepositoryInput on the RepositoryCreate builder.
@@ -635,6 +648,9 @@ func (i *CreateRepositoryInput) Mutate(m *RepositoryCreate) {
 	}
 	if ids := i.DiscordBots; len(ids) > 0 {
 		m.AddDiscordBotIDs(ids...)
+	}
+	if ids := i.Sites; len(ids) > 0 {
+		m.AddSiteIDs(ids...)
 	}
 }
 
@@ -657,6 +673,8 @@ type UpdateRepositoryInput struct {
 	ClearGithubOrganization bool
 	AddDiscordBotIDs        []int
 	RemoveDiscordBotIDs     []int
+	AddSiteIDs              []int
+	RemoveSiteIDs           []int
 }
 
 // Mutate applies the UpdateRepositoryInput on the RepositoryMutation.
@@ -694,6 +712,12 @@ func (i *UpdateRepositoryInput) Mutate(m *RepositoryMutation) {
 	if ids := i.RemoveDiscordBotIDs; len(ids) > 0 {
 		m.RemoveDiscordBotIDs(ids...)
 	}
+	if ids := i.AddSiteIDs; len(ids) > 0 {
+		m.AddSiteIDs(ids...)
+	}
+	if ids := i.RemoveSiteIDs; len(ids) > 0 {
+		m.RemoveSiteIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the UpdateRepositoryInput on the update builder.
@@ -704,6 +728,68 @@ func (u *RepositoryUpdate) SetInput(i UpdateRepositoryInput) *RepositoryUpdate {
 
 // SetInput applies the change-set in the UpdateRepositoryInput on the update-one builder.
 func (u *RepositoryUpdateOne) SetInput(i UpdateRepositoryInput) *RepositoryUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// CreateSiteInput represents a mutation input for creating sites.
+type CreateSiteInput struct {
+	URL        string
+	Project    int
+	Repository *int
+}
+
+// Mutate applies the CreateSiteInput on the SiteCreate builder.
+func (i *CreateSiteInput) Mutate(m *SiteCreate) {
+	m.SetURL(i.URL)
+	m.SetProjectID(i.Project)
+	if v := i.Repository; v != nil {
+		m.SetRepositoryID(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateSiteInput on the create builder.
+func (c *SiteCreate) SetInput(i CreateSiteInput) *SiteCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateSiteInput represents a mutation input for updating sites.
+type UpdateSiteInput struct {
+	URL             *string
+	Project         *int
+	ClearProject    bool
+	Repository      *int
+	ClearRepository bool
+}
+
+// Mutate applies the UpdateSiteInput on the SiteMutation.
+func (i *UpdateSiteInput) Mutate(m *SiteMutation) {
+	if v := i.URL; v != nil {
+		m.SetURL(*v)
+	}
+	if i.ClearProject {
+		m.ClearProject()
+	}
+	if v := i.Project; v != nil {
+		m.SetProjectID(*v)
+	}
+	if i.ClearRepository {
+		m.ClearRepository()
+	}
+	if v := i.Repository; v != nil {
+		m.SetRepositoryID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateSiteInput on the update builder.
+func (u *SiteUpdate) SetInput(i UpdateSiteInput) *SiteUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateSiteInput on the update-one builder.
+func (u *SiteUpdateOne) SetInput(i UpdateSiteInput) *SiteUpdateOne {
 	i.Mutate(u.Mutation())
 	return u
 }

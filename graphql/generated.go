@@ -157,6 +157,7 @@ type ComplexityRoot struct {
 		CreateProjectAssociation       func(childComplexity int, input ent.CreateProjectAssociationInput) int
 		CreateProjectContributor       func(childComplexity int, input ent.CreateProjectContributorInput) int
 		CreateRepository               func(childComplexity int, input ent.CreateRepositoryInput) int
+		CreateSite                     func(childComplexity int, input ent.CreateSiteInput) int
 		CreateUser                     func(childComplexity int, input ent.CreateUserInput) int
 	}
 
@@ -177,6 +178,7 @@ type ComplexityRoot struct {
 		Name           func(childComplexity int) int
 		ParentProjects func(childComplexity int) int
 		Repositories   func(childComplexity int) int
+		Sites          func(childComplexity int) int
 		StartDate      func(childComplexity int) int
 	}
 
@@ -241,6 +243,7 @@ type ComplexityRoot struct {
 		ProjectContributors       func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectContributorOrder, where *ent.ProjectContributorWhereInput) int
 		Projects                  func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectOrder, where *ent.ProjectWhereInput) int
 		Repositories              func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryOrder, where *ent.RepositoryWhereInput) int
+		Sites                     func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.SiteOrder, where *ent.SiteWhereInput) int
 		Users                     func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) int
 	}
 
@@ -252,6 +255,7 @@ type ComplexityRoot struct {
 		ID                 func(childComplexity int) int
 		Name               func(childComplexity int) int
 		Project            func(childComplexity int) int
+		Sites              func(childComplexity int) int
 	}
 
 	RepositoryConnection struct {
@@ -261,6 +265,24 @@ type ComplexityRoot struct {
 	}
 
 	RepositoryEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	Site struct {
+		ID         func(childComplexity int) int
+		Project    func(childComplexity int) int
+		Repository func(childComplexity int) int
+		URL        func(childComplexity int) int
+	}
+
+	SiteConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	SiteEdge struct {
 		Cursor func(childComplexity int) int
 		Node   func(childComplexity int) int
 	}
@@ -297,6 +319,7 @@ type MutationResolver interface {
 	CreateProjectContributor(ctx context.Context, input ent.CreateProjectContributorInput) (*ent.ProjectContributor, error)
 	CreateProjectAssociation(ctx context.Context, input ent.CreateProjectAssociationInput) (*ent.ProjectAssociation, error)
 	CreateRepository(ctx context.Context, input ent.CreateRepositoryInput) (*ent.Repository, error)
+	CreateSite(ctx context.Context, input ent.CreateSiteInput) (*ent.Site, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
@@ -311,6 +334,7 @@ type QueryResolver interface {
 	ProjectContributors(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectContributorOrder, where *ent.ProjectContributorWhereInput) (*ent.ProjectContributorConnection, error)
 	ProjectAssociations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) (*ent.ProjectAssociationConnection, error)
 	Repositories(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryOrder, where *ent.RepositoryWhereInput) (*ent.RepositoryConnection, error)
+	Sites(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.SiteOrder, where *ent.SiteWhereInput) (*ent.SiteConnection, error)
 	AvailableAuthProviders(ctx context.Context) ([]*AuthProvider, error)
 	CurrentUser(ctx context.Context) (*ent.User, error)
 }
@@ -795,6 +819,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateRepository(childComplexity, args["input"].(ent.CreateRepositoryInput)), true
 
+	case "Mutation.createSite":
+		if e.complexity.Mutation.CreateSite == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createSite_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateSite(childComplexity, args["input"].(ent.CreateSiteInput)), true
+
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
 			break
@@ -897,6 +933,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Project.Repositories(childComplexity), true
+
+	case "Project.sites":
+		if e.complexity.Project.Sites == nil {
+			break
+		}
+
+		return e.complexity.Project.Sites(childComplexity), true
 
 	case "Project.startDate":
 		if e.complexity.Project.StartDate == nil {
@@ -1212,6 +1255,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Repositories(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.RepositoryOrder), args["where"].(*ent.RepositoryWhereInput)), true
 
+	case "Query.sites":
+		if e.complexity.Query.Sites == nil {
+			break
+		}
+
+		args, err := ec.field_Query_sites_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Sites(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.SiteOrder), args["where"].(*ent.SiteWhereInput)), true
+
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
 			break
@@ -1273,6 +1328,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Repository.Project(childComplexity), true
 
+	case "Repository.sites":
+		if e.complexity.Repository.Sites == nil {
+			break
+		}
+
+		return e.complexity.Repository.Sites(childComplexity), true
+
 	case "RepositoryConnection.edges":
 		if e.complexity.RepositoryConnection.Edges == nil {
 			break
@@ -1307,6 +1369,69 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.RepositoryEdge.Node(childComplexity), true
+
+	case "Site.id":
+		if e.complexity.Site.ID == nil {
+			break
+		}
+
+		return e.complexity.Site.ID(childComplexity), true
+
+	case "Site.project":
+		if e.complexity.Site.Project == nil {
+			break
+		}
+
+		return e.complexity.Site.Project(childComplexity), true
+
+	case "Site.repository":
+		if e.complexity.Site.Repository == nil {
+			break
+		}
+
+		return e.complexity.Site.Repository(childComplexity), true
+
+	case "Site.url":
+		if e.complexity.Site.URL == nil {
+			break
+		}
+
+		return e.complexity.Site.URL(childComplexity), true
+
+	case "SiteConnection.edges":
+		if e.complexity.SiteConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.SiteConnection.Edges(childComplexity), true
+
+	case "SiteConnection.pageInfo":
+		if e.complexity.SiteConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.SiteConnection.PageInfo(childComplexity), true
+
+	case "SiteConnection.totalCount":
+		if e.complexity.SiteConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.SiteConnection.TotalCount(childComplexity), true
+
+	case "SiteEdge.cursor":
+		if e.complexity.SiteEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.SiteEdge.Cursor(childComplexity), true
+
+	case "SiteEdge.node":
+		if e.complexity.SiteEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.SiteEdge.Node(childComplexity), true
 
 	case "User.avatarUrl":
 		if e.complexity.User.AvatarURL == nil {
@@ -1674,11 +1799,13 @@ type Project implements Node {
     description: String
     startDate: Time!
     endDate: Time
+
     contributors: [ProjectContributor!]
     parentProjects: [ProjectAssociation!]
     childProjects: [ProjectAssociation!]
     repositories: [Repository!]
     discordBots: [DiscordBot!]
+    sites: [Site!]
 }
 
 enum ProjectContributorRole {
@@ -1775,7 +1902,36 @@ type Repository implements Node {
     project: Project!
     githubAccount: GithubAccount
     githubOrganization: GithubOrganization
+
     discordBots: [DiscordBot!]
+    sites: [Site!]
+}
+
+type SiteConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [SiteEdge]
+}
+
+type SiteEdge {
+    node: Site
+    cursor: Cursor!
+}
+
+enum SiteOrderField {
+    URL
+}
+
+input SiteOrder {
+    direction: OrderDirection!
+    field: SiteOrderField
+}
+
+type Site implements Node {
+    id: ID!
+    url: String!
+    project: Project!
+    repository: Repository
 }
 
 type Query {
@@ -1863,6 +2019,14 @@ type Query {
         orderBy: RepositoryOrder
         where: RepositoryWhereInput
     ): RepositoryConnection
+    sites(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        orderBy: SiteOrder
+        where: SiteWhereInput
+    ): SiteConnection
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
@@ -1930,6 +2094,12 @@ input CreateRepositoryInput {
     githubOrganization: Int
 }
 
+input CreateSiteInput {
+    url: String!
+    project: Int!
+    repository: Int
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
@@ -1941,6 +2111,7 @@ type Mutation {
     createProjectContributor(input: CreateProjectContributorInput!): ProjectContributor!
     createProjectAssociation(input: CreateProjectAssociationInput!): ProjectAssociation!
     createRepository(input: CreateRepositoryInput!): Repository!
+    createSite(input: CreateSiteInput!): Site!
 }
 `, BuiltIn: false},
 	{Name: "ent.graphql", Input: `"""
@@ -2313,6 +2484,10 @@ input ProjectWhereInput {
   """discord_bots edge predicates"""
   hasDiscordBots: Boolean
   hasDiscordBotsWith: [DiscordBotWhereInput!]
+  
+  """sites edge predicates"""
+  hasSites: Boolean
+  hasSitesWith: [SiteWhereInput!]
 }
 
 """
@@ -2449,6 +2624,10 @@ input RepositoryWhereInput {
   """discord_bots edge predicates"""
   hasDiscordBots: Boolean
   hasDiscordBotsWith: [DiscordBotWhereInput!]
+  
+  """sites edge predicates"""
+  hasSites: Boolean
+  hasSitesWith: [SiteWhereInput!]
 }
 
 """
@@ -2473,6 +2652,49 @@ input DiscordBotWhereInput {
   """account edge predicates"""
   hasAccount: Boolean
   hasAccountWith: [DiscordAccountWhereInput!]
+  
+  """project edge predicates"""
+  hasProject: Boolean
+  hasProjectWith: [ProjectWhereInput!]
+  
+  """repository edge predicates"""
+  hasRepository: Boolean
+  hasRepositoryWith: [RepositoryWhereInput!]
+}
+
+"""
+SiteWhereInput is used for filtering Site objects.
+Input was generated by ent.
+"""
+input SiteWhereInput {
+  not: SiteWhereInput
+  and: [SiteWhereInput!]
+  or: [SiteWhereInput!]
+  
+  """url field predicates"""
+  url: String
+  urlNEQ: String
+  urlIn: [String!]
+  urlNotIn: [String!]
+  urlGT: String
+  urlGTE: String
+  urlLT: String
+  urlLTE: String
+  urlContains: String
+  urlHasPrefix: String
+  urlHasSuffix: String
+  urlEqualFold: String
+  urlContainsFold: String
+  
+  """id field predicates"""
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
   
   """project edge predicates"""
   hasProject: Boolean
@@ -2617,6 +2839,21 @@ func (ec *executionContext) field_Mutation_createRepository_args(ctx context.Con
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateRepositoryInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateRepositoryInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createSite_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateSiteInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateSiteInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateSiteInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3208,6 +3445,66 @@ func (ec *executionContext) field_Query_repositories_args(ctx context.Context, r
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
 		arg5, err = ec.unmarshalORepositoryWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_sites_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.Cursor
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *ent.Cursor
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.SiteOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOSiteOrder2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *ent.SiteWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOSiteWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -5465,6 +5762,48 @@ func (ec *executionContext) _Mutation_createRepository(ctx context.Context, fiel
 	return ec.marshalNRepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createSite(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createSite_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateSite(rctx, args["input"].(ent.CreateSiteInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Site)
+	fc.Result = res
+	return ec.marshalNSite2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSite(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -5926,6 +6265,38 @@ func (ec *executionContext) _Project_discordBots(ctx context.Context, field grap
 	res := resTmp.([]*ent.DiscordBot)
 	fc.Result = res
 	return ec.marshalODiscordBot2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_sites(ctx context.Context, field graphql.CollectedField, obj *ent.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Sites(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Site)
+	fc.Result = res
+	return ec.marshalOSite2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ProjectAssociation_id(ctx context.Context, field graphql.CollectedField, obj *ent.ProjectAssociation) (ret graphql.Marshaler) {
@@ -7186,6 +7557,45 @@ func (ec *executionContext) _Query_repositories(ctx context.Context, field graph
 	return ec.marshalORepositoryConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryConnection(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_sites(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_sites_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Sites(rctx, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["orderBy"].(*ent.SiteOrder), args["where"].(*ent.SiteWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.SiteConnection)
+	fc.Result = res
+	return ec.marshalOSiteConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteConnection(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_availableAuthProviders(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7554,6 +7964,38 @@ func (ec *executionContext) _Repository_discordBots(ctx context.Context, field g
 	return ec.marshalODiscordBot2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Repository_sites(ctx context.Context, field graphql.CollectedField, obj *ent.Repository) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Repository",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Sites(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Site)
+	fc.Result = res
+	return ec.marshalOSite2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _RepositoryConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.RepositoryConnection) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7697,6 +8139,312 @@ func (ec *executionContext) _RepositoryEdge_cursor(ctx context.Context, field gr
 	}()
 	fc := &graphql.FieldContext{
 		Object:     "RepositoryEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.Cursor)
+	fc.Result = res
+	return ec.marshalNCursor2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_id(ctx context.Context, field graphql.CollectedField, obj *ent.Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_url(ctx context.Context, field graphql.CollectedField, obj *ent.Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.URL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_project(ctx context.Context, field graphql.CollectedField, obj *ent.Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Project(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Project)
+	fc.Result = res
+	return ec.marshalNProject2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_repository(ctx context.Context, field graphql.CollectedField, obj *ent.Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Repository(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Repository)
+	fc.Result = res
+	return ec.marshalORepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SiteConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.SiteConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SiteConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SiteConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.SiteConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SiteConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SiteConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.SiteConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SiteConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.SiteEdge)
+	fc.Result = res
+	return ec.marshalOSiteEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SiteEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.SiteEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SiteEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Site)
+	fc.Result = res
+	return ec.marshalOSite2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSite(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SiteEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.SiteEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SiteEdge",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -9516,6 +10264,42 @@ func (ec *executionContext) unmarshalInputCreateRepositoryInput(ctx context.Cont
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("githubOrganization"))
 			it.GithubOrganization, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateSiteInput(ctx context.Context, obj interface{}) (ent.CreateSiteInput, error) {
+	var it ent.CreateSiteInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "url":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			it.URL, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "project":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("project"))
+			it.Project, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "repository":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("repository"))
+			it.Repository, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11983,6 +12767,22 @@ func (ec *executionContext) unmarshalInputProjectWhereInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
+		case "hasSites":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSites"))
+			it.HasSites, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasSitesWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSitesWith"))
+			it.HasSitesWith, err = ec.unmarshalOSiteWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -12396,6 +13196,286 @@ func (ec *executionContext) unmarshalInputRepositoryWhereInput(ctx context.Conte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDiscordBotsWith"))
 			it.HasDiscordBotsWith, err = ec.unmarshalODiscordBotWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBotWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasSites":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSites"))
+			it.HasSites, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasSitesWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSitesWith"))
+			it.HasSitesWith, err = ec.unmarshalOSiteWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSiteOrder(ctx context.Context, obj interface{}) (ent.SiteOrder, error) {
+	var it ent.SiteOrder
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNOrderDirection2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			it.Field, err = ec.unmarshalOSiteOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSiteWhereInput(ctx context.Context, obj interface{}) (ent.SiteWhereInput, error) {
+	var it ent.SiteWhereInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "not":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			it.Not, err = ec.unmarshalOSiteWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "and":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			it.And, err = ec.unmarshalOSiteWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "or":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			it.Or, err = ec.unmarshalOSiteWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "url":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			it.URL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlNEQ"))
+			it.URLNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlIn"))
+			it.URLIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlNotIn"))
+			it.URLNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlGT"))
+			it.URLGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlGTE"))
+			it.URLGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlLT"))
+			it.URLLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlLTE"))
+			it.URLLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlContains"))
+			it.URLContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlHasPrefix"))
+			it.URLHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlHasSuffix"))
+			it.URLHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlEqualFold"))
+			it.URLEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urlContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlContainsFold"))
+			it.URLContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			it.IDNEQ, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			it.IDIn, err = ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			it.IDNotIn, err = ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			it.IDGT, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			it.IDGTE, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			it.IDLT, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			it.IDLTE, err = ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasProject":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProject"))
+			it.HasProject, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasProjectWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProjectWith"))
+			it.HasProjectWith, err = ec.unmarshalOProjectWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepository":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepository"))
+			it.HasRepository, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasRepositoryWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRepositoryWith"))
+			it.HasRepositoryWith, err = ec.unmarshalORepositoryWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12863,6 +13943,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Repository(ctx, sel, obj)
+	case *ent.Site:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Site(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -13598,6 +14683,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createSite":
+			out.Values[i] = ec._Mutation_createSite(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13728,6 +14818,17 @@ func (ec *executionContext) _Project(ctx context.Context, sel ast.SelectionSet, 
 					}
 				}()
 				res = ec._Project_discordBots(ctx, field, obj)
+				return res
+			})
+		case "sites":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Project_sites(ctx, field, obj)
 				return res
 			})
 		default:
@@ -14200,6 +15301,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_repositories(ctx, field)
 				return res
 			})
+		case "sites":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_sites(ctx, field)
+				return res
+			})
 		case "availableAuthProviders":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -14307,6 +15419,17 @@ func (ec *executionContext) _Repository(ctx context.Context, sel ast.SelectionSe
 				res = ec._Repository_discordBots(ctx, field, obj)
 				return res
 			})
+		case "sites":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Repository_sites(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -14367,6 +15490,126 @@ func (ec *executionContext) _RepositoryEdge(ctx context.Context, sel ast.Selecti
 			out.Values[i] = ec._RepositoryEdge_node(ctx, field, obj)
 		case "cursor":
 			out.Values[i] = ec._RepositoryEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var siteImplementors = []string{"Site", "Node"}
+
+func (ec *executionContext) _Site(ctx context.Context, sel ast.SelectionSet, obj *ent.Site) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, siteImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Site")
+		case "id":
+			out.Values[i] = ec._Site_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "url":
+			out.Values[i] = ec._Site_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "project":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_project(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "repository":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_repository(ctx, field, obj)
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var siteConnectionImplementors = []string{"SiteConnection"}
+
+func (ec *executionContext) _SiteConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.SiteConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, siteConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SiteConnection")
+		case "totalCount":
+			out.Values[i] = ec._SiteConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._SiteConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "edges":
+			out.Values[i] = ec._SiteConnection_edges(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var siteEdgeImplementors = []string{"SiteEdge"}
+
+func (ec *executionContext) _SiteEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.SiteEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, siteEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SiteEdge")
+		case "node":
+			out.Values[i] = ec._SiteEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._SiteEdge_cursor(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -14826,6 +16069,11 @@ func (ec *executionContext) unmarshalNCreateRepositoryInput2githubᚗcomᚋfogo�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateSiteInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateSiteInput(ctx context.Context, v interface{}) (ent.CreateSiteInput, error) {
+	res, err := ec.unmarshalInputCreateSiteInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateUserInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐCreateUserInput(ctx context.Context, v interface{}) (ent.CreateUserInput, error) {
 	res, err := ec.unmarshalInputCreateUserInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -15166,6 +16414,25 @@ func (ec *executionContext) marshalNRepository2ᚖgithubᚗcomᚋfogoᚑshᚋgra
 
 func (ec *executionContext) unmarshalNRepositoryWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryWhereInput(ctx context.Context, v interface{}) (*ent.RepositoryWhereInput, error) {
 	res, err := ec.unmarshalInputRepositoryWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSite2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSite(ctx context.Context, sel ast.SelectionSet, v ent.Site) graphql.Marshaler {
+	return ec._Site(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSite2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSite(ctx context.Context, sel ast.SelectionSet, v *ent.Site) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Site(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSiteWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInput(ctx context.Context, v interface{}) (*ent.SiteWhereInput, error) {
+	res, err := ec.unmarshalInputSiteWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -17153,6 +18420,163 @@ func (ec *executionContext) unmarshalORepositoryWhereInput2ᚖgithubᚗcomᚋfog
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputRepositoryWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOSite2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Site) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSite2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSite(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOSite2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSite(ctx context.Context, sel ast.SelectionSet, v *ent.Site) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Site(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSiteConnection2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteConnection(ctx context.Context, sel ast.SelectionSet, v *ent.SiteConnection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SiteConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSiteEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.SiteEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSiteEdge2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOSiteEdge2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteEdge(ctx context.Context, sel ast.SelectionSet, v *ent.SiteEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SiteEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOSiteOrder2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteOrder(ctx context.Context, v interface{}) (*ent.SiteOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSiteOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOSiteOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteOrderField(ctx context.Context, v interface{}) (*ent.SiteOrderField, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(ent.SiteOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOSiteOrderField2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.SiteOrderField) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOSiteWhereInput2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.SiteWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*ent.SiteWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNSiteWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOSiteWhereInput2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSiteWhereInput(ctx context.Context, v interface{}) (*ent.SiteWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSiteWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

@@ -140,6 +140,14 @@ func (pr *Project) DiscordBots(ctx context.Context) ([]*DiscordBot, error) {
 	return result, err
 }
 
+func (pr *Project) Sites(ctx context.Context) ([]*Site, error) {
+	result, err := pr.Edges.SitesOrErr()
+	if IsNotLoaded(err) {
+		result, err = pr.QuerySites().All(ctx)
+	}
+	return result, err
+}
+
 func (pa *ProjectAssociation) Parent(ctx context.Context) (*Project, error) {
 	result, err := pa.Edges.ParentOrErr()
 	if IsNotLoaded(err) {
@@ -202,6 +210,30 @@ func (r *Repository) DiscordBots(ctx context.Context) ([]*DiscordBot, error) {
 		result, err = r.QueryDiscordBots().All(ctx)
 	}
 	return result, err
+}
+
+func (r *Repository) Sites(ctx context.Context) ([]*Site, error) {
+	result, err := r.Edges.SitesOrErr()
+	if IsNotLoaded(err) {
+		result, err = r.QuerySites().All(ctx)
+	}
+	return result, err
+}
+
+func (s *Site) Project(ctx context.Context) (*Project, error) {
+	result, err := s.Edges.ProjectOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryProject().Only(ctx)
+	}
+	return result, err
+}
+
+func (s *Site) Repository(ctx context.Context) (*Repository, error) {
+	result, err := s.Edges.RepositoryOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryRepository().Only(ctx)
+	}
+	return result, MaskNotFound(err)
 }
 
 func (u *User) DiscordAccounts(ctx context.Context) ([]*DiscordAccount, error) {

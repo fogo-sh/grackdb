@@ -16,6 +16,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/site"
 )
 
 // ProjectUpdate is the builder for updating Project entities.
@@ -158,6 +159,21 @@ func (pu *ProjectUpdate) AddDiscordBots(d ...*DiscordBot) *ProjectUpdate {
 	return pu.AddDiscordBotIDs(ids...)
 }
 
+// AddSiteIDs adds the "sites" edge to the Site entity by IDs.
+func (pu *ProjectUpdate) AddSiteIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.AddSiteIDs(ids...)
+	return pu
+}
+
+// AddSites adds the "sites" edges to the Site entity.
+func (pu *ProjectUpdate) AddSites(s ...*Site) *ProjectUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return pu.AddSiteIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -266,6 +282,27 @@ func (pu *ProjectUpdate) RemoveDiscordBots(d ...*DiscordBot) *ProjectUpdate {
 		ids[i] = d[i].ID
 	}
 	return pu.RemoveDiscordBotIDs(ids...)
+}
+
+// ClearSites clears all "sites" edges to the Site entity.
+func (pu *ProjectUpdate) ClearSites() *ProjectUpdate {
+	pu.mutation.ClearSites()
+	return pu
+}
+
+// RemoveSiteIDs removes the "sites" edge to Site entities by IDs.
+func (pu *ProjectUpdate) RemoveSiteIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.RemoveSiteIDs(ids...)
+	return pu
+}
+
+// RemoveSites removes "sites" edges to Site entities.
+func (pu *ProjectUpdate) RemoveSites(s ...*Site) *ProjectUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return pu.RemoveSiteIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -663,6 +700,60 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.SitesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SitesTable,
+			Columns: []string{project.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedSitesIDs(); len(nodes) > 0 && !pu.mutation.SitesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SitesTable,
+			Columns: []string{project.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.SitesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SitesTable,
+			Columns: []string{project.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{project.Label}
@@ -809,6 +900,21 @@ func (puo *ProjectUpdateOne) AddDiscordBots(d ...*DiscordBot) *ProjectUpdateOne 
 	return puo.AddDiscordBotIDs(ids...)
 }
 
+// AddSiteIDs adds the "sites" edge to the Site entity by IDs.
+func (puo *ProjectUpdateOne) AddSiteIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.AddSiteIDs(ids...)
+	return puo
+}
+
+// AddSites adds the "sites" edges to the Site entity.
+func (puo *ProjectUpdateOne) AddSites(s ...*Site) *ProjectUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return puo.AddSiteIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -917,6 +1023,27 @@ func (puo *ProjectUpdateOne) RemoveDiscordBots(d ...*DiscordBot) *ProjectUpdateO
 		ids[i] = d[i].ID
 	}
 	return puo.RemoveDiscordBotIDs(ids...)
+}
+
+// ClearSites clears all "sites" edges to the Site entity.
+func (puo *ProjectUpdateOne) ClearSites() *ProjectUpdateOne {
+	puo.mutation.ClearSites()
+	return puo
+}
+
+// RemoveSiteIDs removes the "sites" edge to Site entities by IDs.
+func (puo *ProjectUpdateOne) RemoveSiteIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.RemoveSiteIDs(ids...)
+	return puo
+}
+
+// RemoveSites removes "sites" edges to Site entities.
+func (puo *ProjectUpdateOne) RemoveSites(s ...*Site) *ProjectUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return puo.RemoveSiteIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1330,6 +1457,60 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: discordbot.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.SitesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SitesTable,
+			Columns: []string{project.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedSitesIDs(); len(nodes) > 0 && !puo.mutation.SitesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SitesTable,
+			Columns: []string{project.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.SitesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SitesTable,
+			Columns: []string{project.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
 				},
 			},
 		}

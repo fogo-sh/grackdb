@@ -380,6 +380,30 @@ func (f RepositoryMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Muta
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RepositoryMutation", m)
 }
 
+// The SiteQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SiteQueryRuleFunc func(context.Context, *ent.SiteQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SiteQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SiteQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SiteQuery", q)
+}
+
+// The SiteMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SiteMutationRuleFunc func(context.Context, *ent.SiteMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SiteMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SiteMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SiteMutation", m)
+}
+
 // The UserQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type UserQueryRuleFunc func(context.Context, *ent.UserQuery) error

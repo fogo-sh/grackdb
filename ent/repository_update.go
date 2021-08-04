@@ -16,6 +16,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/predicate"
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/site"
 )
 
 // RepositoryUpdate is the builder for updating Repository entities.
@@ -121,6 +122,21 @@ func (ru *RepositoryUpdate) AddDiscordBots(d ...*DiscordBot) *RepositoryUpdate {
 	return ru.AddDiscordBotIDs(ids...)
 }
 
+// AddSiteIDs adds the "sites" edge to the Site entity by IDs.
+func (ru *RepositoryUpdate) AddSiteIDs(ids ...int) *RepositoryUpdate {
+	ru.mutation.AddSiteIDs(ids...)
+	return ru
+}
+
+// AddSites adds the "sites" edges to the Site entity.
+func (ru *RepositoryUpdate) AddSites(s ...*Site) *RepositoryUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ru.AddSiteIDs(ids...)
+}
+
 // Mutation returns the RepositoryMutation object of the builder.
 func (ru *RepositoryUpdate) Mutation() *RepositoryMutation {
 	return ru.mutation
@@ -163,6 +179,27 @@ func (ru *RepositoryUpdate) RemoveDiscordBots(d ...*DiscordBot) *RepositoryUpdat
 		ids[i] = d[i].ID
 	}
 	return ru.RemoveDiscordBotIDs(ids...)
+}
+
+// ClearSites clears all "sites" edges to the Site entity.
+func (ru *RepositoryUpdate) ClearSites() *RepositoryUpdate {
+	ru.mutation.ClearSites()
+	return ru
+}
+
+// RemoveSiteIDs removes the "sites" edge to Site entities by IDs.
+func (ru *RepositoryUpdate) RemoveSiteIDs(ids ...int) *RepositoryUpdate {
+	ru.mutation.RemoveSiteIDs(ids...)
+	return ru
+}
+
+// RemoveSites removes "sites" edges to Site entities.
+func (ru *RepositoryUpdate) RemoveSites(s ...*Site) *RepositoryUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ru.RemoveSiteIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -432,6 +469,60 @@ func (ru *RepositoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ru.mutation.SitesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.SitesTable,
+			Columns: []string{repository.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.RemovedSitesIDs(); len(nodes) > 0 && !ru.mutation.SitesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.SitesTable,
+			Columns: []string{repository.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.SitesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.SitesTable,
+			Columns: []string{repository.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{repository.Label}
@@ -541,6 +632,21 @@ func (ruo *RepositoryUpdateOne) AddDiscordBots(d ...*DiscordBot) *RepositoryUpda
 	return ruo.AddDiscordBotIDs(ids...)
 }
 
+// AddSiteIDs adds the "sites" edge to the Site entity by IDs.
+func (ruo *RepositoryUpdateOne) AddSiteIDs(ids ...int) *RepositoryUpdateOne {
+	ruo.mutation.AddSiteIDs(ids...)
+	return ruo
+}
+
+// AddSites adds the "sites" edges to the Site entity.
+func (ruo *RepositoryUpdateOne) AddSites(s ...*Site) *RepositoryUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ruo.AddSiteIDs(ids...)
+}
+
 // Mutation returns the RepositoryMutation object of the builder.
 func (ruo *RepositoryUpdateOne) Mutation() *RepositoryMutation {
 	return ruo.mutation
@@ -583,6 +689,27 @@ func (ruo *RepositoryUpdateOne) RemoveDiscordBots(d ...*DiscordBot) *RepositoryU
 		ids[i] = d[i].ID
 	}
 	return ruo.RemoveDiscordBotIDs(ids...)
+}
+
+// ClearSites clears all "sites" edges to the Site entity.
+func (ruo *RepositoryUpdateOne) ClearSites() *RepositoryUpdateOne {
+	ruo.mutation.ClearSites()
+	return ruo
+}
+
+// RemoveSiteIDs removes the "sites" edge to Site entities by IDs.
+func (ruo *RepositoryUpdateOne) RemoveSiteIDs(ids ...int) *RepositoryUpdateOne {
+	ruo.mutation.RemoveSiteIDs(ids...)
+	return ruo
+}
+
+// RemoveSites removes "sites" edges to Site entities.
+func (ruo *RepositoryUpdateOne) RemoveSites(s ...*Site) *RepositoryUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ruo.RemoveSiteIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -868,6 +995,60 @@ func (ruo *RepositoryUpdateOne) sqlSave(ctx context.Context) (_node *Repository,
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: discordbot.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.SitesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.SitesTable,
+			Columns: []string{repository.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.RemovedSitesIDs(); len(nodes) > 0 && !ruo.mutation.SitesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.SitesTable,
+			Columns: []string{repository.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.SitesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.SitesTable,
+			Columns: []string{repository.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
 				},
 			},
 		}

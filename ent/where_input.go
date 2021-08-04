@@ -16,6 +16,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/user"
 )
 
@@ -1277,6 +1278,10 @@ type ProjectWhereInput struct {
 	// "discord_bots" edge predicates.
 	HasDiscordBots     *bool                   `json:"hasDiscordBots,omitempty"`
 	HasDiscordBotsWith []*DiscordBotWhereInput `json:"hasDiscordBotsWith,omitempty"`
+
+	// "sites" edge predicates.
+	HasSites     *bool             `json:"hasSites,omitempty"`
+	HasSitesWith []*SiteWhereInput `json:"hasSitesWith,omitempty"`
 }
 
 // Filter applies the ProjectWhereInput filter on the ProjectQuery builder.
@@ -1590,6 +1595,24 @@ func (i *ProjectWhereInput) P() (predicate.Project, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, project.HasDiscordBotsWith(with...))
+	}
+	if i.HasSites != nil {
+		p := project.HasSites()
+		if !*i.HasSites {
+			p = project.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasSitesWith) > 0 {
+		with := make([]predicate.Site, 0, len(i.HasSitesWith))
+		for _, w := range i.HasSitesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, project.HasSitesWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -2010,6 +2033,10 @@ type RepositoryWhereInput struct {
 	// "discord_bots" edge predicates.
 	HasDiscordBots     *bool                   `json:"hasDiscordBots,omitempty"`
 	HasDiscordBotsWith []*DiscordBotWhereInput `json:"hasDiscordBotsWith,omitempty"`
+
+	// "sites" edge predicates.
+	HasSites     *bool             `json:"hasSites,omitempty"`
+	HasSitesWith []*SiteWhereInput `json:"hasSitesWith,omitempty"`
 }
 
 // Filter applies the RepositoryWhereInput filter on the RepositoryQuery builder.
@@ -2252,6 +2279,24 @@ func (i *RepositoryWhereInput) P() (predicate.Repository, error) {
 		}
 		predicates = append(predicates, repository.HasDiscordBotsWith(with...))
 	}
+	if i.HasSites != nil {
+		p := repository.HasSites()
+		if !*i.HasSites {
+			p = repository.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasSitesWith) > 0 {
+		with := make([]predicate.Site, 0, len(i.HasSitesWith))
+		for _, w := range i.HasSitesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, repository.HasSitesWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate RepositoryWhereInput")
@@ -2259,6 +2304,215 @@ func (i *RepositoryWhereInput) P() (predicate.Repository, error) {
 		return predicates[0], nil
 	default:
 		return repository.And(predicates...), nil
+	}
+}
+
+// SiteWhereInput represents a where input for filtering Site queries.
+type SiteWhereInput struct {
+	Not *SiteWhereInput   `json:"not,omitempty"`
+	Or  []*SiteWhereInput `json:"or,omitempty"`
+	And []*SiteWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *int  `json:"id,omitempty"`
+	IDNEQ   *int  `json:"idNEQ,omitempty"`
+	IDIn    []int `json:"idIn,omitempty"`
+	IDNotIn []int `json:"idNotIn,omitempty"`
+	IDGT    *int  `json:"idGT,omitempty"`
+	IDGTE   *int  `json:"idGTE,omitempty"`
+	IDLT    *int  `json:"idLT,omitempty"`
+	IDLTE   *int  `json:"idLTE,omitempty"`
+
+	// "url" field predicates.
+	URL             *string  `json:"url,omitempty"`
+	URLNEQ          *string  `json:"urlNEQ,omitempty"`
+	URLIn           []string `json:"urlIn,omitempty"`
+	URLNotIn        []string `json:"urlNotIn,omitempty"`
+	URLGT           *string  `json:"urlGT,omitempty"`
+	URLGTE          *string  `json:"urlGTE,omitempty"`
+	URLLT           *string  `json:"urlLT,omitempty"`
+	URLLTE          *string  `json:"urlLTE,omitempty"`
+	URLContains     *string  `json:"urlContains,omitempty"`
+	URLHasPrefix    *string  `json:"urlHasPrefix,omitempty"`
+	URLHasSuffix    *string  `json:"urlHasSuffix,omitempty"`
+	URLEqualFold    *string  `json:"urlEqualFold,omitempty"`
+	URLContainsFold *string  `json:"urlContainsFold,omitempty"`
+
+	// "project" edge predicates.
+	HasProject     *bool                `json:"hasProject,omitempty"`
+	HasProjectWith []*ProjectWhereInput `json:"hasProjectWith,omitempty"`
+
+	// "repository" edge predicates.
+	HasRepository     *bool                   `json:"hasRepository,omitempty"`
+	HasRepositoryWith []*RepositoryWhereInput `json:"hasRepositoryWith,omitempty"`
+}
+
+// Filter applies the SiteWhereInput filter on the SiteQuery builder.
+func (i *SiteWhereInput) Filter(q *SiteQuery) (*SiteQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// P returns a predicate for filtering sites.
+// An error is returned if the input is empty or invalid.
+func (i *SiteWhereInput) P() (predicate.Site, error) {
+	var predicates []predicate.Site
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, site.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.Site, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, site.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.Site, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, site.And(and...))
+	}
+	if i.ID != nil {
+		predicates = append(predicates, site.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, site.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, site.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, site.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, site.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, site.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, site.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, site.IDLTE(*i.IDLTE))
+	}
+	if i.URL != nil {
+		predicates = append(predicates, site.URLEQ(*i.URL))
+	}
+	if i.URLNEQ != nil {
+		predicates = append(predicates, site.URLNEQ(*i.URLNEQ))
+	}
+	if len(i.URLIn) > 0 {
+		predicates = append(predicates, site.URLIn(i.URLIn...))
+	}
+	if len(i.URLNotIn) > 0 {
+		predicates = append(predicates, site.URLNotIn(i.URLNotIn...))
+	}
+	if i.URLGT != nil {
+		predicates = append(predicates, site.URLGT(*i.URLGT))
+	}
+	if i.URLGTE != nil {
+		predicates = append(predicates, site.URLGTE(*i.URLGTE))
+	}
+	if i.URLLT != nil {
+		predicates = append(predicates, site.URLLT(*i.URLLT))
+	}
+	if i.URLLTE != nil {
+		predicates = append(predicates, site.URLLTE(*i.URLLTE))
+	}
+	if i.URLContains != nil {
+		predicates = append(predicates, site.URLContains(*i.URLContains))
+	}
+	if i.URLHasPrefix != nil {
+		predicates = append(predicates, site.URLHasPrefix(*i.URLHasPrefix))
+	}
+	if i.URLHasSuffix != nil {
+		predicates = append(predicates, site.URLHasSuffix(*i.URLHasSuffix))
+	}
+	if i.URLEqualFold != nil {
+		predicates = append(predicates, site.URLEqualFold(*i.URLEqualFold))
+	}
+	if i.URLContainsFold != nil {
+		predicates = append(predicates, site.URLContainsFold(*i.URLContainsFold))
+	}
+
+	if i.HasProject != nil {
+		p := site.HasProject()
+		if !*i.HasProject {
+			p = site.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasProjectWith) > 0 {
+		with := make([]predicate.Project, 0, len(i.HasProjectWith))
+		for _, w := range i.HasProjectWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, site.HasProjectWith(with...))
+	}
+	if i.HasRepository != nil {
+		p := site.HasRepository()
+		if !*i.HasRepository {
+			p = site.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasRepositoryWith) > 0 {
+		with := make([]predicate.Repository, 0, len(i.HasRepositoryWith))
+		for _, w := range i.HasRepositoryWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, site.HasRepositoryWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, fmt.Errorf("github.com/fogo-sh/grackdb/ent: empty predicate SiteWhereInput")
+	case 1:
+		return predicates[0], nil
+	default:
+		return site.And(predicates...), nil
 	}
 }
 

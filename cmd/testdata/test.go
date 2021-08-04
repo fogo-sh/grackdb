@@ -34,6 +34,7 @@ const (
 	ProjectAssociation       TestItemType = "ProjectAssociation"
 	ProjectContributor       TestItemType = "ProjectContributor"
 	Repository               TestItemType = "Repository"
+	Site                     TestItemType = "Site"
 	User                     TestItemType = "User"
 )
 
@@ -203,6 +204,16 @@ func main() {
 			_, err = client.Repository.Create().SetInput(*input).Save(ctx)
 			if err != nil {
 				log.Fatalf("failed creating Repository: %v", err)
+			}
+		case Site:
+			input := new(ent.CreateSiteInput)
+			err = Decode(item.Params, input)
+			if err != nil {
+				log.Fatalf("failed decoding Site: %v", err)
+			}
+			_, err = client.Site.Create().SetInput(*input).Save(ctx)
+			if err != nil {
+				log.Fatalf("failed creating Site: %v", err)
 			}
 		case User:
 			input := new(ent.CreateUserInput)

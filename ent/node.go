@@ -23,6 +23,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/user"
 	"github.com/hashicorp/go-multierror"
 	"golang.org/x/sync/semaphore"
@@ -290,7 +291,7 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		ID:     pr.ID,
 		Type:   "Project",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 5),
+		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(pr.Name); err != nil {
@@ -371,6 +372,16 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[4].IDs, err = pr.QueryDiscordBots().
 		Select(discordbot.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[5] = &Edge{
+		Type: "Site",
+		Name: "sites",
+	}
+	node.Edges[5].IDs, err = pr.QuerySites().
+		Select(site.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -461,7 +472,7 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 		ID:     r.ID,
 		Type:   "Repository",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 4),
+		Edges:  make([]*Edge, 5),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(r.Name); err != nil {
@@ -516,6 +527,55 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 	}
 	node.Edges[3].IDs, err = r.QueryDiscordBots().
 		Select(discordbot.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[4] = &Edge{
+		Type: "Site",
+		Name: "sites",
+	}
+	node.Edges[4].IDs, err = r.QuerySites().
+		Select(site.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (s *Site) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     s.ID,
+		Type:   "Site",
+		Fields: make([]*Field, 1),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(s.URL); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "url",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Project",
+		Name: "project",
+	}
+	node.Edges[0].IDs, err = s.QueryProject().
+		Select(project.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Repository",
+		Name: "repository",
+	}
+	node.Edges[1].IDs, err = s.QueryRepository().
+		Select(repository.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
@@ -728,6 +788,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
+	case site.Table:
+		n, err := c.Site.Query().
+			Where(site.ID(id)).
+			CollectFields(ctx, "Site").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case user.Table:
 		n, err := c.User.Query().
 			Where(user.ID(id)).
@@ -918,6 +987,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		nodes, err := c.Repository.Query().
 			Where(repository.IDIn(ids...)).
 			CollectFields(ctx, "Repository").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case site.Table:
+		nodes, err := c.Site.Query().
+			Where(site.IDIn(ids...)).
+			CollectFields(ctx, "Site").
 			All(ctx)
 		if err != nil {
 			return nil, err

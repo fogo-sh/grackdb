@@ -33,5 +33,8 @@ type ProjectContributor func(*sql.Selector)
 // Repository is the predicate function for repository builders.
 type Repository func(*sql.Selector)
 
+// Site is the predicate function for site builders.
+type Site func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

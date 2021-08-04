@@ -14,6 +14,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/githuborganization"
 	"github.com/fogo-sh/grackdb/ent/project"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/site"
 )
 
 // RepositoryCreate is the builder for creating a Repository entity.
@@ -105,6 +106,21 @@ func (rc *RepositoryCreate) AddDiscordBots(d ...*DiscordBot) *RepositoryCreate {
 		ids[i] = d[i].ID
 	}
 	return rc.AddDiscordBotIDs(ids...)
+}
+
+// AddSiteIDs adds the "sites" edge to the Site entity by IDs.
+func (rc *RepositoryCreate) AddSiteIDs(ids ...int) *RepositoryCreate {
+	rc.mutation.AddSiteIDs(ids...)
+	return rc
+}
+
+// AddSites adds the "sites" edges to the Site entity.
+func (rc *RepositoryCreate) AddSites(s ...*Site) *RepositoryCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return rc.AddSiteIDs(ids...)
 }
 
 // Mutation returns the RepositoryMutation object of the builder.
@@ -286,6 +302,25 @@ func (rc *RepositoryCreate) createSpec() (*Repository, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: discordbot.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.SitesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   repository.SitesTable,
+			Columns: []string{repository.SitesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: site.FieldID,
 				},
 			},
 		}

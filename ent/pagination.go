@@ -23,6 +23,7 @@ import (
 	"github.com/fogo-sh/grackdb/ent/projectassociation"
 	"github.com/fogo-sh/grackdb/ent/projectcontributor"
 	"github.com/fogo-sh/grackdb/ent/repository"
+	"github.com/fogo-sh/grackdb/ent/site"
 	"github.com/fogo-sh/grackdb/ent/user"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vmihailenco/msgpack/v5"
@@ -2723,6 +2724,276 @@ func (r *Repository) ToEdge(order *RepositoryOrder) *RepositoryEdge {
 	return &RepositoryEdge{
 		Node:   r,
 		Cursor: order.Field.toCursor(r),
+	}
+}
+
+// SiteEdge is the edge representation of Site.
+type SiteEdge struct {
+	Node   *Site  `json:"node"`
+	Cursor Cursor `json:"cursor"`
+}
+
+// SiteConnection is the connection containing edges to Site.
+type SiteConnection struct {
+	Edges      []*SiteEdge `json:"edges"`
+	PageInfo   PageInfo    `json:"pageInfo"`
+	TotalCount int         `json:"totalCount"`
+}
+
+// SitePaginateOption enables pagination customization.
+type SitePaginateOption func(*sitePager) error
+
+// WithSiteOrder configures pagination ordering.
+func WithSiteOrder(order *SiteOrder) SitePaginateOption {
+	if order == nil {
+		order = DefaultSiteOrder
+	}
+	o := *order
+	return func(pager *sitePager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultSiteOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithSiteFilter configures pagination filter.
+func WithSiteFilter(filter func(*SiteQuery) (*SiteQuery, error)) SitePaginateOption {
+	return func(pager *sitePager) error {
+		if filter == nil {
+			return errors.New("SiteQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type sitePager struct {
+	order  *SiteOrder
+	filter func(*SiteQuery) (*SiteQuery, error)
+}
+
+func newSitePager(opts []SitePaginateOption) (*sitePager, error) {
+	pager := &sitePager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultSiteOrder
+	}
+	return pager, nil
+}
+
+func (p *sitePager) applyFilter(query *SiteQuery) (*SiteQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *sitePager) toCursor(s *Site) Cursor {
+	return p.order.Field.toCursor(s)
+}
+
+func (p *sitePager) applyCursors(query *SiteQuery, after, before *Cursor) *SiteQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultSiteOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *sitePager) applyOrder(query *SiteQuery, reverse bool) *SiteQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultSiteOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultSiteOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Site.
+func (s *SiteQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...SitePaginateOption,
+) (*SiteConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newSitePager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if s, err = pager.applyFilter(s); err != nil {
+		return nil, err
+	}
+
+	conn := &SiteConnection{Edges: []*SiteEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := s.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := s.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	s = pager.applyCursors(s, after, before)
+	s = pager.applyOrder(s, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		s = s.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		s = s.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := s.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Site
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Site {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Site {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*SiteEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &SiteEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// SiteOrderFieldURL orders Site by url.
+	SiteOrderFieldURL = &SiteOrderField{
+		field: site.FieldURL,
+		toCursor: func(s *Site) Cursor {
+			return Cursor{
+				ID:    s.ID,
+				Value: s.URL,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f SiteOrderField) String() string {
+	var str string
+	switch f.field {
+	case site.FieldURL:
+		str = "URL"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f SiteOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *SiteOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("SiteOrderField %T must be a string", v)
+	}
+	switch str {
+	case "URL":
+		*f = *SiteOrderFieldURL
+	default:
+		return fmt.Errorf("%s is not a valid SiteOrderField", str)
+	}
+	return nil
+}
+
+// SiteOrderField defines the ordering field of Site.
+type SiteOrderField struct {
+	field    string
+	toCursor func(*Site) Cursor
+}
+
+// SiteOrder defines the ordering of Site.
+type SiteOrder struct {
+	Direction OrderDirection  `json:"direction"`
+	Field     *SiteOrderField `json:"field"`
+}
+
+// DefaultSiteOrder is the default ordering of Site.
+var DefaultSiteOrder = &SiteOrder{
+	Direction: OrderDirectionAsc,
+	Field: &SiteOrderField{
+		field: site.FieldID,
+		toCursor: func(s *Site) Cursor {
+			return Cursor{ID: s.ID}
+		},
+	},
+}
+
+// ToEdge converts Site into SiteEdge.
+func (s *Site) ToEdge(order *SiteOrder) *SiteEdge {
+	if order == nil {
+		order = DefaultSiteOrder
+	}
+	return &SiteEdge{
+		Node:   s,
+		Cursor: order.Field.toCursor(s),
 	}
 }
 

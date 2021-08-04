@@ -81,6 +81,13 @@ func (r *mutationResolver) CreateRepository(ctx context.Context, input ent.Creat
 		Save(ctx)
 }
 
+func (r *mutationResolver) CreateSite(ctx context.Context, input ent.CreateSiteInput) (*ent.Site, error) {
+	return ent.FromContext(ctx).Site.
+		Create().
+		SetInput(input).
+		Save(ctx)
+}
+
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
 	return r.client.Noder(ctx, id)
 }
@@ -165,6 +172,14 @@ func (r *queryResolver) Repositories(ctx context.Context, after *ent.Cursor, fir
 		Paginate(ctx, after, first, before, last,
 			ent.WithRepositoryOrder(orderBy),
 			ent.WithRepositoryFilter(where.Filter),
+		)
+}
+
+func (r *queryResolver) Sites(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.SiteOrder, where *ent.SiteWhereInput) (*ent.SiteConnection, error) {
+	return r.client.Site.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithSiteOrder(orderBy),
+			ent.WithSiteFilter(where.Filter),
 		)
 }
 

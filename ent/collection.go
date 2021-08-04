@@ -167,6 +167,10 @@ func (pr *ProjectQuery) collectField(ctx *graphql.OperationContext, field graphq
 			pr = pr.WithRepositories(func(query *RepositoryQuery) {
 				query.collectField(ctx, field)
 			})
+		case "sites":
+			pr = pr.WithSites(func(query *SiteQuery) {
+				query.collectField(ctx, field)
+			})
 		}
 	}
 	return pr
@@ -247,9 +251,37 @@ func (r *RepositoryQuery) collectField(ctx *graphql.OperationContext, field grap
 			r = r.WithProject(func(query *ProjectQuery) {
 				query.collectField(ctx, field)
 			})
+		case "sites":
+			r = r.WithSites(func(query *SiteQuery) {
+				query.collectField(ctx, field)
+			})
 		}
 	}
 	return r
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (s *SiteQuery) CollectFields(ctx context.Context, satisfies ...string) *SiteQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		s = s.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return s
+}
+
+func (s *SiteQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *SiteQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "project":
+			s = s.WithProject(func(query *ProjectQuery) {
+				query.collectField(ctx, field)
+			})
+		case "repository":
+			s = s.WithRepository(func(query *RepositoryQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
+	return s
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.

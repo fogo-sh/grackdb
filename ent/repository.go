@@ -40,9 +40,11 @@ type RepositoryEdges struct {
 	GithubOrganization *GithubOrganization `json:"github_organization,omitempty"`
 	// DiscordBots holds the value of the discord_bots edge.
 	DiscordBots []*DiscordBot `json:"discord_bots,omitempty"`
+	// Sites holds the value of the sites edge.
+	Sites []*Site `json:"sites,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // ProjectOrErr returns the Project value or an error if the edge
@@ -94,6 +96,15 @@ func (e RepositoryEdges) DiscordBotsOrErr() ([]*DiscordBot, error) {
 		return e.DiscordBots, nil
 	}
 	return nil, &NotLoadedError{edge: "discord_bots"}
+}
+
+// SitesOrErr returns the Sites value or an error if the edge
+// was not loaded in eager-loading.
+func (e RepositoryEdges) SitesOrErr() ([]*Site, error) {
+	if e.loadedTypes[4] {
+		return e.Sites, nil
+	}
+	return nil, &NotLoadedError{edge: "sites"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -189,6 +200,11 @@ func (r *Repository) QueryGithubOrganization() *GithubOrganizationQuery {
 // QueryDiscordBots queries the "discord_bots" edge of the Repository entity.
 func (r *Repository) QueryDiscordBots() *DiscordBotQuery {
 	return (&RepositoryClient{config: r.config}).QueryDiscordBots(r)
+}
+
+// QuerySites queries the "sites" edge of the Repository entity.
+func (r *Repository) QuerySites() *SiteQuery {
+	return (&RepositoryClient{config: r.config}).QuerySites(r)
 }
 
 // Update returns a builder for updating this Repository.
