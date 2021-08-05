@@ -1,16 +1,17 @@
 import React from "react";
 import { Provider } from "urql";
+
 import { client } from "./graphql";
-import Header from "./Header";
-import Users from "./Users";
+import Explorer from "./components/explorer/Explorer";
+import Header from "./components/Header";
 
 function App() {
-  return (
-    <Provider value={client}>
-      <Header />
-      <Users />
-    </Provider>
-  );
+	return (
+		<Provider value={client}>
+			<Header />
+			<Explorer />
+		</Provider>
+	);
 }
 
 export default App;
