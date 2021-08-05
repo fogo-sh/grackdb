@@ -5,23 +5,30 @@ import Input from "./Input";
 import View from "./View";
 
 const INITIAL_QUERY = `{
-  projects {
-    edges {
-      node {
-        id
-        name
-        startDate
-        endDate
-        contributors {
-          id
-          user {
-            id
-            username
-          }
-        }
-      }
-    }
-  }
+	projects {
+		edges {
+			node {
+				id
+				name
+				startDate
+				endDate
+				technologies {
+					id
+					technology {
+						name
+						colour
+					}
+				}
+				contributors {
+					id
+					user {
+						id
+						username
+					}
+				}
+			}
+		}
+	}
 }`;
 
 function Explorer() {

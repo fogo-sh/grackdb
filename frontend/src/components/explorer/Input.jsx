@@ -19,7 +19,10 @@ function Input({ query, setQuery }) {
 				width="100%"
 				height="30rem"
 			/>
-			<button className="bg-white p-1 w-full" onClick={() => setQuery(code)}>
+			<button
+				className="w-full border border-white text-white"
+				onClick={() => setQuery(code)}
+			>
 				Invoke Query
 			</button>
 		</div>

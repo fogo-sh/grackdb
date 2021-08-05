@@ -1,5 +1,15 @@
 import React from "react";
 
+const scalarFilter = ([_key, value]) =>
+	value !== null && typeof value !== "object" && !Array.isArray(value);
+
+const nestedScalarFilter = ([_key, value]) =>
+	value !== null && typeof value === "object" && !Array.isArray(value);
+
+const subChildrenFilter = ([key, value]) => Array.isArray(value);
+
+const DEPTH_INC = 0;
+
 function View({ data }) {
 	const renderChildren = (children, depth) => {
 		const { __typename, id, ...rest } = children;
@@ -8,40 +18,32 @@ function View({ data }) {
 			throw new Error(`missing 'id' field on ${__typename}'`);
 		}
 
-		const scalars = Object.entries(rest).filter(
-			([_key, value]) =>
-				value !== null && typeof value !== "object" && !Array.isArray(value)
-		);
-
-		const nestedScalars = Object.entries(rest).filter(
-			([_key, value]) =>
-				value !== null && typeof value === "object" && !Array.isArray(value)
-		);
-
-		const subChildren = Object.entries(rest).filter(([key, value]) =>
-			Array.isArray(value)
-		);
-
 		const key = `${__typename}:${id}`;
 
+		const scalars = Object.entries(rest).filter(scalarFilter);
+		const nestedScalars = Object.entries(rest).filter(nestedScalarFilter);
+		const subChildren = Object.entries(rest).filter(subChildrenFilter);
+
 		return (
-			<div key={key}>
+			<div key={key} className="pt-1">
 				{scalars.map(([scalarKey, scalarKeyValue]) => (
 					<p key={`${key}:${scalarKey}`}>
-						{scalarKey}: {scalarKeyValue}
+						<span className="italic font-light">{scalarKey}</span>:{" "}
+						{scalarKeyValue}
 					</p>
 				))}
 				{nestedScalars.map(([nestedKey, { id, __typename, ...rest }]) => (
 					<div key={`${key}:${nestedKey}`}>
-						<p>{nestedKey}:</p>
+						<p className="italic font-light">{nestedKey}:</p>
 						{Object.entries(rest).map(
 							([nestedNestedKey, nestedNestedValue]) => (
 								<div
 									key={`${key}:${nestedKey}:${nestedNestedKey}`}
-									style={{ marginLeft: `${depth}rem` }}
+									className="ml-3"
 								>
 									<p>
-										{nestedNestedKey}: {nestedNestedValue}
+										<span className="italic font-light">{nestedNestedKey}</span>
+										: {nestedNestedValue}
 									</p>
 								</div>
 							)
@@ -49,11 +51,11 @@ function View({ data }) {
 					</div>
 				))}
 				{subChildren.map(([subChildKey, subChildKeyValue]) => (
-					<div key={`${key}:${subChildKey}`}>
-						<p>{subChildKey}:</p>
-						<div style={{ marginLeft: `${depth + 1}rem` }}>
+					<div key={`${key}:${subChildKey}`} className="ml-3">
+						<p className="italic font-light">{subChildKey}:</p>
+						<div className="ml-3">
 							{subChildKeyValue.map((subChild) =>
-								renderChildren(subChild, depth + 1)
+								renderChildren(subChild, depth + DEPTH_INC)
 							)}
 						</div>
 					</div>
@@ -69,7 +71,7 @@ function View({ data }) {
 	return Object.entries(data).map(([key, value]) => {
 		return (
 			<div key={key} className="">
-				<p className="text-xl mb-2">{key}</p>
+				<p className="text-xl">{key}</p>
 				{value.edges.map(({ node }) => renderChildren(node, 1))}
 			</div>
 		);
