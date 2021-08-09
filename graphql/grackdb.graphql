@@ -638,12 +638,22 @@ input CreateUserInput {
 	avatarUrl: String
 }
 
+input UpdateUserInput {
+    username: String
+    avatarUrl: String
+}
+
 input CreateDiscordAccountInput {
     discordId: String!
     username: String!
     discriminator: String!
     owner: Int
-    bot: Int
+}
+
+input UpdateDiscordAccountInput {
+    username: String
+    discriminator: String
+    owner: Int
 }
 
 input CreateDiscordBotInput {
@@ -652,13 +662,29 @@ input CreateDiscordBotInput {
     repository: Int
 }
 
+input UpdateDiscordBotInput {
+    account: Int
+    project: Int
+    repository: Int
+}
+
 input CreateGithubAccountInput {
     username: String!
     owner: Int!
 }
 
+input UpdateGithubAccountInput {
+    username: String
+    owner: Int
+}
+
 input CreateGithubOrganizationInput {
     name: String!
+    displayName: String
+}
+
+input UpdateGithubOrganizationInput {
+    name: String
     displayName: String
 }
 
@@ -668,10 +694,23 @@ input CreateGithubOrganizationMemberInput {
     organization: Int!
 }
 
+input UpdateGithubOrganizationMemberInput {
+    role: GithubOrganizationMemberRole
+    account: Int
+    organization: Int
+}
+
 input CreateProjectInput {
     name: String!
     description: String
     startDate: Time!
+    endDate: Time
+}
+
+input UpdateProjectInput {
+    name: String
+    description: String
+    startDate: Time
     endDate: Time
 }
 
@@ -681,10 +720,22 @@ input CreateProjectContributorInput {
     user: Int!
 }
 
+input UpdateProjectContributorInput {
+    role: ProjectContributorRole
+    project: Int
+    user: Int
+}
+
 input CreateProjectAssociationInput {
     type: ProjectAssociationType!
     parent: Int!
     child: Int!
+}
+
+input UpdateProjectAssociationInput {
+    type: ProjectAssociationType
+    parent: Int
+    child: Int
 }
 
 input CreateRepositoryInput {
@@ -695,9 +746,23 @@ input CreateRepositoryInput {
     githubOrganization: Int
 }
 
+input UpdateRepositoryInput {
+    name: String
+    description: String
+    project: Int
+    githubAccount: Int
+    githubOrganization: Int
+}
+
 input CreateSiteInput {
     url: String!
     project: Int!
+    repository: Int
+}
+
+input UpdateSiteInput {
+    url: String
+    project: Int
     repository: Int
 }
 
@@ -708,10 +773,23 @@ input CreateTechnologyInput {
     type: TechnologyType!
 }
 
+input UpdateTechnologyInput {
+    name: String
+    description: String
+    colour: String
+    type: TechnologyType
+}
+
 input CreateTechnologyAssociationInput {
     type: TechnologyAssociationType!
     parent: Int!
     child: Int!
+}
+
+input UpdateTechnologyAssociationInput {
+    type: TechnologyAssociationType
+    parent: Int
+    child: Int
 }
 
 input CreateProjectTechnologyInput {
@@ -720,26 +798,68 @@ input CreateProjectTechnologyInput {
     project: Int!
 }
 
+input UpdateProjectTechnologyInput {
+    type: ProjectTechnologyAssociationType
+    technology: Int
+    project: Int
+}
+
 input CreateRepositoryTechnologyInput {
     type: RepositoryTechnologyAssociationType!
     technology: Int!
     repository: Int!
 }
 
+input UpdateRepositoryTechnologyInput {
+    type: RepositoryTechnologyAssociationType
+    technology: Int
+    repository: Int
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
+    updateUser(id: ID!, input: UpdateUserInput!): User!
+    deleteUser(id: ID!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
+    updateDiscordAccount(id: ID!, input: UpdateDiscordAccountInput!): DiscordAccount!
+    deleteDiscordAccount(id: ID!): DiscordAccount!
     createDiscordBot(input: CreateDiscordBotInput!): DiscordBot!
+    updateDiscordBot(id: ID!, input: UpdateDiscordBotInput!): DiscordBot!
+    deleteDiscordBot(id: ID!): DiscordBot!
     createGithubAccount(input: CreateGithubAccountInput!): GithubAccount!
+    updateGithubAccount(id: ID!, input: UpdateGithubAccountInput!): GithubAccount!
+    deleteGithubAccount(id: ID!): GithubAccount!
     createGithubOrganization(input: CreateGithubOrganizationInput!): GithubOrganization!
+    updateGithubOrganization(id: ID!, input: UpdateGithubOrganizationInput!): GithubOrganization!
+    deleteGithubOrganization(id: ID!): GithubOrganization!
     createGithubOrganizationMember(input: CreateGithubOrganizationMemberInput!): GithubOrganizationMember!
+    updateGithubOrganizationMember(id: ID!, input: UpdateGithubOrganizationMemberInput!): GithubOrganizationMember!
+    deleteGithubOrganizationMember(id: ID!): GithubOrganizationMember!
     createProject(input: CreateProjectInput!): Project!
+    updateProject(id: ID!, input: UpdateProjectInput!): Project!
+    deleteProject(id: ID!): Project!
     createProjectContributor(input: CreateProjectContributorInput!): ProjectContributor!
+    updateProjectContributor(id: ID!, input: UpdateProjectContributorInput!): ProjectContributor!
+    deleteProjectContributor(id: ID!): ProjectContributor!
     createProjectAssociation(input: CreateProjectAssociationInput!): ProjectAssociation!
+    updateProjectAssociation(id: ID!, input: UpdateProjectAssociationInput!): ProjectAssociation!
+    deleteProjectAssociation(id: ID!): ProjectAssociation!
     createRepository(input: CreateRepositoryInput!): Repository!
+    updateRepository(id: ID!, input: UpdateRepositoryInput!): Repository!
+    deleteRepository(id: ID!): Repository!
     createSite(input: CreateSiteInput!): Site!
+    updateSite(id: ID!, input: UpdateSiteInput!): Site!
+    deleteSite(id: ID!): Site!
     createTechnology(input: CreateTechnologyInput!): Technology!
+    updateTechnology(id: ID!, input: UpdateTechnologyInput!): Technology!
+    deleteTechnology(id: ID!): Technology!
     createTechnologyAssociation(input: CreateTechnologyAssociationInput!): TechnologyAssociation!
+    updateTechnologyAssociation(id: ID!, input: UpdateTechnologyAssociationInput!): TechnologyAssociation!
+    deleteTechnologyAssociation(id: ID!): TechnologyAssociation!
     createProjectTechnology(input: CreateProjectTechnologyInput!): ProjectTechnology!
+    updateProjectTechnology(id: ID!, input: UpdateProjectTechnologyInput!): ProjectTechnology!
+    deleteProjectTechnology(id: ID!): ProjectTechnology!
     createRepositoryTechnology(input: CreateRepositoryTechnologyInput!): RepositoryTechnology!
+    updateRepositoryTechnology(id: ID!, input: UpdateRepositoryTechnologyInput!): RepositoryTechnology!
+    deleteRepositoryTechnology(id: ID!): RepositoryTechnology!
 }

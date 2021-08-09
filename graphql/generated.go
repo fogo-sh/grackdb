@@ -167,6 +167,36 @@ type ComplexityRoot struct {
 		CreateTechnology               func(childComplexity int, input ent.CreateTechnologyInput) int
 		CreateTechnologyAssociation    func(childComplexity int, input ent.CreateTechnologyAssociationInput) int
 		CreateUser                     func(childComplexity int, input ent.CreateUserInput) int
+		DeleteDiscordAccount           func(childComplexity int, id int) int
+		DeleteDiscordBot               func(childComplexity int, id int) int
+		DeleteGithubAccount            func(childComplexity int, id int) int
+		DeleteGithubOrganization       func(childComplexity int, id int) int
+		DeleteGithubOrganizationMember func(childComplexity int, id int) int
+		DeleteProject                  func(childComplexity int, id int) int
+		DeleteProjectAssociation       func(childComplexity int, id int) int
+		DeleteProjectContributor       func(childComplexity int, id int) int
+		DeleteProjectTechnology        func(childComplexity int, id int) int
+		DeleteRepository               func(childComplexity int, id int) int
+		DeleteRepositoryTechnology     func(childComplexity int, id int) int
+		DeleteSite                     func(childComplexity int, id int) int
+		DeleteTechnology               func(childComplexity int, id int) int
+		DeleteTechnologyAssociation    func(childComplexity int, id int) int
+		DeleteUser                     func(childComplexity int, id int) int
+		UpdateDiscordAccount           func(childComplexity int, id int, input ent.UpdateDiscordAccountInput) int
+		UpdateDiscordBot               func(childComplexity int, id int, input ent.UpdateDiscordBotInput) int
+		UpdateGithubAccount            func(childComplexity int, id int, input ent.UpdateGithubAccountInput) int
+		UpdateGithubOrganization       func(childComplexity int, id int, input ent.UpdateGithubOrganizationInput) int
+		UpdateGithubOrganizationMember func(childComplexity int, id int, input ent.UpdateGithubOrganizationMemberInput) int
+		UpdateProject                  func(childComplexity int, id int, input ent.UpdateProjectInput) int
+		UpdateProjectAssociation       func(childComplexity int, id int, input ent.UpdateProjectAssociationInput) int
+		UpdateProjectContributor       func(childComplexity int, id int, input ent.UpdateProjectContributorInput) int
+		UpdateProjectTechnology        func(childComplexity int, id int, input ent.UpdateProjectTechnologyInput) int
+		UpdateRepository               func(childComplexity int, id int, input ent.UpdateRepositoryInput) int
+		UpdateRepositoryTechnology     func(childComplexity int, id int, input ent.UpdateRepositoryTechnologyInput) int
+		UpdateSite                     func(childComplexity int, id int, input ent.UpdateSiteInput) int
+		UpdateTechnology               func(childComplexity int, id int, input ent.UpdateTechnologyInput) int
+		UpdateTechnologyAssociation    func(childComplexity int, id int, input ent.UpdateTechnologyAssociationInput) int
+		UpdateUser                     func(childComplexity int, id int, input ent.UpdateUserInput) int
 	}
 
 	PageInfo struct {
@@ -398,20 +428,50 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error)
+	UpdateUser(ctx context.Context, id int, input ent.UpdateUserInput) (*ent.User, error)
+	DeleteUser(ctx context.Context, id int) (*ent.User, error)
 	CreateDiscordAccount(ctx context.Context, input ent.CreateDiscordAccountInput) (*ent.DiscordAccount, error)
+	UpdateDiscordAccount(ctx context.Context, id int, input ent.UpdateDiscordAccountInput) (*ent.DiscordAccount, error)
+	DeleteDiscordAccount(ctx context.Context, id int) (*ent.DiscordAccount, error)
 	CreateDiscordBot(ctx context.Context, input ent.CreateDiscordBotInput) (*ent.DiscordBot, error)
+	UpdateDiscordBot(ctx context.Context, id int, input ent.UpdateDiscordBotInput) (*ent.DiscordBot, error)
+	DeleteDiscordBot(ctx context.Context, id int) (*ent.DiscordBot, error)
 	CreateGithubAccount(ctx context.Context, input ent.CreateGithubAccountInput) (*ent.GithubAccount, error)
+	UpdateGithubAccount(ctx context.Context, id int, input ent.UpdateGithubAccountInput) (*ent.GithubAccount, error)
+	DeleteGithubAccount(ctx context.Context, id int) (*ent.GithubAccount, error)
 	CreateGithubOrganization(ctx context.Context, input ent.CreateGithubOrganizationInput) (*ent.GithubOrganization, error)
+	UpdateGithubOrganization(ctx context.Context, id int, input ent.UpdateGithubOrganizationInput) (*ent.GithubOrganization, error)
+	DeleteGithubOrganization(ctx context.Context, id int) (*ent.GithubOrganization, error)
 	CreateGithubOrganizationMember(ctx context.Context, input ent.CreateGithubOrganizationMemberInput) (*ent.GithubOrganizationMember, error)
+	UpdateGithubOrganizationMember(ctx context.Context, id int, input ent.UpdateGithubOrganizationMemberInput) (*ent.GithubOrganizationMember, error)
+	DeleteGithubOrganizationMember(ctx context.Context, id int) (*ent.GithubOrganizationMember, error)
 	CreateProject(ctx context.Context, input ent.CreateProjectInput) (*ent.Project, error)
+	UpdateProject(ctx context.Context, id int, input ent.UpdateProjectInput) (*ent.Project, error)
+	DeleteProject(ctx context.Context, id int) (*ent.Project, error)
 	CreateProjectContributor(ctx context.Context, input ent.CreateProjectContributorInput) (*ent.ProjectContributor, error)
+	UpdateProjectContributor(ctx context.Context, id int, input ent.UpdateProjectContributorInput) (*ent.ProjectContributor, error)
+	DeleteProjectContributor(ctx context.Context, id int) (*ent.ProjectContributor, error)
 	CreateProjectAssociation(ctx context.Context, input ent.CreateProjectAssociationInput) (*ent.ProjectAssociation, error)
+	UpdateProjectAssociation(ctx context.Context, id int, input ent.UpdateProjectAssociationInput) (*ent.ProjectAssociation, error)
+	DeleteProjectAssociation(ctx context.Context, id int) (*ent.ProjectAssociation, error)
 	CreateRepository(ctx context.Context, input ent.CreateRepositoryInput) (*ent.Repository, error)
+	UpdateRepository(ctx context.Context, id int, input ent.UpdateRepositoryInput) (*ent.Repository, error)
+	DeleteRepository(ctx context.Context, id int) (*ent.Repository, error)
 	CreateSite(ctx context.Context, input ent.CreateSiteInput) (*ent.Site, error)
+	UpdateSite(ctx context.Context, id int, input ent.UpdateSiteInput) (*ent.Site, error)
+	DeleteSite(ctx context.Context, id int) (*ent.Site, error)
 	CreateTechnology(ctx context.Context, input ent.CreateTechnologyInput) (*ent.Technology, error)
+	UpdateTechnology(ctx context.Context, id int, input ent.UpdateTechnologyInput) (*ent.Technology, error)
+	DeleteTechnology(ctx context.Context, id int) (*ent.Technology, error)
 	CreateTechnologyAssociation(ctx context.Context, input ent.CreateTechnologyAssociationInput) (*ent.TechnologyAssociation, error)
+	UpdateTechnologyAssociation(ctx context.Context, id int, input ent.UpdateTechnologyAssociationInput) (*ent.TechnologyAssociation, error)
+	DeleteTechnologyAssociation(ctx context.Context, id int) (*ent.TechnologyAssociation, error)
 	CreateProjectTechnology(ctx context.Context, input ent.CreateProjectTechnologyInput) (*ent.ProjectTechnology, error)
+	UpdateProjectTechnology(ctx context.Context, id int, input ent.UpdateProjectTechnologyInput) (*ent.ProjectTechnology, error)
+	DeleteProjectTechnology(ctx context.Context, id int) (*ent.ProjectTechnology, error)
 	CreateRepositoryTechnology(ctx context.Context, input ent.CreateRepositoryTechnologyInput) (*ent.RepositoryTechnology, error)
+	UpdateRepositoryTechnology(ctx context.Context, id int, input ent.UpdateRepositoryTechnologyInput) (*ent.RepositoryTechnology, error)
+	DeleteRepositoryTechnology(ctx context.Context, id int) (*ent.RepositoryTechnology, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error)
@@ -984,6 +1044,366 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(ent.CreateUserInput)), true
+
+	case "Mutation.deleteDiscordAccount":
+		if e.complexity.Mutation.DeleteDiscordAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteDiscordAccount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteDiscordAccount(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteDiscordBot":
+		if e.complexity.Mutation.DeleteDiscordBot == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteDiscordBot_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteDiscordBot(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteGithubAccount":
+		if e.complexity.Mutation.DeleteGithubAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteGithubAccount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteGithubAccount(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteGithubOrganization":
+		if e.complexity.Mutation.DeleteGithubOrganization == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteGithubOrganization_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteGithubOrganization(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteGithubOrganizationMember":
+		if e.complexity.Mutation.DeleteGithubOrganizationMember == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteGithubOrganizationMember_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteGithubOrganizationMember(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteProject":
+		if e.complexity.Mutation.DeleteProject == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteProject_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteProject(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteProjectAssociation":
+		if e.complexity.Mutation.DeleteProjectAssociation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteProjectAssociation_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteProjectAssociation(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteProjectContributor":
+		if e.complexity.Mutation.DeleteProjectContributor == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteProjectContributor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteProjectContributor(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteProjectTechnology":
+		if e.complexity.Mutation.DeleteProjectTechnology == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteProjectTechnology_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteProjectTechnology(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteRepository":
+		if e.complexity.Mutation.DeleteRepository == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteRepository_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteRepository(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteRepositoryTechnology":
+		if e.complexity.Mutation.DeleteRepositoryTechnology == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteRepositoryTechnology_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteRepositoryTechnology(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteSite":
+		if e.complexity.Mutation.DeleteSite == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteSite_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteSite(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteTechnology":
+		if e.complexity.Mutation.DeleteTechnology == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteTechnology_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteTechnology(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteTechnologyAssociation":
+		if e.complexity.Mutation.DeleteTechnologyAssociation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteTechnologyAssociation_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteTechnologyAssociation(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteUser":
+		if e.complexity.Mutation.DeleteUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteUser(childComplexity, args["id"].(int)), true
+
+	case "Mutation.updateDiscordAccount":
+		if e.complexity.Mutation.UpdateDiscordAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateDiscordAccount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateDiscordAccount(childComplexity, args["id"].(int), args["input"].(ent.UpdateDiscordAccountInput)), true
+
+	case "Mutation.updateDiscordBot":
+		if e.complexity.Mutation.UpdateDiscordBot == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateDiscordBot_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateDiscordBot(childComplexity, args["id"].(int), args["input"].(ent.UpdateDiscordBotInput)), true
+
+	case "Mutation.updateGithubAccount":
+		if e.complexity.Mutation.UpdateGithubAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateGithubAccount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateGithubAccount(childComplexity, args["id"].(int), args["input"].(ent.UpdateGithubAccountInput)), true
+
+	case "Mutation.updateGithubOrganization":
+		if e.complexity.Mutation.UpdateGithubOrganization == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateGithubOrganization_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateGithubOrganization(childComplexity, args["id"].(int), args["input"].(ent.UpdateGithubOrganizationInput)), true
+
+	case "Mutation.updateGithubOrganizationMember":
+		if e.complexity.Mutation.UpdateGithubOrganizationMember == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateGithubOrganizationMember_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateGithubOrganizationMember(childComplexity, args["id"].(int), args["input"].(ent.UpdateGithubOrganizationMemberInput)), true
+
+	case "Mutation.updateProject":
+		if e.complexity.Mutation.UpdateProject == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateProject_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateProject(childComplexity, args["id"].(int), args["input"].(ent.UpdateProjectInput)), true
+
+	case "Mutation.updateProjectAssociation":
+		if e.complexity.Mutation.UpdateProjectAssociation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateProjectAssociation_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateProjectAssociation(childComplexity, args["id"].(int), args["input"].(ent.UpdateProjectAssociationInput)), true
+
+	case "Mutation.updateProjectContributor":
+		if e.complexity.Mutation.UpdateProjectContributor == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateProjectContributor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateProjectContributor(childComplexity, args["id"].(int), args["input"].(ent.UpdateProjectContributorInput)), true
+
+	case "Mutation.updateProjectTechnology":
+		if e.complexity.Mutation.UpdateProjectTechnology == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateProjectTechnology_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateProjectTechnology(childComplexity, args["id"].(int), args["input"].(ent.UpdateProjectTechnologyInput)), true
+
+	case "Mutation.updateRepository":
+		if e.complexity.Mutation.UpdateRepository == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateRepository_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateRepository(childComplexity, args["id"].(int), args["input"].(ent.UpdateRepositoryInput)), true
+
+	case "Mutation.updateRepositoryTechnology":
+		if e.complexity.Mutation.UpdateRepositoryTechnology == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateRepositoryTechnology_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateRepositoryTechnology(childComplexity, args["id"].(int), args["input"].(ent.UpdateRepositoryTechnologyInput)), true
+
+	case "Mutation.updateSite":
+		if e.complexity.Mutation.UpdateSite == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateSite_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateSite(childComplexity, args["id"].(int), args["input"].(ent.UpdateSiteInput)), true
+
+	case "Mutation.updateTechnology":
+		if e.complexity.Mutation.UpdateTechnology == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTechnology_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTechnology(childComplexity, args["id"].(int), args["input"].(ent.UpdateTechnologyInput)), true
+
+	case "Mutation.updateTechnologyAssociation":
+		if e.complexity.Mutation.UpdateTechnologyAssociation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTechnologyAssociation_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTechnologyAssociation(childComplexity, args["id"].(int), args["input"].(ent.UpdateTechnologyAssociationInput)), true
+
+	case "Mutation.updateUser":
+		if e.complexity.Mutation.UpdateUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(int), args["input"].(ent.UpdateUserInput)), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -2674,12 +3094,22 @@ input CreateUserInput {
 	avatarUrl: String
 }
 
+input UpdateUserInput {
+    username: String
+    avatarUrl: String
+}
+
 input CreateDiscordAccountInput {
     discordId: String!
     username: String!
     discriminator: String!
     owner: Int
-    bot: Int
+}
+
+input UpdateDiscordAccountInput {
+    username: String
+    discriminator: String
+    owner: Int
 }
 
 input CreateDiscordBotInput {
@@ -2688,13 +3118,29 @@ input CreateDiscordBotInput {
     repository: Int
 }
 
+input UpdateDiscordBotInput {
+    account: Int
+    project: Int
+    repository: Int
+}
+
 input CreateGithubAccountInput {
     username: String!
     owner: Int!
 }
 
+input UpdateGithubAccountInput {
+    username: String
+    owner: Int
+}
+
 input CreateGithubOrganizationInput {
     name: String!
+    displayName: String
+}
+
+input UpdateGithubOrganizationInput {
+    name: String
     displayName: String
 }
 
@@ -2704,10 +3150,23 @@ input CreateGithubOrganizationMemberInput {
     organization: Int!
 }
 
+input UpdateGithubOrganizationMemberInput {
+    role: GithubOrganizationMemberRole
+    account: Int
+    organization: Int
+}
+
 input CreateProjectInput {
     name: String!
     description: String
     startDate: Time!
+    endDate: Time
+}
+
+input UpdateProjectInput {
+    name: String
+    description: String
+    startDate: Time
     endDate: Time
 }
 
@@ -2717,10 +3176,22 @@ input CreateProjectContributorInput {
     user: Int!
 }
 
+input UpdateProjectContributorInput {
+    role: ProjectContributorRole
+    project: Int
+    user: Int
+}
+
 input CreateProjectAssociationInput {
     type: ProjectAssociationType!
     parent: Int!
     child: Int!
+}
+
+input UpdateProjectAssociationInput {
+    type: ProjectAssociationType
+    parent: Int
+    child: Int
 }
 
 input CreateRepositoryInput {
@@ -2731,9 +3202,23 @@ input CreateRepositoryInput {
     githubOrganization: Int
 }
 
+input UpdateRepositoryInput {
+    name: String
+    description: String
+    project: Int
+    githubAccount: Int
+    githubOrganization: Int
+}
+
 input CreateSiteInput {
     url: String!
     project: Int!
+    repository: Int
+}
+
+input UpdateSiteInput {
+    url: String
+    project: Int
     repository: Int
 }
 
@@ -2744,10 +3229,23 @@ input CreateTechnologyInput {
     type: TechnologyType!
 }
 
+input UpdateTechnologyInput {
+    name: String
+    description: String
+    colour: String
+    type: TechnologyType
+}
+
 input CreateTechnologyAssociationInput {
     type: TechnologyAssociationType!
     parent: Int!
     child: Int!
+}
+
+input UpdateTechnologyAssociationInput {
+    type: TechnologyAssociationType
+    parent: Int
+    child: Int
 }
 
 input CreateProjectTechnologyInput {
@@ -2756,28 +3254,70 @@ input CreateProjectTechnologyInput {
     project: Int!
 }
 
+input UpdateProjectTechnologyInput {
+    type: ProjectTechnologyAssociationType
+    technology: Int
+    project: Int
+}
+
 input CreateRepositoryTechnologyInput {
     type: RepositoryTechnologyAssociationType!
     technology: Int!
     repository: Int!
 }
 
+input UpdateRepositoryTechnologyInput {
+    type: RepositoryTechnologyAssociationType
+    technology: Int
+    repository: Int
+}
+
 type Mutation {
     createUser(input: CreateUserInput!): User!
+    updateUser(id: ID!, input: UpdateUserInput!): User!
+    deleteUser(id: ID!): User!
     createDiscordAccount(input: CreateDiscordAccountInput!): DiscordAccount!
+    updateDiscordAccount(id: ID!, input: UpdateDiscordAccountInput!): DiscordAccount!
+    deleteDiscordAccount(id: ID!): DiscordAccount!
     createDiscordBot(input: CreateDiscordBotInput!): DiscordBot!
+    updateDiscordBot(id: ID!, input: UpdateDiscordBotInput!): DiscordBot!
+    deleteDiscordBot(id: ID!): DiscordBot!
     createGithubAccount(input: CreateGithubAccountInput!): GithubAccount!
+    updateGithubAccount(id: ID!, input: UpdateGithubAccountInput!): GithubAccount!
+    deleteGithubAccount(id: ID!): GithubAccount!
     createGithubOrganization(input: CreateGithubOrganizationInput!): GithubOrganization!
+    updateGithubOrganization(id: ID!, input: UpdateGithubOrganizationInput!): GithubOrganization!
+    deleteGithubOrganization(id: ID!): GithubOrganization!
     createGithubOrganizationMember(input: CreateGithubOrganizationMemberInput!): GithubOrganizationMember!
+    updateGithubOrganizationMember(id: ID!, input: UpdateGithubOrganizationMemberInput!): GithubOrganizationMember!
+    deleteGithubOrganizationMember(id: ID!): GithubOrganizationMember!
     createProject(input: CreateProjectInput!): Project!
+    updateProject(id: ID!, input: UpdateProjectInput!): Project!
+    deleteProject(id: ID!): Project!
     createProjectContributor(input: CreateProjectContributorInput!): ProjectContributor!
+    updateProjectContributor(id: ID!, input: UpdateProjectContributorInput!): ProjectContributor!
+    deleteProjectContributor(id: ID!): ProjectContributor!
     createProjectAssociation(input: CreateProjectAssociationInput!): ProjectAssociation!
+    updateProjectAssociation(id: ID!, input: UpdateProjectAssociationInput!): ProjectAssociation!
+    deleteProjectAssociation(id: ID!): ProjectAssociation!
     createRepository(input: CreateRepositoryInput!): Repository!
+    updateRepository(id: ID!, input: UpdateRepositoryInput!): Repository!
+    deleteRepository(id: ID!): Repository!
     createSite(input: CreateSiteInput!): Site!
+    updateSite(id: ID!, input: UpdateSiteInput!): Site!
+    deleteSite(id: ID!): Site!
     createTechnology(input: CreateTechnologyInput!): Technology!
+    updateTechnology(id: ID!, input: UpdateTechnologyInput!): Technology!
+    deleteTechnology(id: ID!): Technology!
     createTechnologyAssociation(input: CreateTechnologyAssociationInput!): TechnologyAssociation!
+    updateTechnologyAssociation(id: ID!, input: UpdateTechnologyAssociationInput!): TechnologyAssociation!
+    deleteTechnologyAssociation(id: ID!): TechnologyAssociation!
     createProjectTechnology(input: CreateProjectTechnologyInput!): ProjectTechnology!
+    updateProjectTechnology(id: ID!, input: UpdateProjectTechnologyInput!): ProjectTechnology!
+    deleteProjectTechnology(id: ID!): ProjectTechnology!
     createRepositoryTechnology(input: CreateRepositoryTechnologyInput!): RepositoryTechnology!
+    updateRepositoryTechnology(id: ID!, input: UpdateRepositoryTechnologyInput!): RepositoryTechnology!
+    deleteRepositoryTechnology(id: ID!): RepositoryTechnology!
 }
 `, BuiltIn: false},
 	{Name: "ent.graphql", Input: `"""
@@ -3801,6 +4341,591 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteDiscordAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteDiscordBot_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteGithubAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteGithubOrganizationMember_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteGithubOrganization_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteProjectAssociation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteProjectContributor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteProjectTechnology_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteProject_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteRepositoryTechnology_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteRepository_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteSite_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteTechnologyAssociation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteTechnology_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateDiscordAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateDiscordAccountInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateDiscordAccountInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateDiscordAccountInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateDiscordBot_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateDiscordBotInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateDiscordBotInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateDiscordBotInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateGithubAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateGithubAccountInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateGithubAccountInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateGithubAccountInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateGithubOrganizationMember_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateGithubOrganizationMemberInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateGithubOrganizationMemberInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateGithubOrganizationMemberInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateGithubOrganization_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateGithubOrganizationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateGithubOrganizationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateGithubOrganizationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateProjectAssociation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateProjectAssociationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateProjectAssociationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateProjectAssociationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateProjectContributor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateProjectContributorInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateProjectContributorInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateProjectContributorInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateProjectTechnology_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateProjectTechnologyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateProjectTechnologyInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateProjectTechnologyInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateProject_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateProjectInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateProjectInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateProjectInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateRepositoryTechnology_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateRepositoryTechnologyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateRepositoryTechnologyInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateRepositoryTechnologyInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateRepository_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateRepositoryInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateRepositoryInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateRepositoryInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateSite_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateSiteInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateSiteInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateSiteInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateTechnologyAssociation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateTechnologyAssociationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateTechnologyAssociationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateTechnologyAssociationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateTechnology_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateTechnologyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateTechnologyInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateTechnologyInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateUserInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateUserInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateUserInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -6521,6 +7646,90 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	return ec.marshalNUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateUser_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateUser(rctx, args["id"].(int), args["input"].(ent.UpdateUserInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteUser_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteUser(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createDiscordAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6547,6 +7756,90 @@ func (ec *executionContext) _Mutation_createDiscordAccount(ctx context.Context, 
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateDiscordAccount(rctx, args["input"].(ent.CreateDiscordAccountInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DiscordAccount)
+	fc.Result = res
+	return ec.marshalNDiscordAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateDiscordAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateDiscordAccount_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateDiscordAccount(rctx, args["id"].(int), args["input"].(ent.UpdateDiscordAccountInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DiscordAccount)
+	fc.Result = res
+	return ec.marshalNDiscordAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteDiscordAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteDiscordAccount_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteDiscordAccount(rctx, args["id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6605,6 +7898,90 @@ func (ec *executionContext) _Mutation_createDiscordBot(ctx context.Context, fiel
 	return ec.marshalNDiscordBot2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBot(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateDiscordBot(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateDiscordBot_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateDiscordBot(rctx, args["id"].(int), args["input"].(ent.UpdateDiscordBotInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DiscordBot)
+	fc.Result = res
+	return ec.marshalNDiscordBot2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBot(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteDiscordBot(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteDiscordBot_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteDiscordBot(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DiscordBot)
+	fc.Result = res
+	return ec.marshalNDiscordBot2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐDiscordBot(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createGithubAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6631,6 +8008,90 @@ func (ec *executionContext) _Mutation_createGithubAccount(ctx context.Context, f
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateGithubAccount(rctx, args["input"].(ent.CreateGithubAccountInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubAccount)
+	fc.Result = res
+	return ec.marshalNGithubAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateGithubAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateGithubAccount_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateGithubAccount(rctx, args["id"].(int), args["input"].(ent.UpdateGithubAccountInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubAccount)
+	fc.Result = res
+	return ec.marshalNGithubAccount2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteGithubAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteGithubAccount_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteGithubAccount(rctx, args["id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6689,6 +8150,90 @@ func (ec *executionContext) _Mutation_createGithubOrganization(ctx context.Conte
 	return ec.marshalNGithubOrganization2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganization(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateGithubOrganization(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateGithubOrganization_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateGithubOrganization(rctx, args["id"].(int), args["input"].(ent.UpdateGithubOrganizationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubOrganization)
+	fc.Result = res
+	return ec.marshalNGithubOrganization2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganization(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteGithubOrganization(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteGithubOrganization_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteGithubOrganization(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubOrganization)
+	fc.Result = res
+	return ec.marshalNGithubOrganization2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganization(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createGithubOrganizationMember(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6715,6 +8260,90 @@ func (ec *executionContext) _Mutation_createGithubOrganizationMember(ctx context
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateGithubOrganizationMember(rctx, args["input"].(ent.CreateGithubOrganizationMemberInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubOrganizationMember)
+	fc.Result = res
+	return ec.marshalNGithubOrganizationMember2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationMember(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateGithubOrganizationMember(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateGithubOrganizationMember_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateGithubOrganizationMember(rctx, args["id"].(int), args["input"].(ent.UpdateGithubOrganizationMemberInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.GithubOrganizationMember)
+	fc.Result = res
+	return ec.marshalNGithubOrganizationMember2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐGithubOrganizationMember(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteGithubOrganizationMember(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteGithubOrganizationMember_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteGithubOrganizationMember(rctx, args["id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6773,6 +8402,90 @@ func (ec *executionContext) _Mutation_createProject(ctx context.Context, field g
 	return ec.marshalNProject2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProject(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateProject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateProject_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateProject(rctx, args["id"].(int), args["input"].(ent.UpdateProjectInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Project)
+	fc.Result = res
+	return ec.marshalNProject2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteProject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteProject_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteProject(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Project)
+	fc.Result = res
+	return ec.marshalNProject2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProject(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createProjectContributor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6799,6 +8512,90 @@ func (ec *executionContext) _Mutation_createProjectContributor(ctx context.Conte
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateProjectContributor(rctx, args["input"].(ent.CreateProjectContributorInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ProjectContributor)
+	fc.Result = res
+	return ec.marshalNProjectContributor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectContributor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateProjectContributor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateProjectContributor_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateProjectContributor(rctx, args["id"].(int), args["input"].(ent.UpdateProjectContributorInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ProjectContributor)
+	fc.Result = res
+	return ec.marshalNProjectContributor2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectContributor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteProjectContributor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteProjectContributor_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteProjectContributor(rctx, args["id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6857,6 +8654,90 @@ func (ec *executionContext) _Mutation_createProjectAssociation(ctx context.Conte
 	return ec.marshalNProjectAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociation(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateProjectAssociation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateProjectAssociation_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateProjectAssociation(rctx, args["id"].(int), args["input"].(ent.UpdateProjectAssociationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ProjectAssociation)
+	fc.Result = res
+	return ec.marshalNProjectAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteProjectAssociation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteProjectAssociation_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteProjectAssociation(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ProjectAssociation)
+	fc.Result = res
+	return ec.marshalNProjectAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectAssociation(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createRepository(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6883,6 +8764,90 @@ func (ec *executionContext) _Mutation_createRepository(ctx context.Context, fiel
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateRepository(rctx, args["input"].(ent.CreateRepositoryInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Repository)
+	fc.Result = res
+	return ec.marshalNRepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateRepository(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateRepository_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateRepository(rctx, args["id"].(int), args["input"].(ent.UpdateRepositoryInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Repository)
+	fc.Result = res
+	return ec.marshalNRepository2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepository(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteRepository(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteRepository_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteRepository(rctx, args["id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6941,6 +8906,90 @@ func (ec *executionContext) _Mutation_createSite(ctx context.Context, field grap
 	return ec.marshalNSite2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSite(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateSite(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateSite_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateSite(rctx, args["id"].(int), args["input"].(ent.UpdateSiteInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Site)
+	fc.Result = res
+	return ec.marshalNSite2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSite(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteSite(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteSite_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteSite(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Site)
+	fc.Result = res
+	return ec.marshalNSite2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐSite(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createTechnology(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6967,6 +9016,90 @@ func (ec *executionContext) _Mutation_createTechnology(ctx context.Context, fiel
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateTechnology(rctx, args["input"].(ent.CreateTechnologyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Technology)
+	fc.Result = res
+	return ec.marshalNTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐTechnology(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateTechnology(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateTechnology_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTechnology(rctx, args["id"].(int), args["input"].(ent.UpdateTechnologyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Technology)
+	fc.Result = res
+	return ec.marshalNTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐTechnology(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteTechnology(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteTechnology_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteTechnology(rctx, args["id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7025,6 +9158,90 @@ func (ec *executionContext) _Mutation_createTechnologyAssociation(ctx context.Co
 	return ec.marshalNTechnologyAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐTechnologyAssociation(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateTechnologyAssociation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateTechnologyAssociation_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTechnologyAssociation(rctx, args["id"].(int), args["input"].(ent.UpdateTechnologyAssociationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.TechnologyAssociation)
+	fc.Result = res
+	return ec.marshalNTechnologyAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐTechnologyAssociation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteTechnologyAssociation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteTechnologyAssociation_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteTechnologyAssociation(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.TechnologyAssociation)
+	fc.Result = res
+	return ec.marshalNTechnologyAssociation2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐTechnologyAssociation(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createProjectTechnology(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7067,6 +9284,90 @@ func (ec *executionContext) _Mutation_createProjectTechnology(ctx context.Contex
 	return ec.marshalNProjectTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectTechnology(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateProjectTechnology(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateProjectTechnology_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateProjectTechnology(rctx, args["id"].(int), args["input"].(ent.UpdateProjectTechnologyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ProjectTechnology)
+	fc.Result = res
+	return ec.marshalNProjectTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectTechnology(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteProjectTechnology(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteProjectTechnology_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteProjectTechnology(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ProjectTechnology)
+	fc.Result = res
+	return ec.marshalNProjectTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐProjectTechnology(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createRepositoryTechnology(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7093,6 +9394,90 @@ func (ec *executionContext) _Mutation_createRepositoryTechnology(ctx context.Con
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateRepositoryTechnology(rctx, args["input"].(ent.CreateRepositoryTechnologyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.RepositoryTechnology)
+	fc.Result = res
+	return ec.marshalNRepositoryTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnology(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateRepositoryTechnology(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateRepositoryTechnology_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateRepositoryTechnology(rctx, args["id"].(int), args["input"].(ent.UpdateRepositoryTechnologyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.RepositoryTechnology)
+	fc.Result = res
+	return ec.marshalNRepositoryTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnology(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteRepositoryTechnology(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteRepositoryTechnology_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteRepositoryTechnology(rctx, args["id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12768,14 +15153,6 @@ func (ec *executionContext) unmarshalInputCreateDiscordAccountInput(ctx context.
 			if err != nil {
 				return it, err
 			}
-		case "bot":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bot"))
-			it.Bot, err = ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		}
 	}
 
@@ -17618,6 +19995,554 @@ func (ec *executionContext) unmarshalInputTechnologyWhereInput(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateDiscordAccountInput(ctx context.Context, obj interface{}) (ent.UpdateDiscordAccountInput, error) {
+	var it ent.UpdateDiscordAccountInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "username":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			it.Username, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "discriminator":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("discriminator"))
+			it.Discriminator, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "owner":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("owner"))
+			it.Owner, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateDiscordBotInput(ctx context.Context, obj interface{}) (ent.UpdateDiscordBotInput, error) {
+	var it ent.UpdateDiscordBotInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "account":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("account"))
+			it.Account, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "project":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("project"))
+			it.Project, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "repository":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("repository"))
+			it.Repository, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateGithubAccountInput(ctx context.Context, obj interface{}) (ent.UpdateGithubAccountInput, error) {
+	var it ent.UpdateGithubAccountInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "username":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			it.Username, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "owner":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("owner"))
+			it.Owner, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateGithubOrganizationInput(ctx context.Context, obj interface{}) (ent.UpdateGithubOrganizationInput, error) {
+	var it ent.UpdateGithubOrganizationInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "displayName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
+			it.DisplayName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateGithubOrganizationMemberInput(ctx context.Context, obj interface{}) (ent.UpdateGithubOrganizationMemberInput, error) {
+	var it ent.UpdateGithubOrganizationMemberInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "role":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			it.Role, err = ec.unmarshalOGithubOrganizationMemberRole2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋgithuborganizationmemberᚐRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "account":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("account"))
+			it.Account, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "organization":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("organization"))
+			it.Organization, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateProjectAssociationInput(ctx context.Context, obj interface{}) (ent.UpdateProjectAssociationInput, error) {
+	var it ent.UpdateProjectAssociationInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalOProjectAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectassociationᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "parent":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent"))
+			it.Parent, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "child":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("child"))
+			it.Child, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateProjectContributorInput(ctx context.Context, obj interface{}) (ent.UpdateProjectContributorInput, error) {
+	var it ent.UpdateProjectContributorInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "role":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			it.Role, err = ec.unmarshalOProjectContributorRole2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojectcontributorᚐRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "project":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("project"))
+			it.Project, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user"))
+			it.User, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateProjectInput(ctx context.Context, obj interface{}) (ent.UpdateProjectInput, error) {
+	var it ent.UpdateProjectInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "startDate":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startDate"))
+			it.StartDate, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "endDate":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("endDate"))
+			it.EndDate, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateProjectTechnologyInput(ctx context.Context, obj interface{}) (ent.UpdateProjectTechnologyInput, error) {
+	var it ent.UpdateProjectTechnologyInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalOProjectTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋprojecttechnologyᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "technology":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("technology"))
+			it.Technology, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "project":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("project"))
+			it.Project, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateRepositoryInput(ctx context.Context, obj interface{}) (ent.UpdateRepositoryInput, error) {
+	var it ent.UpdateRepositoryInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "project":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("project"))
+			it.Project, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "githubAccount":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("githubAccount"))
+			it.GithubAccount, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "githubOrganization":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("githubOrganization"))
+			it.GithubOrganization, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateRepositoryTechnologyInput(ctx context.Context, obj interface{}) (ent.UpdateRepositoryTechnologyInput, error) {
+	var it ent.UpdateRepositoryTechnologyInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalORepositoryTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋrepositorytechnologyᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "technology":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("technology"))
+			it.Technology, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "repository":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("repository"))
+			it.Repository, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateSiteInput(ctx context.Context, obj interface{}) (ent.UpdateSiteInput, error) {
+	var it ent.UpdateSiteInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "url":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			it.URL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "project":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("project"))
+			it.Project, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "repository":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("repository"))
+			it.Repository, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateTechnologyAssociationInput(ctx context.Context, obj interface{}) (ent.UpdateTechnologyAssociationInput, error) {
+	var it ent.UpdateTechnologyAssociationInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalOTechnologyAssociationType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋtechnologyassociationᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "parent":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent"))
+			it.Parent, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "child":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("child"))
+			it.Child, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateTechnologyInput(ctx context.Context, obj interface{}) (ent.UpdateTechnologyInput, error) {
+	var it ent.UpdateTechnologyInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "colour":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("colour"))
+			it.Colour, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalOTechnologyType2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚋtechnologyᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, obj interface{}) (ent.UpdateUserInput, error) {
+	var it ent.UpdateUserInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "username":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			it.Username, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "avatarUrl":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("avatarUrl"))
+			it.AvatarURL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUserOrder(ctx context.Context, obj interface{}) (ent.UserOrder, error) {
 	var it ent.UserOrder
 	var asMap = obj.(map[string]interface{})
@@ -18791,8 +21716,28 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateUser":
+			out.Values[i] = ec._Mutation_updateUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteUser":
+			out.Values[i] = ec._Mutation_deleteUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createDiscordAccount":
 			out.Values[i] = ec._Mutation_createDiscordAccount(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateDiscordAccount":
+			out.Values[i] = ec._Mutation_updateDiscordAccount(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteDiscordAccount":
+			out.Values[i] = ec._Mutation_deleteDiscordAccount(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -18801,8 +21746,28 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateDiscordBot":
+			out.Values[i] = ec._Mutation_updateDiscordBot(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteDiscordBot":
+			out.Values[i] = ec._Mutation_deleteDiscordBot(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createGithubAccount":
 			out.Values[i] = ec._Mutation_createGithubAccount(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateGithubAccount":
+			out.Values[i] = ec._Mutation_updateGithubAccount(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteGithubAccount":
+			out.Values[i] = ec._Mutation_deleteGithubAccount(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -18811,8 +21776,28 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateGithubOrganization":
+			out.Values[i] = ec._Mutation_updateGithubOrganization(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteGithubOrganization":
+			out.Values[i] = ec._Mutation_deleteGithubOrganization(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createGithubOrganizationMember":
 			out.Values[i] = ec._Mutation_createGithubOrganizationMember(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateGithubOrganizationMember":
+			out.Values[i] = ec._Mutation_updateGithubOrganizationMember(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteGithubOrganizationMember":
+			out.Values[i] = ec._Mutation_deleteGithubOrganizationMember(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -18821,8 +21806,28 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateProject":
+			out.Values[i] = ec._Mutation_updateProject(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteProject":
+			out.Values[i] = ec._Mutation_deleteProject(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createProjectContributor":
 			out.Values[i] = ec._Mutation_createProjectContributor(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateProjectContributor":
+			out.Values[i] = ec._Mutation_updateProjectContributor(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteProjectContributor":
+			out.Values[i] = ec._Mutation_deleteProjectContributor(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -18831,8 +21836,28 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateProjectAssociation":
+			out.Values[i] = ec._Mutation_updateProjectAssociation(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteProjectAssociation":
+			out.Values[i] = ec._Mutation_deleteProjectAssociation(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createRepository":
 			out.Values[i] = ec._Mutation_createRepository(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateRepository":
+			out.Values[i] = ec._Mutation_updateRepository(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteRepository":
+			out.Values[i] = ec._Mutation_deleteRepository(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -18841,8 +21866,28 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateSite":
+			out.Values[i] = ec._Mutation_updateSite(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteSite":
+			out.Values[i] = ec._Mutation_deleteSite(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createTechnology":
 			out.Values[i] = ec._Mutation_createTechnology(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateTechnology":
+			out.Values[i] = ec._Mutation_updateTechnology(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteTechnology":
+			out.Values[i] = ec._Mutation_deleteTechnology(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -18851,13 +21896,43 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateTechnologyAssociation":
+			out.Values[i] = ec._Mutation_updateTechnologyAssociation(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteTechnologyAssociation":
+			out.Values[i] = ec._Mutation_deleteTechnologyAssociation(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createProjectTechnology":
 			out.Values[i] = ec._Mutation_createProjectTechnology(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateProjectTechnology":
+			out.Values[i] = ec._Mutation_updateProjectTechnology(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteProjectTechnology":
+			out.Values[i] = ec._Mutation_deleteProjectTechnology(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createRepositoryTechnology":
 			out.Values[i] = ec._Mutation_createRepositoryTechnology(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateRepositoryTechnology":
+			out.Values[i] = ec._Mutation_updateRepositoryTechnology(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteRepositoryTechnology":
+			out.Values[i] = ec._Mutation_deleteRepositoryTechnology(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -21253,6 +24328,81 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUpdateDiscordAccountInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateDiscordAccountInput(ctx context.Context, v interface{}) (ent.UpdateDiscordAccountInput, error) {
+	res, err := ec.unmarshalInputUpdateDiscordAccountInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateDiscordBotInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateDiscordBotInput(ctx context.Context, v interface{}) (ent.UpdateDiscordBotInput, error) {
+	res, err := ec.unmarshalInputUpdateDiscordBotInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateGithubAccountInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateGithubAccountInput(ctx context.Context, v interface{}) (ent.UpdateGithubAccountInput, error) {
+	res, err := ec.unmarshalInputUpdateGithubAccountInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateGithubOrganizationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateGithubOrganizationInput(ctx context.Context, v interface{}) (ent.UpdateGithubOrganizationInput, error) {
+	res, err := ec.unmarshalInputUpdateGithubOrganizationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateGithubOrganizationMemberInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateGithubOrganizationMemberInput(ctx context.Context, v interface{}) (ent.UpdateGithubOrganizationMemberInput, error) {
+	res, err := ec.unmarshalInputUpdateGithubOrganizationMemberInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateProjectAssociationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateProjectAssociationInput(ctx context.Context, v interface{}) (ent.UpdateProjectAssociationInput, error) {
+	res, err := ec.unmarshalInputUpdateProjectAssociationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateProjectContributorInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateProjectContributorInput(ctx context.Context, v interface{}) (ent.UpdateProjectContributorInput, error) {
+	res, err := ec.unmarshalInputUpdateProjectContributorInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateProjectInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateProjectInput(ctx context.Context, v interface{}) (ent.UpdateProjectInput, error) {
+	res, err := ec.unmarshalInputUpdateProjectInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateProjectTechnologyInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateProjectTechnologyInput(ctx context.Context, v interface{}) (ent.UpdateProjectTechnologyInput, error) {
+	res, err := ec.unmarshalInputUpdateProjectTechnologyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateRepositoryInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateRepositoryInput(ctx context.Context, v interface{}) (ent.UpdateRepositoryInput, error) {
+	res, err := ec.unmarshalInputUpdateRepositoryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateRepositoryTechnologyInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateRepositoryTechnologyInput(ctx context.Context, v interface{}) (ent.UpdateRepositoryTechnologyInput, error) {
+	res, err := ec.unmarshalInputUpdateRepositoryTechnologyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateSiteInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateSiteInput(ctx context.Context, v interface{}) (ent.UpdateSiteInput, error) {
+	res, err := ec.unmarshalInputUpdateSiteInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateTechnologyAssociationInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateTechnologyAssociationInput(ctx context.Context, v interface{}) (ent.UpdateTechnologyAssociationInput, error) {
+	res, err := ec.unmarshalInputUpdateTechnologyAssociationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateTechnologyInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateTechnologyInput(ctx context.Context, v interface{}) (ent.UpdateTechnologyInput, error) {
+	res, err := ec.unmarshalInputUpdateTechnologyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateUserInput2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUpdateUserInput(ctx context.Context, v interface{}) (ent.UpdateUserInput, error) {
+	res, err := ec.unmarshalInputUpdateUserInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v ent.User) graphql.Marshaler {
