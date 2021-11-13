@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  grackdb:
+    image: ghcr.io/fogo.sh/grackdb
+    restart: always
+    networks:
+      - web
+    expose:
+      - 8081
+    labels:
+      traefik.enable: true
+      traefik.frontend.rule: "Host: grackdb.fogo.sh"
+      traefik.port: 8081
+      traefik.frontend.entryPoints: "https"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/grackdb
+  
+networks:
+  web:
+    external: true
