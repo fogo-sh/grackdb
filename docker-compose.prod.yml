@@ -2,7 +2,7 @@ version: '3'
 
 services:
   grackdb:
-    image: ghcr.io/fogo.sh/grackdb
+    image: ghcr.io/fogo-sh/grackdb
     restart: always
     networks:
       - web
