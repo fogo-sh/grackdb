@@ -26,7 +26,7 @@ function App() {
 							<Link to="/projects">Projects</Link>
 						</div>
 						<div className="flex gap-3">
-							<Link to="/playground">GraphQL Playground</Link>
+							<a href="/playground">GraphQL Playground</a>
 						</div>
 					</div>
 					<hr className="my-3" />
