@@ -1,0 +1,17 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+*.test
+*.out
+
+grack.db
+
+.env
+.env.*
+!.env.dist
+
+/frontend/node_modules/
+/frontend/dist/

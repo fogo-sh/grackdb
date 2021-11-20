@@ -13,4 +13,3 @@ indent_size = 4
 
 [*{.jsx,.js}]
 indent_style = tab
-
