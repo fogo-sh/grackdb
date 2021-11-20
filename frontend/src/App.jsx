@@ -19,10 +19,15 @@ function App() {
 					<div className="w-[3.5rem]">
 						<img src={grack} className="h-16 mb-1 mx-auto" />
 					</div>
-					<div className="flex gap-3">
-						<Link to="/">GrackDB</Link>
-						<Link to="/users">Users</Link>
-						<Link to="/projects">Projects</Link>
+					<div className="flex justify-between">
+						<div className="flex gap-3">
+							<Link to="/">GrackDB</Link>
+							<Link to="/users">Users</Link>
+							<Link to="/projects">Projects</Link>
+						</div>
+						<div className="flex gap-3">
+							<Link to="/playground">GraphQL Playground</Link>
+						</div>
 					</div>
 					<hr className="my-3" />
 					<Routes>
