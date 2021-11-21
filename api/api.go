@@ -35,12 +35,19 @@ func graphqlHandler(server *handler.Server) gin.HandlerFunc {
 
 func jwtAuthMiddleware(client *ent.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var token string
 		authHeader := c.GetHeader("Authorization")
-		if !strings.HasPrefix(authHeader, "Bearer ") {
+		jwtCookie, err := c.Cookie("jwt")
+		if err == nil {
+			token = jwtCookie
+		} else if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+			token = strings.TrimPrefix(authHeader, "Bearer ")
+		}
+
+		if token == "" {
 			c.Set("user", (*ent.User)(nil))
 			return
 		}
-		token := strings.TrimPrefix(authHeader, "Bearer ")
 
 		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
