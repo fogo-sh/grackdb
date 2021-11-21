@@ -20,9 +20,9 @@ type DiscordBotDelete struct {
 	mutation *DiscordBotMutation
 }
 
-// Where adds a new predicate to the DiscordBotDelete builder.
+// Where appends a list predicates to the DiscordBotDelete builder.
 func (dbd *DiscordBotDelete) Where(ps ...predicate.DiscordBot) *DiscordBotDelete {
-	dbd.mutation.predicates = append(dbd.mutation.predicates, ps...)
+	dbd.mutation.Where(ps...)
 	return dbd
 }
 
@@ -46,6 +46,9 @@ func (dbd *DiscordBotDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(dbd.hooks) - 1; i >= 0; i-- {
+			if dbd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dbd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dbd.mutation); err != nil {

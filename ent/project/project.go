@@ -35,49 +35,49 @@ const (
 	EdgeTechnologies = "technologies"
 	// Table holds the table name of the project in the database.
 	Table = "projects"
-	// ContributorsTable is the table the holds the contributors relation/edge.
+	// ContributorsTable is the table that holds the contributors relation/edge.
 	ContributorsTable = "project_contributors"
 	// ContributorsInverseTable is the table name for the ProjectContributor entity.
 	// It exists in this package in order to avoid circular dependency with the "projectcontributor" package.
 	ContributorsInverseTable = "project_contributors"
 	// ContributorsColumn is the table column denoting the contributors relation/edge.
 	ContributorsColumn = "project_contributors"
-	// ParentProjectsTable is the table the holds the parent_projects relation/edge.
+	// ParentProjectsTable is the table that holds the parent_projects relation/edge.
 	ParentProjectsTable = "project_associations"
 	// ParentProjectsInverseTable is the table name for the ProjectAssociation entity.
 	// It exists in this package in order to avoid circular dependency with the "projectassociation" package.
 	ParentProjectsInverseTable = "project_associations"
 	// ParentProjectsColumn is the table column denoting the parent_projects relation/edge.
 	ParentProjectsColumn = "project_parent_projects"
-	// ChildProjectsTable is the table the holds the child_projects relation/edge.
+	// ChildProjectsTable is the table that holds the child_projects relation/edge.
 	ChildProjectsTable = "project_associations"
 	// ChildProjectsInverseTable is the table name for the ProjectAssociation entity.
 	// It exists in this package in order to avoid circular dependency with the "projectassociation" package.
 	ChildProjectsInverseTable = "project_associations"
 	// ChildProjectsColumn is the table column denoting the child_projects relation/edge.
 	ChildProjectsColumn = "project_child_projects"
-	// RepositoriesTable is the table the holds the repositories relation/edge.
+	// RepositoriesTable is the table that holds the repositories relation/edge.
 	RepositoriesTable = "repositories"
 	// RepositoriesInverseTable is the table name for the Repository entity.
 	// It exists in this package in order to avoid circular dependency with the "repository" package.
 	RepositoriesInverseTable = "repositories"
 	// RepositoriesColumn is the table column denoting the repositories relation/edge.
 	RepositoriesColumn = "project_repositories"
-	// DiscordBotsTable is the table the holds the discord_bots relation/edge.
+	// DiscordBotsTable is the table that holds the discord_bots relation/edge.
 	DiscordBotsTable = "discord_bots"
 	// DiscordBotsInverseTable is the table name for the DiscordBot entity.
 	// It exists in this package in order to avoid circular dependency with the "discordbot" package.
 	DiscordBotsInverseTable = "discord_bots"
 	// DiscordBotsColumn is the table column denoting the discord_bots relation/edge.
 	DiscordBotsColumn = "project_discord_bots"
-	// SitesTable is the table the holds the sites relation/edge.
+	// SitesTable is the table that holds the sites relation/edge.
 	SitesTable = "sites"
 	// SitesInverseTable is the table name for the Site entity.
 	// It exists in this package in order to avoid circular dependency with the "site" package.
 	SitesInverseTable = "sites"
 	// SitesColumn is the table column denoting the sites relation/edge.
 	SitesColumn = "project_sites"
-	// TechnologiesTable is the table the holds the technologies relation/edge.
+	// TechnologiesTable is the table that holds the technologies relation/edge.
 	TechnologiesTable = "project_technologies"
 	// TechnologiesInverseTable is the table name for the ProjectTechnology entity.
 	// It exists in this package in order to avoid circular dependency with the "projecttechnology" package.

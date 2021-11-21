@@ -432,8 +432,8 @@ func (tq *TechnologyQuery) GroupBy(field string, fields ...string) *TechnologyGr
 //		Select(technology.FieldName).
 //		Scan(ctx, &v)
 //
-func (tq *TechnologyQuery) Select(field string, fields ...string) *TechnologySelect {
-	tq.fields = append([]string{field}, fields...)
+func (tq *TechnologyQuery) Select(fields ...string) *TechnologySelect {
+	tq.fields = append(tq.fields, fields...)
 	return &TechnologySelect{TechnologyQuery: tq}
 }
 

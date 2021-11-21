@@ -23,9 +23,9 @@ type ProjectTechnologyUpdate struct {
 	mutation *ProjectTechnologyMutation
 }
 
-// Where adds a new predicate for the ProjectTechnologyUpdate builder.
+// Where appends a list predicates to the ProjectTechnologyUpdate builder.
 func (ptu *ProjectTechnologyUpdate) Where(ps ...predicate.ProjectTechnology) *ProjectTechnologyUpdate {
-	ptu.mutation.predicates = append(ptu.mutation.predicates, ps...)
+	ptu.mutation.Where(ps...)
 	return ptu
 }
 
@@ -100,6 +100,9 @@ func (ptu *ProjectTechnologyUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(ptu.hooks) - 1; i >= 0; i-- {
+			if ptu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = ptu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, ptu.mutation); err != nil {
@@ -339,6 +342,9 @@ func (ptuo *ProjectTechnologyUpdateOne) Save(ctx context.Context) (*ProjectTechn
 			return node, err
 		})
 		for i := len(ptuo.hooks) - 1; i >= 0; i-- {
+			if ptuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = ptuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, ptuo.mutation); err != nil {

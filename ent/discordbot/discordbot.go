@@ -19,21 +19,21 @@ const (
 	EdgeRepository = "repository"
 	// Table holds the table name of the discordbot in the database.
 	Table = "discord_bots"
-	// AccountTable is the table the holds the account relation/edge.
+	// AccountTable is the table that holds the account relation/edge.
 	AccountTable = "discord_accounts"
 	// AccountInverseTable is the table name for the DiscordAccount entity.
 	// It exists in this package in order to avoid circular dependency with the "discordaccount" package.
 	AccountInverseTable = "discord_accounts"
 	// AccountColumn is the table column denoting the account relation/edge.
 	AccountColumn = "discord_bot_account"
-	// ProjectTable is the table the holds the project relation/edge.
+	// ProjectTable is the table that holds the project relation/edge.
 	ProjectTable = "discord_bots"
 	// ProjectInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ProjectInverseTable = "projects"
 	// ProjectColumn is the table column denoting the project relation/edge.
 	ProjectColumn = "project_discord_bots"
-	// RepositoryTable is the table the holds the repository relation/edge.
+	// RepositoryTable is the table that holds the repository relation/edge.
 	RepositoryTable = "discord_bots"
 	// RepositoryInverseTable is the table name for the Repository entity.
 	// It exists in this package in order to avoid circular dependency with the "repository" package.

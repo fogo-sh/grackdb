@@ -338,6 +338,11 @@ func (m *DiscordAccountMutation) ResetBot() {
 	m.clearedbot = false
 }
 
+// Where appends a list predicates to the DiscordAccountMutation builder.
+func (m *DiscordAccountMutation) Where(ps ...predicate.DiscordAccount) {
+	m.predicates = append(m.predicates, ps...)
+}
+
 // Op returns the operation name.
 func (m *DiscordAccountMutation) Op() Op {
 	return m.op
@@ -789,6 +794,11 @@ func (m *DiscordBotMutation) RepositoryIDs() (ids []int) {
 func (m *DiscordBotMutation) ResetRepository() {
 	m.repository = nil
 	m.clearedrepository = false
+}
+
+// Where appends a list predicates to the DiscordBotMutation builder.
+func (m *DiscordBotMutation) Where(ps ...predicate.DiscordBot) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
@@ -1270,6 +1280,11 @@ func (m *GithubAccountMutation) ResetRepositories() {
 	m.repositories = nil
 	m.clearedrepositories = false
 	m.removedrepositories = nil
+}
+
+// Where appends a list predicates to the GithubAccountMutation builder.
+func (m *GithubAccountMutation) Where(ps ...predicate.GithubAccount) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
@@ -1803,6 +1818,11 @@ func (m *GithubOrganizationMutation) ResetRepositories() {
 	m.removedrepositories = nil
 }
 
+// Where appends a list predicates to the GithubOrganizationMutation builder.
+func (m *GithubOrganizationMutation) Where(ps ...predicate.GithubOrganization) {
+	m.predicates = append(m.predicates, ps...)
+}
+
 // Op returns the operation name.
 func (m *GithubOrganizationMutation) Op() Op {
 	return m.op
@@ -2258,6 +2278,11 @@ func (m *GithubOrganizationMemberMutation) AccountIDs() (ids []int) {
 func (m *GithubOrganizationMemberMutation) ResetAccount() {
 	m.account = nil
 	m.clearedaccount = false
+}
+
+// Where appends a list predicates to the GithubOrganizationMemberMutation builder.
+func (m *GithubOrganizationMemberMutation) Where(ps ...predicate.GithubOrganizationMember) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
@@ -3129,6 +3154,11 @@ func (m *ProjectMutation) ResetTechnologies() {
 	m.removedtechnologies = nil
 }
 
+// Where appends a list predicates to the ProjectMutation builder.
+func (m *ProjectMutation) Where(ps ...predicate.Project) {
+	m.predicates = append(m.predicates, ps...)
+}
+
 // Op returns the operation name.
 func (m *ProjectMutation) Op() Op {
 	return m.op
@@ -3756,6 +3786,11 @@ func (m *ProjectAssociationMutation) ResetChild() {
 	m.clearedchild = false
 }
 
+// Where appends a list predicates to the ProjectAssociationMutation builder.
+func (m *ProjectAssociationMutation) Where(ps ...predicate.ProjectAssociation) {
+	m.predicates = append(m.predicates, ps...)
+}
+
 // Op returns the operation name.
 func (m *ProjectAssociationMutation) Op() Op {
 	return m.op
@@ -4171,6 +4206,11 @@ func (m *ProjectContributorMutation) ResetUser() {
 	m.cleareduser = false
 }
 
+// Where appends a list predicates to the ProjectContributorMutation builder.
+func (m *ProjectContributorMutation) Where(ps ...predicate.ProjectContributor) {
+	m.predicates = append(m.predicates, ps...)
+}
+
 // Op returns the operation name.
 func (m *ProjectContributorMutation) Op() Op {
 	return m.op
@@ -4584,6 +4624,11 @@ func (m *ProjectTechnologyMutation) TechnologyIDs() (ids []int) {
 func (m *ProjectTechnologyMutation) ResetTechnology() {
 	m.technology = nil
 	m.clearedtechnology = false
+}
+
+// Where appends a list predicates to the ProjectTechnologyMutation builder.
+func (m *ProjectTechnologyMutation) Where(ps ...predicate.ProjectTechnology) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
@@ -5263,6 +5308,11 @@ func (m *RepositoryMutation) ResetTechnologies() {
 	m.removedtechnologies = nil
 }
 
+// Where appends a list predicates to the RepositoryMutation builder.
+func (m *RepositoryMutation) Where(ps ...predicate.Repository) {
+	m.predicates = append(m.predicates, ps...)
+}
+
 // Op returns the operation name.
 func (m *RepositoryMutation) Op() Op {
 	return m.op
@@ -5800,6 +5850,11 @@ func (m *RepositoryTechnologyMutation) ResetTechnology() {
 	m.clearedtechnology = false
 }
 
+// Where appends a list predicates to the RepositoryTechnologyMutation builder.
+func (m *RepositoryTechnologyMutation) Where(ps ...predicate.RepositoryTechnology) {
+	m.predicates = append(m.predicates, ps...)
+}
+
 // Op returns the operation name.
 func (m *RepositoryTechnologyMutation) Op() Op {
 	return m.op
@@ -6213,6 +6268,11 @@ func (m *SiteMutation) RepositoryIDs() (ids []int) {
 func (m *SiteMutation) ResetRepository() {
 	m.repository = nil
 	m.clearedrepository = false
+}
+
+// Where appends a list predicates to the SiteMutation builder.
+func (m *SiteMutation) Where(ps ...predicate.Site) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
@@ -6913,6 +6973,11 @@ func (m *TechnologyMutation) ResetRepositories() {
 	m.removedrepositories = nil
 }
 
+// Where appends a list predicates to the TechnologyMutation builder.
+func (m *TechnologyMutation) Where(ps ...predicate.Technology) {
+	m.predicates = append(m.predicates, ps...)
+}
+
 // Op returns the operation name.
 func (m *TechnologyMutation) Op() Op {
 	return m.op
@@ -7460,6 +7525,11 @@ func (m *TechnologyAssociationMutation) ChildIDs() (ids []int) {
 func (m *TechnologyAssociationMutation) ResetChild() {
 	m.child = nil
 	m.clearedchild = false
+}
+
+// Where appends a list predicates to the TechnologyAssociationMutation builder.
+func (m *TechnologyAssociationMutation) Where(ps ...predicate.TechnologyAssociation) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
@@ -8014,6 +8084,11 @@ func (m *UserMutation) ResetProjectContributions() {
 	m.project_contributions = nil
 	m.clearedproject_contributions = false
 	m.removedproject_contributions = nil
+}
+
+// Where appends a list predicates to the UserMutation builder.
+func (m *UserMutation) Where(ps ...predicate.User) {
+	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.

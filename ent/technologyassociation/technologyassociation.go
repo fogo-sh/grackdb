@@ -23,14 +23,14 @@ const (
 	EdgeChild = "child"
 	// Table holds the table name of the technologyassociation in the database.
 	Table = "technology_associations"
-	// ParentTable is the table the holds the parent relation/edge.
+	// ParentTable is the table that holds the parent relation/edge.
 	ParentTable = "technology_associations"
 	// ParentInverseTable is the table name for the Technology entity.
 	// It exists in this package in order to avoid circular dependency with the "technology" package.
 	ParentInverseTable = "technologies"
 	// ParentColumn is the table column denoting the parent relation/edge.
 	ParentColumn = "technology_child_technologies"
-	// ChildTable is the table the holds the child relation/edge.
+	// ChildTable is the table that holds the child relation/edge.
 	ChildTable = "technology_associations"
 	// ChildInverseTable is the table name for the Technology entity.
 	// It exists in this package in order to avoid circular dependency with the "technology" package.

@@ -103,6 +103,9 @@ func (gac *GithubAccountCreate) Save(ctx context.Context) (*GithubAccount, error
 			return node, err
 		})
 		for i := len(gac.hooks) - 1; i >= 0; i-- {
+			if gac.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gac.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gac.mutation); err != nil {
@@ -121,14 +124,27 @@ func (gac *GithubAccountCreate) SaveX(ctx context.Context) *GithubAccount {
 	return v
 }
 
+// Exec executes the query.
+func (gac *GithubAccountCreate) Exec(ctx context.Context) error {
+	_, err := gac.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (gac *GithubAccountCreate) ExecX(ctx context.Context) {
+	if err := gac.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (gac *GithubAccountCreate) check() error {
 	if _, ok := gac.mutation.Username(); !ok {
-		return &ValidationError{Name: "username", err: errors.New("ent: missing required field \"username\"")}
+		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "username"`)}
 	}
 	if v, ok := gac.mutation.Username(); ok {
 		if err := githubaccount.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf("ent: validator failed for field \"username\": %w", err)}
+			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "username": %w`, err)}
 		}
 	}
 	if _, ok := gac.mutation.OwnerID(); !ok {
@@ -258,8 +274,9 @@ func (gacb *GithubAccountCreateBulk) Save(ctx context.Context) ([]*GithubAccount
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, gacb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, gacb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, gacb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{err.Error(), err}
 						}
@@ -270,8 +287,10 @@ func (gacb *GithubAccountCreateBulk) Save(ctx context.Context) ([]*GithubAccount
 				}
 				mutation.id = &nodes[i].ID
 				mutation.done = true
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -295,4 +314,17 @@ func (gacb *GithubAccountCreateBulk) SaveX(ctx context.Context) []*GithubAccount
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (gacb *GithubAccountCreateBulk) Exec(ctx context.Context) error {
+	_, err := gacb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (gacb *GithubAccountCreateBulk) ExecX(ctx context.Context) {
+	if err := gacb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

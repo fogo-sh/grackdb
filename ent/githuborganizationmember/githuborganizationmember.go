@@ -23,14 +23,14 @@ const (
 	EdgeAccount = "account"
 	// Table holds the table name of the githuborganizationmember in the database.
 	Table = "github_organization_members"
-	// OrganizationTable is the table the holds the organization relation/edge.
+	// OrganizationTable is the table that holds the organization relation/edge.
 	OrganizationTable = "github_organization_members"
 	// OrganizationInverseTable is the table name for the GithubOrganization entity.
 	// It exists in this package in order to avoid circular dependency with the "githuborganization" package.
 	OrganizationInverseTable = "github_organizations"
 	// OrganizationColumn is the table column denoting the organization relation/edge.
 	OrganizationColumn = "github_organization_members"
-	// AccountTable is the table the holds the account relation/edge.
+	// AccountTable is the table that holds the account relation/edge.
 	AccountTable = "github_organization_members"
 	// AccountInverseTable is the table name for the GithubAccount entity.
 	// It exists in this package in order to avoid circular dependency with the "githubaccount" package.

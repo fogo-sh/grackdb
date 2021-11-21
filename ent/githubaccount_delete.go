@@ -20,9 +20,9 @@ type GithubAccountDelete struct {
 	mutation *GithubAccountMutation
 }
 
-// Where adds a new predicate to the GithubAccountDelete builder.
+// Where appends a list predicates to the GithubAccountDelete builder.
 func (gad *GithubAccountDelete) Where(ps ...predicate.GithubAccount) *GithubAccountDelete {
-	gad.mutation.predicates = append(gad.mutation.predicates, ps...)
+	gad.mutation.Where(ps...)
 	return gad
 }
 
@@ -46,6 +46,9 @@ func (gad *GithubAccountDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(gad.hooks) - 1; i >= 0; i-- {
+			if gad.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gad.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gad.mutation); err != nil {

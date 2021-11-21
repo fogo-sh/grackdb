@@ -360,8 +360,8 @@ func (paq *ProjectAssociationQuery) GroupBy(field string, fields ...string) *Pro
 //		Select(projectassociation.FieldType).
 //		Scan(ctx, &v)
 //
-func (paq *ProjectAssociationQuery) Select(field string, fields ...string) *ProjectAssociationSelect {
-	paq.fields = append([]string{field}, fields...)
+func (paq *ProjectAssociationQuery) Select(fields ...string) *ProjectAssociationSelect {
+	paq.fields = append(paq.fields, fields...)
 	return &ProjectAssociationSelect{ProjectAssociationQuery: paq}
 }
 

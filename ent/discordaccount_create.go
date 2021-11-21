@@ -111,6 +111,9 @@ func (dac *DiscordAccountCreate) Save(ctx context.Context) (*DiscordAccount, err
 			return node, err
 		})
 		for i := len(dac.hooks) - 1; i >= 0; i-- {
+			if dac.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dac.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dac.mutation); err != nil {
@@ -129,25 +132,38 @@ func (dac *DiscordAccountCreate) SaveX(ctx context.Context) *DiscordAccount {
 	return v
 }
 
+// Exec executes the query.
+func (dac *DiscordAccountCreate) Exec(ctx context.Context) error {
+	_, err := dac.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (dac *DiscordAccountCreate) ExecX(ctx context.Context) {
+	if err := dac.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (dac *DiscordAccountCreate) check() error {
 	if _, ok := dac.mutation.DiscordID(); !ok {
-		return &ValidationError{Name: "discord_id", err: errors.New("ent: missing required field \"discord_id\"")}
+		return &ValidationError{Name: "discord_id", err: errors.New(`ent: missing required field "discord_id"`)}
 	}
 	if v, ok := dac.mutation.DiscordID(); ok {
 		if err := discordaccount.DiscordIDValidator(v); err != nil {
-			return &ValidationError{Name: "discord_id", err: fmt.Errorf("ent: validator failed for field \"discord_id\": %w", err)}
+			return &ValidationError{Name: "discord_id", err: fmt.Errorf(`ent: validator failed for field "discord_id": %w`, err)}
 		}
 	}
 	if _, ok := dac.mutation.Username(); !ok {
-		return &ValidationError{Name: "username", err: errors.New("ent: missing required field \"username\"")}
+		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "username"`)}
 	}
 	if _, ok := dac.mutation.Discriminator(); !ok {
-		return &ValidationError{Name: "discriminator", err: errors.New("ent: missing required field \"discriminator\"")}
+		return &ValidationError{Name: "discriminator", err: errors.New(`ent: missing required field "discriminator"`)}
 	}
 	if v, ok := dac.mutation.Discriminator(); ok {
 		if err := discordaccount.DiscriminatorValidator(v); err != nil {
-			return &ValidationError{Name: "discriminator", err: fmt.Errorf("ent: validator failed for field \"discriminator\": %w", err)}
+			return &ValidationError{Name: "discriminator", err: fmt.Errorf(`ent: validator failed for field "discriminator": %w`, err)}
 		}
 	}
 	return nil
@@ -272,8 +288,9 @@ func (dacb *DiscordAccountCreateBulk) Save(ctx context.Context) ([]*DiscordAccou
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, dacb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, dacb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, dacb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{err.Error(), err}
 						}
@@ -284,8 +301,10 @@ func (dacb *DiscordAccountCreateBulk) Save(ctx context.Context) ([]*DiscordAccou
 				}
 				mutation.id = &nodes[i].ID
 				mutation.done = true
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -309,4 +328,17 @@ func (dacb *DiscordAccountCreateBulk) SaveX(ctx context.Context) []*DiscordAccou
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (dacb *DiscordAccountCreateBulk) Exec(ctx context.Context) error {
+	_, err := dacb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (dacb *DiscordAccountCreateBulk) ExecX(ctx context.Context) {
+	if err := dacb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

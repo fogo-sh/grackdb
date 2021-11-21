@@ -29,42 +29,42 @@ const (
 	EdgeTechnologies = "technologies"
 	// Table holds the table name of the repository in the database.
 	Table = "repositories"
-	// ProjectTable is the table the holds the project relation/edge.
+	// ProjectTable is the table that holds the project relation/edge.
 	ProjectTable = "repositories"
 	// ProjectInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ProjectInverseTable = "projects"
 	// ProjectColumn is the table column denoting the project relation/edge.
 	ProjectColumn = "project_repositories"
-	// GithubAccountTable is the table the holds the github_account relation/edge.
+	// GithubAccountTable is the table that holds the github_account relation/edge.
 	GithubAccountTable = "repositories"
 	// GithubAccountInverseTable is the table name for the GithubAccount entity.
 	// It exists in this package in order to avoid circular dependency with the "githubaccount" package.
 	GithubAccountInverseTable = "github_accounts"
 	// GithubAccountColumn is the table column denoting the github_account relation/edge.
 	GithubAccountColumn = "github_account_repositories"
-	// GithubOrganizationTable is the table the holds the github_organization relation/edge.
+	// GithubOrganizationTable is the table that holds the github_organization relation/edge.
 	GithubOrganizationTable = "repositories"
 	// GithubOrganizationInverseTable is the table name for the GithubOrganization entity.
 	// It exists in this package in order to avoid circular dependency with the "githuborganization" package.
 	GithubOrganizationInverseTable = "github_organizations"
 	// GithubOrganizationColumn is the table column denoting the github_organization relation/edge.
 	GithubOrganizationColumn = "github_organization_repositories"
-	// DiscordBotsTable is the table the holds the discord_bots relation/edge.
+	// DiscordBotsTable is the table that holds the discord_bots relation/edge.
 	DiscordBotsTable = "discord_bots"
 	// DiscordBotsInverseTable is the table name for the DiscordBot entity.
 	// It exists in this package in order to avoid circular dependency with the "discordbot" package.
 	DiscordBotsInverseTable = "discord_bots"
 	// DiscordBotsColumn is the table column denoting the discord_bots relation/edge.
 	DiscordBotsColumn = "repository_discord_bots"
-	// SitesTable is the table the holds the sites relation/edge.
+	// SitesTable is the table that holds the sites relation/edge.
 	SitesTable = "sites"
 	// SitesInverseTable is the table name for the Site entity.
 	// It exists in this package in order to avoid circular dependency with the "site" package.
 	SitesInverseTable = "sites"
 	// SitesColumn is the table column denoting the sites relation/edge.
 	SitesColumn = "repository_sites"
-	// TechnologiesTable is the table the holds the technologies relation/edge.
+	// TechnologiesTable is the table that holds the technologies relation/edge.
 	TechnologiesTable = "repository_technologies"
 	// TechnologiesInverseTable is the table name for the RepositoryTechnology entity.
 	// It exists in this package in order to avoid circular dependency with the "repositorytechnology" package.

@@ -20,9 +20,9 @@ type DiscordAccountDelete struct {
 	mutation *DiscordAccountMutation
 }
 
-// Where adds a new predicate to the DiscordAccountDelete builder.
+// Where appends a list predicates to the DiscordAccountDelete builder.
 func (dad *DiscordAccountDelete) Where(ps ...predicate.DiscordAccount) *DiscordAccountDelete {
-	dad.mutation.predicates = append(dad.mutation.predicates, ps...)
+	dad.mutation.Where(ps...)
 	return dad
 }
 
@@ -46,6 +46,9 @@ func (dad *DiscordAccountDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(dad.hooks) - 1; i >= 0; i-- {
+			if dad.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dad.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dad.mutation); err != nil {

@@ -20,9 +20,9 @@ type GithubOrganizationMemberDelete struct {
 	mutation *GithubOrganizationMemberMutation
 }
 
-// Where adds a new predicate to the GithubOrganizationMemberDelete builder.
+// Where appends a list predicates to the GithubOrganizationMemberDelete builder.
 func (gomd *GithubOrganizationMemberDelete) Where(ps ...predicate.GithubOrganizationMember) *GithubOrganizationMemberDelete {
-	gomd.mutation.predicates = append(gomd.mutation.predicates, ps...)
+	gomd.mutation.Where(ps...)
 	return gomd
 }
 
@@ -46,6 +46,9 @@ func (gomd *GithubOrganizationMemberDelete) Exec(ctx context.Context) (int, erro
 			return affected, err
 		})
 		for i := len(gomd.hooks) - 1; i >= 0; i-- {
+			if gomd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gomd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gomd.mutation); err != nil {

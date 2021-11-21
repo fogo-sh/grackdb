@@ -20,9 +20,9 @@ type ProjectContributorDelete struct {
 	mutation *ProjectContributorMutation
 }
 
-// Where adds a new predicate to the ProjectContributorDelete builder.
+// Where appends a list predicates to the ProjectContributorDelete builder.
 func (pcd *ProjectContributorDelete) Where(ps ...predicate.ProjectContributor) *ProjectContributorDelete {
-	pcd.mutation.predicates = append(pcd.mutation.predicates, ps...)
+	pcd.mutation.Where(ps...)
 	return pcd
 }
 
@@ -46,6 +46,9 @@ func (pcd *ProjectContributorDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(pcd.hooks) - 1; i >= 0; i-- {
+			if pcd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pcd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pcd.mutation); err != nil {

@@ -23,9 +23,9 @@ type TechnologyUpdate struct {
 	mutation *TechnologyMutation
 }
 
-// Where adds a new predicate for the TechnologyUpdate builder.
+// Where appends a list predicates to the TechnologyUpdate builder.
 func (tu *TechnologyUpdate) Where(ps ...predicate.Technology) *TechnologyUpdate {
-	tu.mutation.predicates = append(tu.mutation.predicates, ps...)
+	tu.mutation.Where(ps...)
 	return tu
 }
 
@@ -256,6 +256,9 @@ func (tu *TechnologyUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(tu.hooks) - 1; i >= 0; i-- {
+			if tu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = tu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, tu.mutation); err != nil {
@@ -829,6 +832,9 @@ func (tuo *TechnologyUpdateOne) Save(ctx context.Context) (*Technology, error) {
 			return node, err
 		})
 		for i := len(tuo.hooks) - 1; i >= 0; i-- {
+			if tuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = tuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, tuo.mutation); err != nil {

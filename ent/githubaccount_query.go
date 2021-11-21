@@ -398,8 +398,8 @@ func (gaq *GithubAccountQuery) GroupBy(field string, fields ...string) *GithubAc
 //		Select(githubaccount.FieldUsername).
 //		Scan(ctx, &v)
 //
-func (gaq *GithubAccountQuery) Select(field string, fields ...string) *GithubAccountSelect {
-	gaq.fields = append([]string{field}, fields...)
+func (gaq *GithubAccountQuery) Select(fields ...string) *GithubAccountSelect {
+	gaq.fields = append(gaq.fields, fields...)
 	return &GithubAccountSelect{GithubAccountQuery: gaq}
 }
 

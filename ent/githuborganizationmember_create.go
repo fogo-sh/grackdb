@@ -68,7 +68,9 @@ func (gomc *GithubOrganizationMemberCreate) Save(ctx context.Context) (*GithubOr
 		err  error
 		node *GithubOrganizationMember
 	)
-	gomc.defaults()
+	if err := gomc.defaults(); err != nil {
+		return nil, err
+	}
 	if len(gomc.hooks) == 0 {
 		if err = gomc.check(); err != nil {
 			return nil, err
@@ -92,6 +94,9 @@ func (gomc *GithubOrganizationMemberCreate) Save(ctx context.Context) (*GithubOr
 			return node, err
 		})
 		for i := len(gomc.hooks) - 1; i >= 0; i-- {
+			if gomc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gomc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gomc.mutation); err != nil {
@@ -110,22 +115,36 @@ func (gomc *GithubOrganizationMemberCreate) SaveX(ctx context.Context) *GithubOr
 	return v
 }
 
+// Exec executes the query.
+func (gomc *GithubOrganizationMemberCreate) Exec(ctx context.Context) error {
+	_, err := gomc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (gomc *GithubOrganizationMemberCreate) ExecX(ctx context.Context) {
+	if err := gomc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
-func (gomc *GithubOrganizationMemberCreate) defaults() {
+func (gomc *GithubOrganizationMemberCreate) defaults() error {
 	if _, ok := gomc.mutation.Role(); !ok {
 		v := githuborganizationmember.DefaultRole
 		gomc.mutation.SetRole(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (gomc *GithubOrganizationMemberCreate) check() error {
 	if _, ok := gomc.mutation.Role(); !ok {
-		return &ValidationError{Name: "role", err: errors.New("ent: missing required field \"role\"")}
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "role"`)}
 	}
 	if v, ok := gomc.mutation.Role(); ok {
 		if err := githuborganizationmember.RoleValidator(v); err != nil {
-			return &ValidationError{Name: "role", err: fmt.Errorf("ent: validator failed for field \"role\": %w", err)}
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "role": %w`, err)}
 		}
 	}
 	if _, ok := gomc.mutation.OrganizationID(); !ok {
@@ -241,8 +260,9 @@ func (gomcb *GithubOrganizationMemberCreateBulk) Save(ctx context.Context) ([]*G
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, gomcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, gomcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, gomcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{err.Error(), err}
 						}
@@ -253,8 +273,10 @@ func (gomcb *GithubOrganizationMemberCreateBulk) Save(ctx context.Context) ([]*G
 				}
 				mutation.id = &nodes[i].ID
 				mutation.done = true
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -278,4 +300,17 @@ func (gomcb *GithubOrganizationMemberCreateBulk) SaveX(ctx context.Context) []*G
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (gomcb *GithubOrganizationMemberCreateBulk) Exec(ctx context.Context) error {
+	_, err := gomcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (gomcb *GithubOrganizationMemberCreateBulk) ExecX(ctx context.Context) {
+	if err := gomcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

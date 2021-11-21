@@ -22,9 +22,9 @@ type DiscordAccountUpdate struct {
 	mutation *DiscordAccountMutation
 }
 
-// Where adds a new predicate for the DiscordAccountUpdate builder.
+// Where appends a list predicates to the DiscordAccountUpdate builder.
 func (dau *DiscordAccountUpdate) Where(ps ...predicate.DiscordAccount) *DiscordAccountUpdate {
-	dau.mutation.predicates = append(dau.mutation.predicates, ps...)
+	dau.mutation.Where(ps...)
 	return dau
 }
 
@@ -121,6 +121,9 @@ func (dau *DiscordAccountUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(dau.hooks) - 1; i >= 0; i-- {
+			if dau.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dau.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dau.mutation); err != nil {
@@ -383,6 +386,9 @@ func (dauo *DiscordAccountUpdateOne) Save(ctx context.Context) (*DiscordAccount,
 			return node, err
 		})
 		for i := len(dauo.hooks) - 1; i >= 0; i-- {
+			if dauo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dauo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dauo.mutation); err != nil {

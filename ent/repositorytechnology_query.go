@@ -361,8 +361,8 @@ func (rtq *RepositoryTechnologyQuery) GroupBy(field string, fields ...string) *R
 //		Select(repositorytechnology.FieldType).
 //		Scan(ctx, &v)
 //
-func (rtq *RepositoryTechnologyQuery) Select(field string, fields ...string) *RepositoryTechnologySelect {
-	rtq.fields = append([]string{field}, fields...)
+func (rtq *RepositoryTechnologyQuery) Select(fields ...string) *RepositoryTechnologySelect {
+	rtq.fields = append(rtq.fields, fields...)
 	return &RepositoryTechnologySelect{RepositoryTechnologyQuery: rtq}
 }
 

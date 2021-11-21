@@ -23,9 +23,9 @@ type RepositoryTechnologyUpdate struct {
 	mutation *RepositoryTechnologyMutation
 }
 
-// Where adds a new predicate for the RepositoryTechnologyUpdate builder.
+// Where appends a list predicates to the RepositoryTechnologyUpdate builder.
 func (rtu *RepositoryTechnologyUpdate) Where(ps ...predicate.RepositoryTechnology) *RepositoryTechnologyUpdate {
-	rtu.mutation.predicates = append(rtu.mutation.predicates, ps...)
+	rtu.mutation.Where(ps...)
 	return rtu
 }
 
@@ -100,6 +100,9 @@ func (rtu *RepositoryTechnologyUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(rtu.hooks) - 1; i >= 0; i-- {
+			if rtu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = rtu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, rtu.mutation); err != nil {
@@ -339,6 +342,9 @@ func (rtuo *RepositoryTechnologyUpdateOne) Save(ctx context.Context) (*Repositor
 			return node, err
 		})
 		for i := len(rtuo.hooks) - 1; i >= 0; i-- {
+			if rtuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = rtuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, rtuo.mutation); err != nil {

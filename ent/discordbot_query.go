@@ -374,8 +374,8 @@ func (dbq *DiscordBotQuery) GroupBy(field string, fields ...string) *DiscordBotG
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
-func (dbq *DiscordBotQuery) Select(field string, fields ...string) *DiscordBotSelect {
-	dbq.fields = append([]string{field}, fields...)
+func (dbq *DiscordBotQuery) Select(fields ...string) *DiscordBotSelect {
+	dbq.fields = append(dbq.fields, fields...)
 	return &DiscordBotSelect{DiscordBotQuery: dbq}
 }
 

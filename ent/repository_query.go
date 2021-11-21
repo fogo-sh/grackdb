@@ -506,8 +506,8 @@ func (rq *RepositoryQuery) GroupBy(field string, fields ...string) *RepositoryGr
 //		Select(repository.FieldName).
 //		Scan(ctx, &v)
 //
-func (rq *RepositoryQuery) Select(field string, fields ...string) *RepositorySelect {
-	rq.fields = append([]string{field}, fields...)
+func (rq *RepositoryQuery) Select(fields ...string) *RepositorySelect {
+	rq.fields = append(rq.fields, fields...)
 	return &RepositorySelect{RepositoryQuery: rq}
 }
 

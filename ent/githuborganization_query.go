@@ -361,8 +361,8 @@ func (goq *GithubOrganizationQuery) GroupBy(field string, fields ...string) *Git
 //		Select(githuborganization.FieldName).
 //		Scan(ctx, &v)
 //
-func (goq *GithubOrganizationQuery) Select(field string, fields ...string) *GithubOrganizationSelect {
-	goq.fields = append([]string{field}, fields...)
+func (goq *GithubOrganizationQuery) Select(fields ...string) *GithubOrganizationSelect {
+	goq.fields = append(goq.fields, fields...)
 	return &GithubOrganizationSelect{GithubOrganizationQuery: goq}
 }
 

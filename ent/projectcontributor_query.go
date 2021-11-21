@@ -361,8 +361,8 @@ func (pcq *ProjectContributorQuery) GroupBy(field string, fields ...string) *Pro
 //		Select(projectcontributor.FieldRole).
 //		Scan(ctx, &v)
 //
-func (pcq *ProjectContributorQuery) Select(field string, fields ...string) *ProjectContributorSelect {
-	pcq.fields = append([]string{field}, fields...)
+func (pcq *ProjectContributorQuery) Select(fields ...string) *ProjectContributorSelect {
+	pcq.fields = append(pcq.fields, fields...)
 	return &ProjectContributorSelect{ProjectContributorQuery: pcq}
 }
 

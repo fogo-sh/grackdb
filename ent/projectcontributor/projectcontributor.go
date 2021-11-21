@@ -23,14 +23,14 @@ const (
 	EdgeUser = "user"
 	// Table holds the table name of the projectcontributor in the database.
 	Table = "project_contributors"
-	// ProjectTable is the table the holds the project relation/edge.
+	// ProjectTable is the table that holds the project relation/edge.
 	ProjectTable = "project_contributors"
 	// ProjectInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ProjectInverseTable = "projects"
 	// ProjectColumn is the table column denoting the project relation/edge.
 	ProjectColumn = "project_contributors"
-	// UserTable is the table the holds the user relation/edge.
+	// UserTable is the table that holds the user relation/edge.
 	UserTable = "project_contributors"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.

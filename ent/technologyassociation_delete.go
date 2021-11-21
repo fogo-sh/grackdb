@@ -20,9 +20,9 @@ type TechnologyAssociationDelete struct {
 	mutation *TechnologyAssociationMutation
 }
 
-// Where adds a new predicate to the TechnologyAssociationDelete builder.
+// Where appends a list predicates to the TechnologyAssociationDelete builder.
 func (tad *TechnologyAssociationDelete) Where(ps ...predicate.TechnologyAssociation) *TechnologyAssociationDelete {
-	tad.mutation.predicates = append(tad.mutation.predicates, ps...)
+	tad.mutation.Where(ps...)
 	return tad
 }
 
@@ -46,6 +46,9 @@ func (tad *TechnologyAssociationDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(tad.hooks) - 1; i >= 0; i-- {
+			if tad.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = tad.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, tad.mutation); err != nil {

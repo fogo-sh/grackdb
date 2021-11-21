@@ -22,9 +22,9 @@ type TechnologyAssociationUpdate struct {
 	mutation *TechnologyAssociationMutation
 }
 
-// Where adds a new predicate for the TechnologyAssociationUpdate builder.
+// Where appends a list predicates to the TechnologyAssociationUpdate builder.
 func (tau *TechnologyAssociationUpdate) Where(ps ...predicate.TechnologyAssociation) *TechnologyAssociationUpdate {
-	tau.mutation.predicates = append(tau.mutation.predicates, ps...)
+	tau.mutation.Where(ps...)
 	return tau
 }
 
@@ -99,6 +99,9 @@ func (tau *TechnologyAssociationUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(tau.hooks) - 1; i >= 0; i-- {
+			if tau.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = tau.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, tau.mutation); err != nil {
@@ -338,6 +341,9 @@ func (tauo *TechnologyAssociationUpdateOne) Save(ctx context.Context) (*Technolo
 			return node, err
 		})
 		for i := len(tauo.hooks) - 1; i >= 0; i-- {
+			if tauo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = tauo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, tauo.mutation); err != nil {

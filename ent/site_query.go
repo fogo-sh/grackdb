@@ -361,8 +361,8 @@ func (sq *SiteQuery) GroupBy(field string, fields ...string) *SiteGroupBy {
 //		Select(site.FieldURL).
 //		Scan(ctx, &v)
 //
-func (sq *SiteQuery) Select(field string, fields ...string) *SiteSelect {
-	sq.fields = append([]string{field}, fields...)
+func (sq *SiteQuery) Select(fields ...string) *SiteSelect {
+	sq.fields = append(sq.fields, fields...)
 	return &SiteSelect{SiteQuery: sq}
 }
 

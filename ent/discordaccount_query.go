@@ -361,8 +361,8 @@ func (daq *DiscordAccountQuery) GroupBy(field string, fields ...string) *Discord
 //		Select(discordaccount.FieldDiscordID).
 //		Scan(ctx, &v)
 //
-func (daq *DiscordAccountQuery) Select(field string, fields ...string) *DiscordAccountSelect {
-	daq.fields = append([]string{field}, fields...)
+func (daq *DiscordAccountQuery) Select(fields ...string) *DiscordAccountSelect {
+	daq.fields = append(daq.fields, fields...)
 	return &DiscordAccountSelect{DiscordAccountQuery: daq}
 }
 

@@ -82,6 +82,9 @@ func (tac *TechnologyAssociationCreate) Save(ctx context.Context) (*TechnologyAs
 			return node, err
 		})
 		for i := len(tac.hooks) - 1; i >= 0; i-- {
+			if tac.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = tac.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, tac.mutation); err != nil {
@@ -100,14 +103,27 @@ func (tac *TechnologyAssociationCreate) SaveX(ctx context.Context) *TechnologyAs
 	return v
 }
 
+// Exec executes the query.
+func (tac *TechnologyAssociationCreate) Exec(ctx context.Context) error {
+	_, err := tac.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (tac *TechnologyAssociationCreate) ExecX(ctx context.Context) {
+	if err := tac.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (tac *TechnologyAssociationCreate) check() error {
 	if _, ok := tac.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
 	}
 	if v, ok := tac.mutation.GetType(); ok {
 		if err := technologyassociation.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "type": %w`, err)}
 		}
 	}
 	if _, ok := tac.mutation.ParentID(); !ok {
@@ -222,8 +238,9 @@ func (tacb *TechnologyAssociationCreateBulk) Save(ctx context.Context) ([]*Techn
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, tacb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, tacb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, tacb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{err.Error(), err}
 						}
@@ -234,8 +251,10 @@ func (tacb *TechnologyAssociationCreateBulk) Save(ctx context.Context) ([]*Techn
 				}
 				mutation.id = &nodes[i].ID
 				mutation.done = true
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -259,4 +278,17 @@ func (tacb *TechnologyAssociationCreateBulk) SaveX(ctx context.Context) []*Techn
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (tacb *TechnologyAssociationCreateBulk) Exec(ctx context.Context) error {
+	_, err := tacb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (tacb *TechnologyAssociationCreateBulk) ExecX(ctx context.Context) {
+	if err := tacb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

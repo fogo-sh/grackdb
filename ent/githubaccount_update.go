@@ -24,9 +24,9 @@ type GithubAccountUpdate struct {
 	mutation *GithubAccountMutation
 }
 
-// Where adds a new predicate for the GithubAccountUpdate builder.
+// Where appends a list predicates to the GithubAccountUpdate builder.
 func (gau *GithubAccountUpdate) Where(ps ...predicate.GithubAccount) *GithubAccountUpdate {
-	gau.mutation.predicates = append(gau.mutation.predicates, ps...)
+	gau.mutation.Where(ps...)
 	return gau
 }
 
@@ -156,6 +156,9 @@ func (gau *GithubAccountUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(gau.hooks) - 1; i >= 0; i-- {
+			if gau.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gau.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gau.mutation); err != nil {
@@ -520,6 +523,9 @@ func (gauo *GithubAccountUpdateOne) Save(ctx context.Context) (*GithubAccount, e
 			return node, err
 		})
 		for i := len(gauo.hooks) - 1; i >= 0; i-- {
+			if gauo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gauo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gauo.mutation); err != nil {

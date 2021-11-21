@@ -21,14 +21,14 @@ const (
 	EdgeRepositories = "repositories"
 	// Table holds the table name of the githuborganization in the database.
 	Table = "github_organizations"
-	// MembersTable is the table the holds the members relation/edge.
+	// MembersTable is the table that holds the members relation/edge.
 	MembersTable = "github_organization_members"
 	// MembersInverseTable is the table name for the GithubOrganizationMember entity.
 	// It exists in this package in order to avoid circular dependency with the "githuborganizationmember" package.
 	MembersInverseTable = "github_organization_members"
 	// MembersColumn is the table column denoting the members relation/edge.
 	MembersColumn = "github_organization_members"
-	// RepositoriesTable is the table the holds the repositories relation/edge.
+	// RepositoriesTable is the table that holds the repositories relation/edge.
 	RepositoriesTable = "repositories"
 	// RepositoriesInverseTable is the table name for the Repository entity.
 	// It exists in this package in order to avoid circular dependency with the "repository" package.

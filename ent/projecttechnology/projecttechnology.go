@@ -23,14 +23,14 @@ const (
 	EdgeTechnology = "technology"
 	// Table holds the table name of the projecttechnology in the database.
 	Table = "project_technologies"
-	// ProjectTable is the table the holds the project relation/edge.
+	// ProjectTable is the table that holds the project relation/edge.
 	ProjectTable = "project_technologies"
 	// ProjectInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ProjectInverseTable = "projects"
 	// ProjectColumn is the table column denoting the project relation/edge.
 	ProjectColumn = "project_technologies"
-	// TechnologyTable is the table the holds the technology relation/edge.
+	// TechnologyTable is the table that holds the technology relation/edge.
 	TechnologyTable = "project_technologies"
 	// TechnologyInverseTable is the table name for the Technology entity.
 	// It exists in this package in order to avoid circular dependency with the "technology" package.

@@ -20,9 +20,9 @@ type RepositoryTechnologyDelete struct {
 	mutation *RepositoryTechnologyMutation
 }
 
-// Where adds a new predicate to the RepositoryTechnologyDelete builder.
+// Where appends a list predicates to the RepositoryTechnologyDelete builder.
 func (rtd *RepositoryTechnologyDelete) Where(ps ...predicate.RepositoryTechnology) *RepositoryTechnologyDelete {
-	rtd.mutation.predicates = append(rtd.mutation.predicates, ps...)
+	rtd.mutation.Where(ps...)
 	return rtd
 }
 
@@ -46,6 +46,9 @@ func (rtd *RepositoryTechnologyDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(rtd.hooks) - 1; i >= 0; i-- {
+			if rtd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = rtd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, rtd.mutation); err != nil {

@@ -22,9 +22,9 @@ type ProjectAssociationUpdate struct {
 	mutation *ProjectAssociationMutation
 }
 
-// Where adds a new predicate for the ProjectAssociationUpdate builder.
+// Where appends a list predicates to the ProjectAssociationUpdate builder.
 func (pau *ProjectAssociationUpdate) Where(ps ...predicate.ProjectAssociation) *ProjectAssociationUpdate {
-	pau.mutation.predicates = append(pau.mutation.predicates, ps...)
+	pau.mutation.Where(ps...)
 	return pau
 }
 
@@ -99,6 +99,9 @@ func (pau *ProjectAssociationUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(pau.hooks) - 1; i >= 0; i-- {
+			if pau.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pau.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pau.mutation); err != nil {
@@ -338,6 +341,9 @@ func (pauo *ProjectAssociationUpdateOne) Save(ctx context.Context) (*ProjectAsso
 			return node, err
 		})
 		for i := len(pauo.hooks) - 1; i >= 0; i-- {
+			if pauo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pauo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pauo.mutation); err != nil {

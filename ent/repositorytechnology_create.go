@@ -83,6 +83,9 @@ func (rtc *RepositoryTechnologyCreate) Save(ctx context.Context) (*RepositoryTec
 			return node, err
 		})
 		for i := len(rtc.hooks) - 1; i >= 0; i-- {
+			if rtc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = rtc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, rtc.mutation); err != nil {
@@ -101,14 +104,27 @@ func (rtc *RepositoryTechnologyCreate) SaveX(ctx context.Context) *RepositoryTec
 	return v
 }
 
+// Exec executes the query.
+func (rtc *RepositoryTechnologyCreate) Exec(ctx context.Context) error {
+	_, err := rtc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (rtc *RepositoryTechnologyCreate) ExecX(ctx context.Context) {
+	if err := rtc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (rtc *RepositoryTechnologyCreate) check() error {
 	if _, ok := rtc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
 	}
 	if v, ok := rtc.mutation.GetType(); ok {
 		if err := repositorytechnology.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "type": %w`, err)}
 		}
 	}
 	if _, ok := rtc.mutation.RepositoryID(); !ok {
@@ -223,8 +239,9 @@ func (rtcb *RepositoryTechnologyCreateBulk) Save(ctx context.Context) ([]*Reposi
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, rtcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, rtcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, rtcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{err.Error(), err}
 						}
@@ -235,8 +252,10 @@ func (rtcb *RepositoryTechnologyCreateBulk) Save(ctx context.Context) ([]*Reposi
 				}
 				mutation.id = &nodes[i].ID
 				mutation.done = true
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -260,4 +279,17 @@ func (rtcb *RepositoryTechnologyCreateBulk) SaveX(ctx context.Context) []*Reposi
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (rtcb *RepositoryTechnologyCreateBulk) Exec(ctx context.Context) error {
+	_, err := rtcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (rtcb *RepositoryTechnologyCreateBulk) ExecX(ctx context.Context) {
+	if err := rtcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

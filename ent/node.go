@@ -96,9 +96,9 @@ func (da *DiscordAccount) Node(ctx context.Context) (node *Node, err error) {
 		Type: "User",
 		Name: "owner",
 	}
-	node.Edges[0].IDs, err = da.QueryOwner().
+	err = da.QueryOwner().
 		Select(user.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -106,9 +106,9 @@ func (da *DiscordAccount) Node(ctx context.Context) (node *Node, err error) {
 		Type: "DiscordBot",
 		Name: "bot",
 	}
-	node.Edges[1].IDs, err = da.QueryBot().
+	err = da.QueryBot().
 		Select(discordbot.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -126,9 +126,9 @@ func (db *DiscordBot) Node(ctx context.Context) (node *Node, err error) {
 		Type: "DiscordAccount",
 		Name: "account",
 	}
-	node.Edges[0].IDs, err = db.QueryAccount().
+	err = db.QueryAccount().
 		Select(discordaccount.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -136,9 +136,9 @@ func (db *DiscordBot) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Project",
 		Name: "project",
 	}
-	node.Edges[1].IDs, err = db.QueryProject().
+	err = db.QueryProject().
 		Select(project.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -146,9 +146,9 @@ func (db *DiscordBot) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Repository",
 		Name: "repository",
 	}
-	node.Edges[2].IDs, err = db.QueryRepository().
+	err = db.QueryRepository().
 		Select(repository.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -175,9 +175,9 @@ func (ga *GithubAccount) Node(ctx context.Context) (node *Node, err error) {
 		Type: "User",
 		Name: "owner",
 	}
-	node.Edges[0].IDs, err = ga.QueryOwner().
+	err = ga.QueryOwner().
 		Select(user.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -185,9 +185,9 @@ func (ga *GithubAccount) Node(ctx context.Context) (node *Node, err error) {
 		Type: "GithubOrganizationMember",
 		Name: "organization_memberships",
 	}
-	node.Edges[1].IDs, err = ga.QueryOrganizationMemberships().
+	err = ga.QueryOrganizationMemberships().
 		Select(githuborganizationmember.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -195,9 +195,9 @@ func (ga *GithubAccount) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Repository",
 		Name: "repositories",
 	}
-	node.Edges[2].IDs, err = ga.QueryRepositories().
+	err = ga.QueryRepositories().
 		Select(repository.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -232,9 +232,9 @@ func (_go *GithubOrganization) Node(ctx context.Context) (node *Node, err error)
 		Type: "GithubOrganizationMember",
 		Name: "members",
 	}
-	node.Edges[0].IDs, err = _go.QueryMembers().
+	err = _go.QueryMembers().
 		Select(githuborganizationmember.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -242,9 +242,9 @@ func (_go *GithubOrganization) Node(ctx context.Context) (node *Node, err error)
 		Type: "Repository",
 		Name: "repositories",
 	}
-	node.Edges[1].IDs, err = _go.QueryRepositories().
+	err = _go.QueryRepositories().
 		Select(repository.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -271,9 +271,9 @@ func (gom *GithubOrganizationMember) Node(ctx context.Context) (node *Node, err 
 		Type: "GithubOrganization",
 		Name: "organization",
 	}
-	node.Edges[0].IDs, err = gom.QueryOrganization().
+	err = gom.QueryOrganization().
 		Select(githuborganization.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -281,9 +281,9 @@ func (gom *GithubOrganizationMember) Node(ctx context.Context) (node *Node, err 
 		Type: "GithubAccount",
 		Name: "account",
 	}
-	node.Edges[1].IDs, err = gom.QueryAccount().
+	err = gom.QueryAccount().
 		Select(githubaccount.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -334,9 +334,9 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProjectContributor",
 		Name: "contributors",
 	}
-	node.Edges[0].IDs, err = pr.QueryContributors().
+	err = pr.QueryContributors().
 		Select(projectcontributor.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -344,9 +344,9 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProjectAssociation",
 		Name: "parent_projects",
 	}
-	node.Edges[1].IDs, err = pr.QueryParentProjects().
+	err = pr.QueryParentProjects().
 		Select(projectassociation.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -354,9 +354,9 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProjectAssociation",
 		Name: "child_projects",
 	}
-	node.Edges[2].IDs, err = pr.QueryChildProjects().
+	err = pr.QueryChildProjects().
 		Select(projectassociation.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -364,9 +364,9 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Repository",
 		Name: "repositories",
 	}
-	node.Edges[3].IDs, err = pr.QueryRepositories().
+	err = pr.QueryRepositories().
 		Select(repository.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -374,9 +374,9 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		Type: "DiscordBot",
 		Name: "discord_bots",
 	}
-	node.Edges[4].IDs, err = pr.QueryDiscordBots().
+	err = pr.QueryDiscordBots().
 		Select(discordbot.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -384,9 +384,9 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Site",
 		Name: "sites",
 	}
-	node.Edges[5].IDs, err = pr.QuerySites().
+	err = pr.QuerySites().
 		Select(site.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -394,9 +394,9 @@ func (pr *Project) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProjectTechnology",
 		Name: "technologies",
 	}
-	node.Edges[6].IDs, err = pr.QueryTechnologies().
+	err = pr.QueryTechnologies().
 		Select(projecttechnology.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[6].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -423,9 +423,9 @@ func (pa *ProjectAssociation) Node(ctx context.Context) (node *Node, err error) 
 		Type: "Project",
 		Name: "parent",
 	}
-	node.Edges[0].IDs, err = pa.QueryParent().
+	err = pa.QueryParent().
 		Select(project.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -433,9 +433,9 @@ func (pa *ProjectAssociation) Node(ctx context.Context) (node *Node, err error) 
 		Type: "Project",
 		Name: "child",
 	}
-	node.Edges[1].IDs, err = pa.QueryChild().
+	err = pa.QueryChild().
 		Select(project.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -462,9 +462,9 @@ func (pc *ProjectContributor) Node(ctx context.Context) (node *Node, err error) 
 		Type: "Project",
 		Name: "project",
 	}
-	node.Edges[0].IDs, err = pc.QueryProject().
+	err = pc.QueryProject().
 		Select(project.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -472,9 +472,9 @@ func (pc *ProjectContributor) Node(ctx context.Context) (node *Node, err error) 
 		Type: "User",
 		Name: "user",
 	}
-	node.Edges[1].IDs, err = pc.QueryUser().
+	err = pc.QueryUser().
 		Select(user.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -501,9 +501,9 @@ func (pt *ProjectTechnology) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Project",
 		Name: "project",
 	}
-	node.Edges[0].IDs, err = pt.QueryProject().
+	err = pt.QueryProject().
 		Select(project.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -511,9 +511,9 @@ func (pt *ProjectTechnology) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Technology",
 		Name: "technology",
 	}
-	node.Edges[1].IDs, err = pt.QueryTechnology().
+	err = pt.QueryTechnology().
 		Select(technology.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -548,9 +548,9 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Project",
 		Name: "project",
 	}
-	node.Edges[0].IDs, err = r.QueryProject().
+	err = r.QueryProject().
 		Select(project.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -558,9 +558,9 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 		Type: "GithubAccount",
 		Name: "github_account",
 	}
-	node.Edges[1].IDs, err = r.QueryGithubAccount().
+	err = r.QueryGithubAccount().
 		Select(githubaccount.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -568,9 +568,9 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 		Type: "GithubOrganization",
 		Name: "github_organization",
 	}
-	node.Edges[2].IDs, err = r.QueryGithubOrganization().
+	err = r.QueryGithubOrganization().
 		Select(githuborganization.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -578,9 +578,9 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 		Type: "DiscordBot",
 		Name: "discord_bots",
 	}
-	node.Edges[3].IDs, err = r.QueryDiscordBots().
+	err = r.QueryDiscordBots().
 		Select(discordbot.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -588,9 +588,9 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Site",
 		Name: "sites",
 	}
-	node.Edges[4].IDs, err = r.QuerySites().
+	err = r.QuerySites().
 		Select(site.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -598,9 +598,9 @@ func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
 		Type: "RepositoryTechnology",
 		Name: "technologies",
 	}
-	node.Edges[5].IDs, err = r.QueryTechnologies().
+	err = r.QueryTechnologies().
 		Select(repositorytechnology.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -627,9 +627,9 @@ func (rt *RepositoryTechnology) Node(ctx context.Context) (node *Node, err error
 		Type: "Repository",
 		Name: "repository",
 	}
-	node.Edges[0].IDs, err = rt.QueryRepository().
+	err = rt.QueryRepository().
 		Select(repository.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -637,9 +637,9 @@ func (rt *RepositoryTechnology) Node(ctx context.Context) (node *Node, err error
 		Type: "Technology",
 		Name: "technology",
 	}
-	node.Edges[1].IDs, err = rt.QueryTechnology().
+	err = rt.QueryTechnology().
 		Select(technology.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -666,9 +666,9 @@ func (s *Site) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Project",
 		Name: "project",
 	}
-	node.Edges[0].IDs, err = s.QueryProject().
+	err = s.QueryProject().
 		Select(project.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -676,9 +676,9 @@ func (s *Site) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Repository",
 		Name: "repository",
 	}
-	node.Edges[1].IDs, err = s.QueryRepository().
+	err = s.QueryRepository().
 		Select(repository.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -729,9 +729,9 @@ func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
 		Type: "TechnologyAssociation",
 		Name: "parent_technologies",
 	}
-	node.Edges[0].IDs, err = t.QueryParentTechnologies().
+	err = t.QueryParentTechnologies().
 		Select(technologyassociation.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -739,9 +739,9 @@ func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
 		Type: "TechnologyAssociation",
 		Name: "child_technologies",
 	}
-	node.Edges[1].IDs, err = t.QueryChildTechnologies().
+	err = t.QueryChildTechnologies().
 		Select(technologyassociation.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -749,9 +749,9 @@ func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProjectTechnology",
 		Name: "projects",
 	}
-	node.Edges[2].IDs, err = t.QueryProjects().
+	err = t.QueryProjects().
 		Select(projecttechnology.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -759,9 +759,9 @@ func (t *Technology) Node(ctx context.Context) (node *Node, err error) {
 		Type: "RepositoryTechnology",
 		Name: "repositories",
 	}
-	node.Edges[3].IDs, err = t.QueryRepositories().
+	err = t.QueryRepositories().
 		Select(repositorytechnology.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -788,9 +788,9 @@ func (ta *TechnologyAssociation) Node(ctx context.Context) (node *Node, err erro
 		Type: "Technology",
 		Name: "parent",
 	}
-	node.Edges[0].IDs, err = ta.QueryParent().
+	err = ta.QueryParent().
 		Select(technology.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -798,9 +798,9 @@ func (ta *TechnologyAssociation) Node(ctx context.Context) (node *Node, err erro
 		Type: "Technology",
 		Name: "child",
 	}
-	node.Edges[1].IDs, err = ta.QueryChild().
+	err = ta.QueryChild().
 		Select(technology.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -835,9 +835,9 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Type: "DiscordAccount",
 		Name: "discord_accounts",
 	}
-	node.Edges[0].IDs, err = u.QueryDiscordAccounts().
+	err = u.QueryDiscordAccounts().
 		Select(discordaccount.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -845,9 +845,9 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Type: "GithubAccount",
 		Name: "github_accounts",
 	}
-	node.Edges[1].IDs, err = u.QueryGithubAccounts().
+	err = u.QueryGithubAccounts().
 		Select(githubaccount.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -855,9 +855,9 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Type: "ProjectContributor",
 		Name: "project_contributions",
 	}
-	node.Edges[2].IDs, err = u.QueryProjectContributions().
+	err = u.QueryProjectContributions().
 		Select(projectcontributor.FieldID).
-		Ints(ctx)
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}

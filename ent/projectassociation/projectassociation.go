@@ -23,14 +23,14 @@ const (
 	EdgeChild = "child"
 	// Table holds the table name of the projectassociation in the database.
 	Table = "project_associations"
-	// ParentTable is the table the holds the parent relation/edge.
+	// ParentTable is the table that holds the parent relation/edge.
 	ParentTable = "project_associations"
 	// ParentInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ParentInverseTable = "projects"
 	// ParentColumn is the table column denoting the parent relation/edge.
 	ParentColumn = "project_child_projects"
-	// ChildTable is the table the holds the child relation/edge.
+	// ChildTable is the table that holds the child relation/edge.
 	ChildTable = "project_associations"
 	// ChildInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.

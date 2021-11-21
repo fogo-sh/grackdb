@@ -19,14 +19,14 @@ const (
 	EdgeRepository = "repository"
 	// Table holds the table name of the site in the database.
 	Table = "sites"
-	// ProjectTable is the table the holds the project relation/edge.
+	// ProjectTable is the table that holds the project relation/edge.
 	ProjectTable = "sites"
 	// ProjectInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ProjectInverseTable = "projects"
 	// ProjectColumn is the table column denoting the project relation/edge.
 	ProjectColumn = "project_sites"
-	// RepositoryTable is the table the holds the repository relation/edge.
+	// RepositoryTable is the table that holds the repository relation/edge.
 	RepositoryTable = "sites"
 	// RepositoryInverseTable is the table name for the Repository entity.
 	// It exists in this package in order to avoid circular dependency with the "repository" package.

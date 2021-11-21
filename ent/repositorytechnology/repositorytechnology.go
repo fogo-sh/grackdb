@@ -23,14 +23,14 @@ const (
 	EdgeTechnology = "technology"
 	// Table holds the table name of the repositorytechnology in the database.
 	Table = "repository_technologies"
-	// RepositoryTable is the table the holds the repository relation/edge.
+	// RepositoryTable is the table that holds the repository relation/edge.
 	RepositoryTable = "repository_technologies"
 	// RepositoryInverseTable is the table name for the Repository entity.
 	// It exists in this package in order to avoid circular dependency with the "repository" package.
 	RepositoryInverseTable = "repositories"
 	// RepositoryColumn is the table column denoting the repository relation/edge.
 	RepositoryColumn = "repository_technologies"
-	// TechnologyTable is the table the holds the technology relation/edge.
+	// TechnologyTable is the table that holds the technology relation/edge.
 	TechnologyTable = "repository_technologies"
 	// TechnologyInverseTable is the table name for the Technology entity.
 	// It exists in this package in order to avoid circular dependency with the "technology" package.

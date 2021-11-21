@@ -82,6 +82,9 @@ func (pac *ProjectAssociationCreate) Save(ctx context.Context) (*ProjectAssociat
 			return node, err
 		})
 		for i := len(pac.hooks) - 1; i >= 0; i-- {
+			if pac.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pac.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pac.mutation); err != nil {
@@ -100,14 +103,27 @@ func (pac *ProjectAssociationCreate) SaveX(ctx context.Context) *ProjectAssociat
 	return v
 }
 
+// Exec executes the query.
+func (pac *ProjectAssociationCreate) Exec(ctx context.Context) error {
+	_, err := pac.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (pac *ProjectAssociationCreate) ExecX(ctx context.Context) {
+	if err := pac.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (pac *ProjectAssociationCreate) check() error {
 	if _, ok := pac.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
 	}
 	if v, ok := pac.mutation.GetType(); ok {
 		if err := projectassociation.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "type": %w`, err)}
 		}
 	}
 	if _, ok := pac.mutation.ParentID(); !ok {
@@ -222,8 +238,9 @@ func (pacb *ProjectAssociationCreateBulk) Save(ctx context.Context) ([]*ProjectA
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, pacb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, pacb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, pacb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{err.Error(), err}
 						}
@@ -234,8 +251,10 @@ func (pacb *ProjectAssociationCreateBulk) Save(ctx context.Context) ([]*ProjectA
 				}
 				mutation.id = &nodes[i].ID
 				mutation.done = true
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -259,4 +278,17 @@ func (pacb *ProjectAssociationCreateBulk) SaveX(ctx context.Context) []*ProjectA
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (pacb *ProjectAssociationCreateBulk) Exec(ctx context.Context) error {
+	_, err := pacb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (pacb *ProjectAssociationCreateBulk) ExecX(ctx context.Context) {
+	if err := pacb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

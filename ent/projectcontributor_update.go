@@ -23,9 +23,9 @@ type ProjectContributorUpdate struct {
 	mutation *ProjectContributorMutation
 }
 
-// Where adds a new predicate for the ProjectContributorUpdate builder.
+// Where appends a list predicates to the ProjectContributorUpdate builder.
 func (pcu *ProjectContributorUpdate) Where(ps ...predicate.ProjectContributor) *ProjectContributorUpdate {
-	pcu.mutation.predicates = append(pcu.mutation.predicates, ps...)
+	pcu.mutation.Where(ps...)
 	return pcu
 }
 
@@ -100,6 +100,9 @@ func (pcu *ProjectContributorUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(pcu.hooks) - 1; i >= 0; i-- {
+			if pcu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pcu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pcu.mutation); err != nil {
@@ -339,6 +342,9 @@ func (pcuo *ProjectContributorUpdateOne) Save(ctx context.Context) (*ProjectCont
 			return node, err
 		})
 		for i := len(pcuo.hooks) - 1; i >= 0; i-- {
+			if pcuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pcuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pcuo.mutation); err != nil {

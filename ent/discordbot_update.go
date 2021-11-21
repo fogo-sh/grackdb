@@ -24,9 +24,9 @@ type DiscordBotUpdate struct {
 	mutation *DiscordBotMutation
 }
 
-// Where adds a new predicate for the DiscordBotUpdate builder.
+// Where appends a list predicates to the DiscordBotUpdate builder.
 func (dbu *DiscordBotUpdate) Where(ps ...predicate.DiscordBot) *DiscordBotUpdate {
-	dbu.mutation.predicates = append(dbu.mutation.predicates, ps...)
+	dbu.mutation.Where(ps...)
 	return dbu
 }
 
@@ -120,6 +120,9 @@ func (dbu *DiscordBotUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(dbu.hooks) - 1; i >= 0; i-- {
+			if dbu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dbu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dbu.mutation); err != nil {
@@ -401,6 +404,9 @@ func (dbuo *DiscordBotUpdateOne) Save(ctx context.Context) (*DiscordBot, error) 
 			return node, err
 		})
 		for i := len(dbuo.hooks) - 1; i >= 0; i-- {
+			if dbuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dbuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dbuo.mutation); err != nil {

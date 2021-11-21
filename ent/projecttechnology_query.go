@@ -361,8 +361,8 @@ func (ptq *ProjectTechnologyQuery) GroupBy(field string, fields ...string) *Proj
 //		Select(projecttechnology.FieldType).
 //		Scan(ctx, &v)
 //
-func (ptq *ProjectTechnologyQuery) Select(field string, fields ...string) *ProjectTechnologySelect {
-	ptq.fields = append([]string{field}, fields...)
+func (ptq *ProjectTechnologyQuery) Select(fields ...string) *ProjectTechnologySelect {
+	ptq.fields = append(ptq.fields, fields...)
 	return &ProjectTechnologySelect{ProjectTechnologyQuery: ptq}
 }
 

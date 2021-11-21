@@ -361,8 +361,8 @@ func (gomq *GithubOrganizationMemberQuery) GroupBy(field string, fields ...strin
 //		Select(githuborganizationmember.FieldRole).
 //		Scan(ctx, &v)
 //
-func (gomq *GithubOrganizationMemberQuery) Select(field string, fields ...string) *GithubOrganizationMemberSelect {
-	gomq.fields = append([]string{field}, fields...)
+func (gomq *GithubOrganizationMemberQuery) Select(fields ...string) *GithubOrganizationMemberSelect {
+	gomq.fields = append(gomq.fields, fields...)
 	return &GithubOrganizationMemberSelect{GithubOrganizationMemberQuery: gomq}
 }
 

@@ -33,28 +33,28 @@ const (
 	EdgeRepositories = "repositories"
 	// Table holds the table name of the technology in the database.
 	Table = "technologies"
-	// ParentTechnologiesTable is the table the holds the parent_technologies relation/edge.
+	// ParentTechnologiesTable is the table that holds the parent_technologies relation/edge.
 	ParentTechnologiesTable = "technology_associations"
 	// ParentTechnologiesInverseTable is the table name for the TechnologyAssociation entity.
 	// It exists in this package in order to avoid circular dependency with the "technologyassociation" package.
 	ParentTechnologiesInverseTable = "technology_associations"
 	// ParentTechnologiesColumn is the table column denoting the parent_technologies relation/edge.
 	ParentTechnologiesColumn = "technology_parent_technologies"
-	// ChildTechnologiesTable is the table the holds the child_technologies relation/edge.
+	// ChildTechnologiesTable is the table that holds the child_technologies relation/edge.
 	ChildTechnologiesTable = "technology_associations"
 	// ChildTechnologiesInverseTable is the table name for the TechnologyAssociation entity.
 	// It exists in this package in order to avoid circular dependency with the "technologyassociation" package.
 	ChildTechnologiesInverseTable = "technology_associations"
 	// ChildTechnologiesColumn is the table column denoting the child_technologies relation/edge.
 	ChildTechnologiesColumn = "technology_child_technologies"
-	// ProjectsTable is the table the holds the projects relation/edge.
+	// ProjectsTable is the table that holds the projects relation/edge.
 	ProjectsTable = "project_technologies"
 	// ProjectsInverseTable is the table name for the ProjectTechnology entity.
 	// It exists in this package in order to avoid circular dependency with the "projecttechnology" package.
 	ProjectsInverseTable = "project_technologies"
 	// ProjectsColumn is the table column denoting the projects relation/edge.
 	ProjectsColumn = "technology_projects"
-	// RepositoriesTable is the table the holds the repositories relation/edge.
+	// RepositoriesTable is the table that holds the repositories relation/edge.
 	RepositoriesTable = "repository_technologies"
 	// RepositoriesInverseTable is the table name for the RepositoryTechnology entity.
 	// It exists in this package in order to avoid circular dependency with the "repositorytechnology" package.

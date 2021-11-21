@@ -20,9 +20,9 @@ type ProjectAssociationDelete struct {
 	mutation *ProjectAssociationMutation
 }
 
-// Where adds a new predicate to the ProjectAssociationDelete builder.
+// Where appends a list predicates to the ProjectAssociationDelete builder.
 func (pad *ProjectAssociationDelete) Where(ps ...predicate.ProjectAssociation) *ProjectAssociationDelete {
-	pad.mutation.predicates = append(pad.mutation.predicates, ps...)
+	pad.mutation.Where(ps...)
 	return pad
 }
 
@@ -46,6 +46,9 @@ func (pad *ProjectAssociationDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(pad.hooks) - 1; i >= 0; i-- {
+			if pad.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pad.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pad.mutation); err != nil {

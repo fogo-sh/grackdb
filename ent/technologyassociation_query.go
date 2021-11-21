@@ -360,8 +360,8 @@ func (taq *TechnologyAssociationQuery) GroupBy(field string, fields ...string) *
 //		Select(technologyassociation.FieldType).
 //		Scan(ctx, &v)
 //
-func (taq *TechnologyAssociationQuery) Select(field string, fields ...string) *TechnologyAssociationSelect {
-	taq.fields = append([]string{field}, fields...)
+func (taq *TechnologyAssociationQuery) Select(fields ...string) *TechnologyAssociationSelect {
+	taq.fields = append(taq.fields, fields...)
 	return &TechnologyAssociationSelect{TechnologyAssociationQuery: taq}
 }
 

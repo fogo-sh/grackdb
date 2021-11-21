@@ -23,9 +23,9 @@ type GithubOrganizationMemberUpdate struct {
 	mutation *GithubOrganizationMemberMutation
 }
 
-// Where adds a new predicate for the GithubOrganizationMemberUpdate builder.
+// Where appends a list predicates to the GithubOrganizationMemberUpdate builder.
 func (gomu *GithubOrganizationMemberUpdate) Where(ps ...predicate.GithubOrganizationMember) *GithubOrganizationMemberUpdate {
-	gomu.mutation.predicates = append(gomu.mutation.predicates, ps...)
+	gomu.mutation.Where(ps...)
 	return gomu
 }
 
@@ -108,6 +108,9 @@ func (gomu *GithubOrganizationMemberUpdate) Save(ctx context.Context) (int, erro
 			return affected, err
 		})
 		for i := len(gomu.hooks) - 1; i >= 0; i-- {
+			if gomu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gomu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gomu.mutation); err != nil {
@@ -355,6 +358,9 @@ func (gomuo *GithubOrganizationMemberUpdateOne) Save(ctx context.Context) (*Gith
 			return node, err
 		})
 		for i := len(gomuo.hooks) - 1; i >= 0; i-- {
+			if gomuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gomuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gomuo.mutation); err != nil {
