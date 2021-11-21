@@ -113,11 +113,7 @@ func handleGithubCallback(c *gin.Context) {
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("jwt", tokenString, 0, "/", "", false, false)
 
-	c.Data(
-		http.StatusOK,
-		"text/plain;charset=UTF-8",
-		[]byte(fmt.Sprintf("Welcome to GrackDB!\n\nYour auth token is:\n%s\n\nYou can use this to query restricted API fields (and in the future, to make changes to the DB!)", tokenString)),
-	)
+	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
 func handleDiscordAuth(c *gin.Context) {
@@ -224,9 +220,5 @@ func handleDiscordCallback(c *gin.Context) {
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("jwt", tokenString, 0, "/", "", false, false)
 
-	c.Data(
-		http.StatusOK,
-		"text/plain;charset=UTF-8",
-		[]byte(fmt.Sprintf("Welcome to GrackDB!\n\nYour auth token is:\n%s\n\nYou can use this to query restricted API fields (and in the future, to make changes to the DB!)", tokenString)),
-	)
+	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
