@@ -173,25 +173,27 @@ export function LoginPage() {
 				<p className="text-center italic">no available auth providers!</p>
 			)}
 
-			{availableAuthProviders.discord && (
-				<a href={availableAuthProviders.discord.url}>
-					<button className="btn flex w-[6rem] my-3 mx-auto">
-						<div className="flex items-center mx-auto">
-							<FaDiscord className="mr-1" /> Discord
-						</div>
-					</button>
-				</a>
-			)}
+			<div className="flex flex-col items-center">
+				{availableAuthProviders.discord && (
+					<a href={availableAuthProviders.discord.url}>
+						<button className="btn flex w-[6rem] my-2">
+							<div className="flex items-center mx-auto">
+								<FaDiscord className="mr-1" /> Discord
+							</div>
+						</button>
+					</a>
+				)}
 
-			{availableAuthProviders.github && (
-				<a href={availableAuthProviders.github.url}>
-					<button className="btn flex w-[6rem] my-3 mx-auto">
-						<div className="flex items-center mx-auto">
-							<FaGithub className="mr-1" /> GitHub
-						</div>
-					</button>
-				</a>
-			)}
+				{availableAuthProviders.github && (
+					<a href={availableAuthProviders.github.url}>
+						<button className="btn flex w-[6rem] my-2">
+							<div className="flex items-center mx-auto">
+								<FaGithub className="mr-1" /> GitHub
+							</div>
+						</button>
+					</a>
+				)}
+			</div>
 
 			{developmentMode && (
 				<>
