@@ -178,7 +178,7 @@ export function ProjectPage() {
 							>
 								{({ projectName }) => (
 									<>
-										<span>{projectName} <i>({enumValueToDisplayName(parentProject.type)})</i></span>
+										<span>{projectName} <i>({project.name} {enumValueToDisplayName(parentProject.type)})</i></span>
 										<TechnologiesReference
 											technologies={parentProject.parent.technologies}
 										/>
@@ -202,7 +202,7 @@ export function ProjectPage() {
 							>
 								{({ projectName }) => (
 									<>
-										<span>{projectName} <i>({enumValueToDisplayName(childProject.type)})</i></span>
+										<span>{projectName} <i>({enumValueToDisplayName(childProject.type)} {project.name})</i></span>
 										<TechnologiesReference
 											technologies={childProject.child.technologies}
 										/>
