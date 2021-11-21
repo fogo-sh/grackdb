@@ -11,6 +11,10 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
+h1 {
+	@apply text-2xl my-3 font-semibold;
+}
+
 h2 {
 	@apply text-xl my-3 font-semibold;
 }

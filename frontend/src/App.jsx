@@ -3,11 +3,11 @@ import { Provider } from "urql";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 
 import { client } from "./graphql";
-import { HomepagePage } from "./pages/Homepage";
-import { ProjectsPage } from "./pages/Projects";
-import { ProjectPage } from "./pages/Project";
-import { UsersPage } from "./pages/Users";
-import { UserPage } from "./pages/User";
+import { HomepagePage } from "./pages/HomepagePage";
+import { ProjectsPage } from "./pages/ProjectsPage";
+import { ProjectPage } from "./pages/ProjectPage";
+import { UsersPage } from "./pages/UsersPage";
+import { UserPage } from "./pages/UserPage";
 
 import grack from "./grack.png";
 
