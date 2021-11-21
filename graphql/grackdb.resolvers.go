@@ -5,10 +5,13 @@ package graphql
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
+	"github.com/golang-jwt/jwt"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
@@ -371,6 +374,40 @@ func (r *mutationResolver) DeleteRepositoryTechnology(ctx context.Context, id in
 		Exec(ctx)
 }
 
+func (r *mutationResolver) AssumeDevelopmentUser(ctx context.Context, id int) (*ent.User, error) {
+	if !grackdb.AppConfig.DevelopmentMode {
+		return nil, errors.New("assumeDevelopmentUser is only available in development mode")
+	}
+
+	user, err := ent.FromContext(ctx).User.Get(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching user: %w", err)
+	}
+
+	unsignedToken := jwt.NewWithClaims(
+		jwt.SigningMethodHS512,
+		jwt.MapClaims{
+			"iat": time.Now().UTC().Unix(),
+			"sub": user.ID,
+		},
+	)
+
+	tokenString, err := unsignedToken.SignedString([]byte(grackdb.AppConfig.JwtSigningSecret))
+
+	if err != nil {
+		return nil, fmt.Errorf("error signing token: %w", err)
+	}
+
+	ginContext, err := grackdb.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error getting gin context: %w", err)
+	}
+
+	ginContext.SetCookie("jwt", tokenString, 0, "/", "", false, false)
+
+	return user, nil
+}
+
 func (r *queryResolver) Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error) {
 	return r.client.User.Query().
 		Paginate(ctx, after, first, before, last,
@@ -516,6 +553,10 @@ func (r *queryResolver) CurrentUser(ctx context.Context) (*ent.User, error) {
 		return nil, fmt.Errorf("error fetching context: %w", err)
 	}
 	return ginCtx.Value("user").(*ent.User), nil
+}
+
+func (r *queryResolver) DevelopmentMode(ctx context.Context) (bool, error) {
+	return grackdb.AppConfig.DevelopmentMode, nil
 }
 
 // Mutation returns MutationResolver implementation.

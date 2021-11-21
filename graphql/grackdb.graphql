@@ -631,6 +631,8 @@ type Query {
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
+
+    developmentMode: Boolean!
 }
 
 input CreateUserInput {
@@ -862,4 +864,6 @@ type Mutation {
     createRepositoryTechnology(input: CreateRepositoryTechnologyInput!): RepositoryTechnology!
     updateRepositoryTechnology(id: ID!, input: UpdateRepositoryTechnologyInput!): RepositoryTechnology!
     deleteRepositoryTechnology(id: ID!): RepositoryTechnology!
+
+    assumeDevelopmentUser(id: ID!): User!
 }

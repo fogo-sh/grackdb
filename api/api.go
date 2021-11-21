@@ -7,14 +7,15 @@ import (
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect"
-	"github.com/99designs/gqlgen/graphql/executor"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	introspectionfilter "github.com/ec2-software/gqlgen-introspect-filter"
 	"github.com/fogo-sh/grackdb"
 	"github.com/fogo-sh/grackdb/ent"
 	"github.com/fogo-sh/grackdb/graphql"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/vektah/gqlparser/v2/ast"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
@@ -130,9 +131,12 @@ func StartApi() error {
 	app.Use(jwtAuthMiddleware(entClient))
 	app.Use(ginContextToContextMiddleware())
 
-	executor.New(graphql.NewSchema(entClient))
-
 	srv := handler.NewDefaultServer(graphql.NewSchema(entClient))
+	srv.Use(&introspectionfilter.Plugin{
+		FieldFilter: func(ctx context.Context, fd *ast.FieldDefinition) bool {
+			return fd.Name != "assumeDevelopmentUser" || grackdb.AppConfig.DevelopmentMode
+		},
+	})
 	srv.Use(entgql.Transactioner{TxOpener: entClient})
 
 	app.Static("/assets", "./frontend/dist/assets")
@@ -140,7 +144,6 @@ func StartApi() error {
 	app.NoRoute(func(c *gin.Context) {
 		c.File("./frontend/dist/index.html")
 	})
-	// app.StaticFile("/", "./frontend/dist/index.html")
 
 	app.GET("/playground", playgroundHandler())
 	app.POST("/query", graphqlHandler(srv))

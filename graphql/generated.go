@@ -152,6 +152,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AssumeDevelopmentUser          func(childComplexity int, id int) int
 		CreateDiscordAccount           func(childComplexity int, input ent.CreateDiscordAccountInput) int
 		CreateDiscordBot               func(childComplexity int, input ent.CreateDiscordBotInput) int
 		CreateGithubAccount            func(childComplexity int, input ent.CreateGithubAccountInput) int
@@ -289,6 +290,7 @@ type ComplexityRoot struct {
 	Query struct {
 		AvailableAuthProviders    func(childComplexity int) int
 		CurrentUser               func(childComplexity int) int
+		DevelopmentMode           func(childComplexity int) int
 		DiscordAccounts           func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.DiscordAccountOrder, where *ent.DiscordAccountWhereInput) int
 		DiscordBots               func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.DiscordBotWhereInput) int
 		GithubAccounts            func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubAccountOrder, where *ent.GithubAccountWhereInput) int
@@ -472,6 +474,7 @@ type MutationResolver interface {
 	CreateRepositoryTechnology(ctx context.Context, input ent.CreateRepositoryTechnologyInput) (*ent.RepositoryTechnology, error)
 	UpdateRepositoryTechnology(ctx context.Context, id int, input ent.UpdateRepositoryTechnologyInput) (*ent.RepositoryTechnology, error)
 	DeleteRepositoryTechnology(ctx context.Context, id int) (*ent.RepositoryTechnology, error)
+	AssumeDevelopmentUser(ctx context.Context, id int) (*ent.User, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error)
@@ -491,6 +494,7 @@ type QueryResolver interface {
 	RepositoryTechnologies(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryTechnologyOrder, where *ent.RepositoryTechnologyWhereInput) (*ent.RepositoryTechnologyConnection, error)
 	AvailableAuthProviders(ctx context.Context) ([]*AuthProvider, error)
 	CurrentUser(ctx context.Context) (*ent.User, error)
+	DevelopmentMode(ctx context.Context) (bool, error)
 }
 
 type executableSchema struct {
@@ -864,6 +868,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.GithubOrganizationMemberEdge.Node(childComplexity), true
+
+	case "Mutation.assumeDevelopmentUser":
+		if e.complexity.Mutation.AssumeDevelopmentUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_assumeDevelopmentUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AssumeDevelopmentUser(childComplexity, args["id"].(int)), true
 
 	case "Mutation.createDiscordAccount":
 		if e.complexity.Mutation.CreateDiscordAccount == nil {
@@ -1754,6 +1770,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.CurrentUser(childComplexity), true
+
+	case "Query.developmentMode":
+		if e.complexity.Query.DevelopmentMode == nil {
+			break
+		}
+
+		return e.complexity.Query.DevelopmentMode(childComplexity), true
 
 	case "Query.discordAccounts":
 		if e.complexity.Query.DiscordAccounts == nil {
@@ -3087,6 +3110,8 @@ type Query {
 
     availableAuthProviders: [AuthProvider]
     currentUser: User
+
+    developmentMode: Boolean!
 }
 
 input CreateUserInput {
@@ -3318,6 +3343,8 @@ type Mutation {
     createRepositoryTechnology(input: CreateRepositoryTechnologyInput!): RepositoryTechnology!
     updateRepositoryTechnology(id: ID!, input: UpdateRepositoryTechnologyInput!): RepositoryTechnology!
     deleteRepositoryTechnology(id: ID!): RepositoryTechnology!
+
+    assumeDevelopmentUser(id: ID!): User!
 }
 `, BuiltIn: false},
 	{Name: "ent.graphql", Input: `"""
@@ -4118,6 +4145,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_assumeDevelopmentUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createDiscordAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -9494,6 +9536,48 @@ func (ec *executionContext) _Mutation_deleteRepositoryTechnology(ctx context.Con
 	return ec.marshalNRepositoryTechnology2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐRepositoryTechnology(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_assumeDevelopmentUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_assumeDevelopmentUser_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AssumeDevelopmentUser(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11764,6 +11848,41 @@ func (ec *executionContext) _Query_currentUser(ctx context.Context, field graphq
 	res := resTmp.(*ent.User)
 	fc.Result = res
 	return ec.marshalOUser2ᚖgithubᚗcomᚋfogoᚑshᚋgrackdbᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_developmentMode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().DevelopmentMode(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -14165,6 +14284,41 @@ func (ec *executionContext) ___Directive_args(ctx context.Context, field graphql
 	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValueᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) ___Directive_isRepeatable(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "__Directive",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsRepeatable, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) ___EnumValue_name(ctx context.Context, field graphql.CollectedField, obj *introspection.EnumValue) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15117,7 +15271,10 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 func (ec *executionContext) unmarshalInputCreateDiscordAccountInput(ctx context.Context, obj interface{}) (ent.CreateDiscordAccountInput, error) {
 	var it ent.CreateDiscordAccountInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15161,7 +15318,10 @@ func (ec *executionContext) unmarshalInputCreateDiscordAccountInput(ctx context.
 
 func (ec *executionContext) unmarshalInputCreateDiscordBotInput(ctx context.Context, obj interface{}) (ent.CreateDiscordBotInput, error) {
 	var it ent.CreateDiscordBotInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15197,7 +15357,10 @@ func (ec *executionContext) unmarshalInputCreateDiscordBotInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputCreateGithubAccountInput(ctx context.Context, obj interface{}) (ent.CreateGithubAccountInput, error) {
 	var it ent.CreateGithubAccountInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15225,7 +15388,10 @@ func (ec *executionContext) unmarshalInputCreateGithubAccountInput(ctx context.C
 
 func (ec *executionContext) unmarshalInputCreateGithubOrganizationInput(ctx context.Context, obj interface{}) (ent.CreateGithubOrganizationInput, error) {
 	var it ent.CreateGithubOrganizationInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15253,7 +15419,10 @@ func (ec *executionContext) unmarshalInputCreateGithubOrganizationInput(ctx cont
 
 func (ec *executionContext) unmarshalInputCreateGithubOrganizationMemberInput(ctx context.Context, obj interface{}) (ent.CreateGithubOrganizationMemberInput, error) {
 	var it ent.CreateGithubOrganizationMemberInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15289,7 +15458,10 @@ func (ec *executionContext) unmarshalInputCreateGithubOrganizationMemberInput(ct
 
 func (ec *executionContext) unmarshalInputCreateProjectAssociationInput(ctx context.Context, obj interface{}) (ent.CreateProjectAssociationInput, error) {
 	var it ent.CreateProjectAssociationInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15325,7 +15497,10 @@ func (ec *executionContext) unmarshalInputCreateProjectAssociationInput(ctx cont
 
 func (ec *executionContext) unmarshalInputCreateProjectContributorInput(ctx context.Context, obj interface{}) (ent.CreateProjectContributorInput, error) {
 	var it ent.CreateProjectContributorInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15361,7 +15536,10 @@ func (ec *executionContext) unmarshalInputCreateProjectContributorInput(ctx cont
 
 func (ec *executionContext) unmarshalInputCreateProjectInput(ctx context.Context, obj interface{}) (ent.CreateProjectInput, error) {
 	var it ent.CreateProjectInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15405,7 +15583,10 @@ func (ec *executionContext) unmarshalInputCreateProjectInput(ctx context.Context
 
 func (ec *executionContext) unmarshalInputCreateProjectTechnologyInput(ctx context.Context, obj interface{}) (ent.CreateProjectTechnologyInput, error) {
 	var it ent.CreateProjectTechnologyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15441,7 +15622,10 @@ func (ec *executionContext) unmarshalInputCreateProjectTechnologyInput(ctx conte
 
 func (ec *executionContext) unmarshalInputCreateRepositoryInput(ctx context.Context, obj interface{}) (ent.CreateRepositoryInput, error) {
 	var it ent.CreateRepositoryInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15493,7 +15677,10 @@ func (ec *executionContext) unmarshalInputCreateRepositoryInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputCreateRepositoryTechnologyInput(ctx context.Context, obj interface{}) (ent.CreateRepositoryTechnologyInput, error) {
 	var it ent.CreateRepositoryTechnologyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15529,7 +15716,10 @@ func (ec *executionContext) unmarshalInputCreateRepositoryTechnologyInput(ctx co
 
 func (ec *executionContext) unmarshalInputCreateSiteInput(ctx context.Context, obj interface{}) (ent.CreateSiteInput, error) {
 	var it ent.CreateSiteInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15565,7 +15755,10 @@ func (ec *executionContext) unmarshalInputCreateSiteInput(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputCreateTechnologyAssociationInput(ctx context.Context, obj interface{}) (ent.CreateTechnologyAssociationInput, error) {
 	var it ent.CreateTechnologyAssociationInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15601,7 +15794,10 @@ func (ec *executionContext) unmarshalInputCreateTechnologyAssociationInput(ctx c
 
 func (ec *executionContext) unmarshalInputCreateTechnologyInput(ctx context.Context, obj interface{}) (ent.CreateTechnologyInput, error) {
 	var it ent.CreateTechnologyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15645,7 +15841,10 @@ func (ec *executionContext) unmarshalInputCreateTechnologyInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, obj interface{}) (ent.CreateUserInput, error) {
 	var it ent.CreateUserInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15673,7 +15872,10 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputDiscordAccountOrder(ctx context.Context, obj interface{}) (ent.DiscordAccountOrder, error) {
 	var it ent.DiscordAccountOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15701,7 +15903,10 @@ func (ec *executionContext) unmarshalInputDiscordAccountOrder(ctx context.Contex
 
 func (ec *executionContext) unmarshalInputDiscordAccountWhereInput(ctx context.Context, obj interface{}) (ent.DiscordAccountWhereInput, error) {
 	var it ent.DiscordAccountWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16145,7 +16350,10 @@ func (ec *executionContext) unmarshalInputDiscordAccountWhereInput(ctx context.C
 
 func (ec *executionContext) unmarshalInputDiscordBotWhereInput(ctx context.Context, obj interface{}) (ent.DiscordBotWhereInput, error) {
 	var it ent.DiscordBotWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16293,7 +16501,10 @@ func (ec *executionContext) unmarshalInputDiscordBotWhereInput(ctx context.Conte
 
 func (ec *executionContext) unmarshalInputGithubAccountOrder(ctx context.Context, obj interface{}) (ent.GithubAccountOrder, error) {
 	var it ent.GithubAccountOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16321,7 +16532,10 @@ func (ec *executionContext) unmarshalInputGithubAccountOrder(ctx context.Context
 
 func (ec *executionContext) unmarshalInputGithubAccountWhereInput(ctx context.Context, obj interface{}) (ent.GithubAccountWhereInput, error) {
 	var it ent.GithubAccountWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16573,7 +16787,10 @@ func (ec *executionContext) unmarshalInputGithubAccountWhereInput(ctx context.Co
 
 func (ec *executionContext) unmarshalInputGithubOrganizationMemberOrder(ctx context.Context, obj interface{}) (ent.GithubOrganizationMemberOrder, error) {
 	var it ent.GithubOrganizationMemberOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16601,7 +16818,10 @@ func (ec *executionContext) unmarshalInputGithubOrganizationMemberOrder(ctx cont
 
 func (ec *executionContext) unmarshalInputGithubOrganizationMemberWhereInput(ctx context.Context, obj interface{}) (ent.GithubOrganizationMemberWhereInput, error) {
 	var it ent.GithubOrganizationMemberWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16765,7 +16985,10 @@ func (ec *executionContext) unmarshalInputGithubOrganizationMemberWhereInput(ctx
 
 func (ec *executionContext) unmarshalInputGithubOrganizationOrder(ctx context.Context, obj interface{}) (ent.GithubOrganizationOrder, error) {
 	var it ent.GithubOrganizationOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16793,7 +17016,10 @@ func (ec *executionContext) unmarshalInputGithubOrganizationOrder(ctx context.Co
 
 func (ec *executionContext) unmarshalInputGithubOrganizationWhereInput(ctx context.Context, obj interface{}) (ent.GithubOrganizationWhereInput, error) {
 	var it ent.GithubOrganizationWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17149,7 +17375,10 @@ func (ec *executionContext) unmarshalInputGithubOrganizationWhereInput(ctx conte
 
 func (ec *executionContext) unmarshalInputProjectAssociationOrder(ctx context.Context, obj interface{}) (ent.ProjectAssociationOrder, error) {
 	var it ent.ProjectAssociationOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17177,7 +17406,10 @@ func (ec *executionContext) unmarshalInputProjectAssociationOrder(ctx context.Co
 
 func (ec *executionContext) unmarshalInputProjectAssociationWhereInput(ctx context.Context, obj interface{}) (ent.ProjectAssociationWhereInput, error) {
 	var it ent.ProjectAssociationWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17341,7 +17573,10 @@ func (ec *executionContext) unmarshalInputProjectAssociationWhereInput(ctx conte
 
 func (ec *executionContext) unmarshalInputProjectContributorOrder(ctx context.Context, obj interface{}) (ent.ProjectContributorOrder, error) {
 	var it ent.ProjectContributorOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17369,7 +17604,10 @@ func (ec *executionContext) unmarshalInputProjectContributorOrder(ctx context.Co
 
 func (ec *executionContext) unmarshalInputProjectContributorWhereInput(ctx context.Context, obj interface{}) (ent.ProjectContributorWhereInput, error) {
 	var it ent.ProjectContributorWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17533,7 +17771,10 @@ func (ec *executionContext) unmarshalInputProjectContributorWhereInput(ctx conte
 
 func (ec *executionContext) unmarshalInputProjectOrder(ctx context.Context, obj interface{}) (ent.ProjectOrder, error) {
 	var it ent.ProjectOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17561,7 +17802,10 @@ func (ec *executionContext) unmarshalInputProjectOrder(ctx context.Context, obj 
 
 func (ec *executionContext) unmarshalInputProjectTechnologyOrder(ctx context.Context, obj interface{}) (ent.ProjectTechnologyOrder, error) {
 	var it ent.ProjectTechnologyOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17589,7 +17833,10 @@ func (ec *executionContext) unmarshalInputProjectTechnologyOrder(ctx context.Con
 
 func (ec *executionContext) unmarshalInputProjectTechnologyWhereInput(ctx context.Context, obj interface{}) (ent.ProjectTechnologyWhereInput, error) {
 	var it ent.ProjectTechnologyWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17753,7 +18000,10 @@ func (ec *executionContext) unmarshalInputProjectTechnologyWhereInput(ctx contex
 
 func (ec *executionContext) unmarshalInputProjectWhereInput(ctx context.Context, obj interface{}) (ent.ProjectWhereInput, error) {
 	var it ent.ProjectWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -18333,7 +18583,10 @@ func (ec *executionContext) unmarshalInputProjectWhereInput(ctx context.Context,
 
 func (ec *executionContext) unmarshalInputRepositoryOrder(ctx context.Context, obj interface{}) (ent.RepositoryOrder, error) {
 	var it ent.RepositoryOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -18361,7 +18614,10 @@ func (ec *executionContext) unmarshalInputRepositoryOrder(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputRepositoryTechnologyOrder(ctx context.Context, obj interface{}) (ent.RepositoryTechnologyOrder, error) {
 	var it ent.RepositoryTechnologyOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -18389,7 +18645,10 @@ func (ec *executionContext) unmarshalInputRepositoryTechnologyOrder(ctx context.
 
 func (ec *executionContext) unmarshalInputRepositoryTechnologyWhereInput(ctx context.Context, obj interface{}) (ent.RepositoryTechnologyWhereInput, error) {
 	var it ent.RepositoryTechnologyWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -18553,7 +18812,10 @@ func (ec *executionContext) unmarshalInputRepositoryTechnologyWhereInput(ctx con
 
 func (ec *executionContext) unmarshalInputRepositoryWhereInput(ctx context.Context, obj interface{}) (ent.RepositoryWhereInput, error) {
 	var it ent.RepositoryWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -18973,7 +19235,10 @@ func (ec *executionContext) unmarshalInputRepositoryWhereInput(ctx context.Conte
 
 func (ec *executionContext) unmarshalInputSiteOrder(ctx context.Context, obj interface{}) (ent.SiteOrder, error) {
 	var it ent.SiteOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -19001,7 +19266,10 @@ func (ec *executionContext) unmarshalInputSiteOrder(ctx context.Context, obj int
 
 func (ec *executionContext) unmarshalInputSiteWhereInput(ctx context.Context, obj interface{}) (ent.SiteWhereInput, error) {
 	var it ent.SiteWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -19237,7 +19505,10 @@ func (ec *executionContext) unmarshalInputSiteWhereInput(ctx context.Context, ob
 
 func (ec *executionContext) unmarshalInputTechnologyAssociationOrder(ctx context.Context, obj interface{}) (ent.TechnologyAssociationOrder, error) {
 	var it ent.TechnologyAssociationOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -19265,7 +19536,10 @@ func (ec *executionContext) unmarshalInputTechnologyAssociationOrder(ctx context
 
 func (ec *executionContext) unmarshalInputTechnologyAssociationWhereInput(ctx context.Context, obj interface{}) (ent.TechnologyAssociationWhereInput, error) {
 	var it ent.TechnologyAssociationWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -19429,7 +19703,10 @@ func (ec *executionContext) unmarshalInputTechnologyAssociationWhereInput(ctx co
 
 func (ec *executionContext) unmarshalInputTechnologyOrder(ctx context.Context, obj interface{}) (ent.TechnologyOrder, error) {
 	var it ent.TechnologyOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -19457,7 +19734,10 @@ func (ec *executionContext) unmarshalInputTechnologyOrder(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputTechnologyWhereInput(ctx context.Context, obj interface{}) (ent.TechnologyWhereInput, error) {
 	var it ent.TechnologyWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -19997,7 +20277,10 @@ func (ec *executionContext) unmarshalInputTechnologyWhereInput(ctx context.Conte
 
 func (ec *executionContext) unmarshalInputUpdateDiscordAccountInput(ctx context.Context, obj interface{}) (ent.UpdateDiscordAccountInput, error) {
 	var it ent.UpdateDiscordAccountInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20033,7 +20316,10 @@ func (ec *executionContext) unmarshalInputUpdateDiscordAccountInput(ctx context.
 
 func (ec *executionContext) unmarshalInputUpdateDiscordBotInput(ctx context.Context, obj interface{}) (ent.UpdateDiscordBotInput, error) {
 	var it ent.UpdateDiscordBotInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20069,7 +20355,10 @@ func (ec *executionContext) unmarshalInputUpdateDiscordBotInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputUpdateGithubAccountInput(ctx context.Context, obj interface{}) (ent.UpdateGithubAccountInput, error) {
 	var it ent.UpdateGithubAccountInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20097,7 +20386,10 @@ func (ec *executionContext) unmarshalInputUpdateGithubAccountInput(ctx context.C
 
 func (ec *executionContext) unmarshalInputUpdateGithubOrganizationInput(ctx context.Context, obj interface{}) (ent.UpdateGithubOrganizationInput, error) {
 	var it ent.UpdateGithubOrganizationInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20125,7 +20417,10 @@ func (ec *executionContext) unmarshalInputUpdateGithubOrganizationInput(ctx cont
 
 func (ec *executionContext) unmarshalInputUpdateGithubOrganizationMemberInput(ctx context.Context, obj interface{}) (ent.UpdateGithubOrganizationMemberInput, error) {
 	var it ent.UpdateGithubOrganizationMemberInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20161,7 +20456,10 @@ func (ec *executionContext) unmarshalInputUpdateGithubOrganizationMemberInput(ct
 
 func (ec *executionContext) unmarshalInputUpdateProjectAssociationInput(ctx context.Context, obj interface{}) (ent.UpdateProjectAssociationInput, error) {
 	var it ent.UpdateProjectAssociationInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20197,7 +20495,10 @@ func (ec *executionContext) unmarshalInputUpdateProjectAssociationInput(ctx cont
 
 func (ec *executionContext) unmarshalInputUpdateProjectContributorInput(ctx context.Context, obj interface{}) (ent.UpdateProjectContributorInput, error) {
 	var it ent.UpdateProjectContributorInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20233,7 +20534,10 @@ func (ec *executionContext) unmarshalInputUpdateProjectContributorInput(ctx cont
 
 func (ec *executionContext) unmarshalInputUpdateProjectInput(ctx context.Context, obj interface{}) (ent.UpdateProjectInput, error) {
 	var it ent.UpdateProjectInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20277,7 +20581,10 @@ func (ec *executionContext) unmarshalInputUpdateProjectInput(ctx context.Context
 
 func (ec *executionContext) unmarshalInputUpdateProjectTechnologyInput(ctx context.Context, obj interface{}) (ent.UpdateProjectTechnologyInput, error) {
 	var it ent.UpdateProjectTechnologyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20313,7 +20620,10 @@ func (ec *executionContext) unmarshalInputUpdateProjectTechnologyInput(ctx conte
 
 func (ec *executionContext) unmarshalInputUpdateRepositoryInput(ctx context.Context, obj interface{}) (ent.UpdateRepositoryInput, error) {
 	var it ent.UpdateRepositoryInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20365,7 +20675,10 @@ func (ec *executionContext) unmarshalInputUpdateRepositoryInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputUpdateRepositoryTechnologyInput(ctx context.Context, obj interface{}) (ent.UpdateRepositoryTechnologyInput, error) {
 	var it ent.UpdateRepositoryTechnologyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20401,7 +20714,10 @@ func (ec *executionContext) unmarshalInputUpdateRepositoryTechnologyInput(ctx co
 
 func (ec *executionContext) unmarshalInputUpdateSiteInput(ctx context.Context, obj interface{}) (ent.UpdateSiteInput, error) {
 	var it ent.UpdateSiteInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20437,7 +20753,10 @@ func (ec *executionContext) unmarshalInputUpdateSiteInput(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputUpdateTechnologyAssociationInput(ctx context.Context, obj interface{}) (ent.UpdateTechnologyAssociationInput, error) {
 	var it ent.UpdateTechnologyAssociationInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20473,7 +20792,10 @@ func (ec *executionContext) unmarshalInputUpdateTechnologyAssociationInput(ctx c
 
 func (ec *executionContext) unmarshalInputUpdateTechnologyInput(ctx context.Context, obj interface{}) (ent.UpdateTechnologyInput, error) {
 	var it ent.UpdateTechnologyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20517,7 +20839,10 @@ func (ec *executionContext) unmarshalInputUpdateTechnologyInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, obj interface{}) (ent.UpdateUserInput, error) {
 	var it ent.UpdateUserInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20545,7 +20870,10 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputUserOrder(ctx context.Context, obj interface{}) (ent.UserOrder, error) {
 	var it ent.UserOrder
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20573,7 +20901,10 @@ func (ec *executionContext) unmarshalInputUserOrder(ctx context.Context, obj int
 
 func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, obj interface{}) (ent.UserWhereInput, error) {
 	var it ent.UserWhereInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -21936,6 +22267,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "assumeDevelopmentUser":
+			out.Values[i] = ec._Mutation_assumeDevelopmentUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22733,6 +23069,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_currentUser(ctx, field)
+				return res
+			})
+		case "developmentMode":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_developmentMode(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "__type":
@@ -23574,6 +23924,11 @@ func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionS
 			}
 		case "args":
 			out.Values[i] = ec.___Directive_args(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "isRepeatable":
+			out.Values[i] = ec.___Directive_isRepeatable(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -24462,6 +24817,13 @@ func (ec *executionContext) marshalN__Directive2ᚕgithubᚗcomᚋ99designsᚋgq
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -24535,6 +24897,13 @@ func (ec *executionContext) marshalN__DirectiveLocation2ᚕstringᚄ(ctx context
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -24584,6 +24953,13 @@ func (ec *executionContext) marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋg
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -24625,6 +25001,13 @@ func (ec *executionContext) marshalN__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgen�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -24690,6 +25073,7 @@ func (ec *executionContext) marshalOAuthProvider2ᚕᚖgithubᚗcomᚋfogoᚑsh�
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -24777,6 +25161,13 @@ func (ec *executionContext) marshalODiscordAccount2ᚕᚖgithubᚗcomᚋfogoᚑs
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -24831,6 +25222,7 @@ func (ec *executionContext) marshalODiscordAccountEdge2ᚕᚖgithubᚗcomᚋfogo
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -24934,6 +25326,13 @@ func (ec *executionContext) marshalODiscordBot2ᚕᚖgithubᚗcomᚋfogoᚑshᚋ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -24988,6 +25387,7 @@ func (ec *executionContext) marshalODiscordBotEdge2ᚕᚖgithubᚗcomᚋfogoᚑs
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -25067,6 +25467,13 @@ func (ec *executionContext) marshalOGithubAccount2ᚕᚖgithubᚗcomᚋfogoᚑsh
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -25121,6 +25528,7 @@ func (ec *executionContext) marshalOGithubAccountEdge2ᚕᚖgithubᚗcomᚋfogo�
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -25238,6 +25646,7 @@ func (ec *executionContext) marshalOGithubOrganizationEdge2ᚕᚖgithubᚗcomᚋ
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -25285,6 +25694,13 @@ func (ec *executionContext) marshalOGithubOrganizationMember2ᚕᚖgithubᚗcom�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -25339,6 +25755,7 @@ func (ec *executionContext) marshalOGithubOrganizationMemberEdge2ᚕᚖgithubᚗ
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -25434,6 +25851,13 @@ func (ec *executionContext) marshalOGithubOrganizationMemberRole2ᚕgithubᚗcom
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -25574,6 +25998,12 @@ func (ec *executionContext) marshalOID2ᚕintᚄ(ctx context.Context, sel ast.Se
 		ret[i] = ec.marshalNID2int(ctx, sel, v[i])
 	}
 
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -25651,6 +26081,13 @@ func (ec *executionContext) marshalOProjectAssociation2ᚕᚖgithubᚗcomᚋfogo
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -25705,6 +26142,7 @@ func (ec *executionContext) marshalOProjectAssociationEdge2ᚕᚖgithubᚗcomᚋ
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -25800,6 +26238,13 @@ func (ec *executionContext) marshalOProjectAssociationType2ᚕgithubᚗcomᚋfog
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -25895,6 +26340,13 @@ func (ec *executionContext) marshalOProjectContributor2ᚕᚖgithubᚗcomᚋfogo
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -25949,6 +26401,7 @@ func (ec *executionContext) marshalOProjectContributorEdge2ᚕᚖgithubᚗcomᚋ
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -26044,6 +26497,13 @@ func (ec *executionContext) marshalOProjectContributorRole2ᚕgithubᚗcomᚋfog
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -26132,6 +26592,7 @@ func (ec *executionContext) marshalOProjectEdge2ᚕᚖgithubᚗcomᚋfogoᚑsh�
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -26203,6 +26664,13 @@ func (ec *executionContext) marshalOProjectTechnology2ᚕᚖgithubᚗcomᚋfogo�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -26274,6 +26742,13 @@ func (ec *executionContext) marshalOProjectTechnologyAssociationType2ᚕgithub�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -26337,6 +26812,7 @@ func (ec *executionContext) marshalOProjectTechnologyEdge2ᚕᚖgithubᚗcomᚋf
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -26472,6 +26948,13 @@ func (ec *executionContext) marshalORepository2ᚕᚖgithubᚗcomᚋfogoᚑshᚋ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -26526,6 +27009,7 @@ func (ec *executionContext) marshalORepositoryEdge2ᚕᚖgithubᚗcomᚋfogoᚑs
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -26597,6 +27081,13 @@ func (ec *executionContext) marshalORepositoryTechnology2ᚕᚖgithubᚗcomᚋfo
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -26668,6 +27159,13 @@ func (ec *executionContext) marshalORepositoryTechnologyAssociationType2ᚕgithu
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -26731,6 +27229,7 @@ func (ec *executionContext) marshalORepositoryTechnologyEdge2ᚕᚖgithubᚗcom�
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -26866,6 +27365,13 @@ func (ec *executionContext) marshalOSite2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgrackd
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -26920,6 +27426,7 @@ func (ec *executionContext) marshalOSiteEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgr
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -27028,6 +27535,12 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
 	}
 
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -27090,6 +27603,13 @@ func (ec *executionContext) marshalOTechnologyAssociation2ᚕᚖgithubᚗcomᚋf
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -27144,6 +27664,7 @@ func (ec *executionContext) marshalOTechnologyAssociationEdge2ᚕᚖgithubᚗcom
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -27239,6 +27760,13 @@ func (ec *executionContext) marshalOTechnologyAssociationType2ᚕgithubᚗcomᚋ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -27334,6 +27862,7 @@ func (ec *executionContext) marshalOTechnologyEdge2ᚕᚖgithubᚗcomᚋfogoᚑs
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -27429,6 +27958,13 @@ func (ec *executionContext) marshalOTechnologyType2ᚕgithubᚗcomᚋfogoᚑsh�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -27513,6 +28049,12 @@ func (ec *executionContext) marshalOTime2ᚕtimeᚐTimeᚄ(ctx context.Context, 
 		ret[i] = ec.marshalNTime2timeᚐTime(ctx, sel, v[i])
 	}
 
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -27582,6 +28124,7 @@ func (ec *executionContext) marshalOUserEdge2ᚕᚖgithubᚗcomᚋfogoᚑshᚋgr
 
 	}
 	wg.Wait()
+
 	return ret
 }
 
@@ -27685,6 +28228,13 @@ func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgq
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -27725,6 +28275,13 @@ func (ec *executionContext) marshalO__Field2ᚕgithubᚗcomᚋ99designsᚋgqlgen
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -27765,6 +28322,13 @@ func (ec *executionContext) marshalO__InputValue2ᚕgithubᚗcomᚋ99designsᚋg
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -27812,6 +28376,13 @@ func (ec *executionContext) marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgen�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 

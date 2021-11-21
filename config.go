@@ -20,6 +20,8 @@ type Config struct {
 	DiscordClientId     string `default:"" split_words:"true"`
 	DiscordClientSecret string `default:"" split_words:"true"`
 	DiscordCallbackUrl  string `default:"http://localhost:8081/oauth/discord/callback" split_words:"true"`
+
+	DevelopmentMode bool `default:"false" split_words:"true"`
 }
 
 var AppConfig Config
