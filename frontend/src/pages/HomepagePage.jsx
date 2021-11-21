@@ -49,6 +49,8 @@ export function HomepagePage() {
 
 	return (
 		<>
+			<h1 className="text-center">GrackDB</h1>
+			<p className="text-center">a database</p>
 			<h2>Users</h2>
 			<div className="mx-2">
 				{users.map((user) => (
