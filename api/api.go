@@ -128,7 +128,10 @@ func StartApi() error {
 	srv := handler.NewDefaultServer(graphql.NewSchema(entClient))
 	srv.Use(entgql.Transactioner{TxOpener: entClient})
 
-	app.GET("/", playgroundHandler())
+	app.Static("/assets", "./assets")
+	app.StaticFile("/", "./index.html")
+
+	app.GET("/playground", playgroundHandler())
 	app.POST("/query", graphqlHandler(srv))
 
 	app.GET("/oauth/github/auth", handleGithubAuth)
