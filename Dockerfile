@@ -7,7 +7,7 @@ RUN npm install && npm run build
 FROM golang:1.16-buster
 
 WORKDIR /build
-COPY --from=builder /app/dist .
+COPY --from=builder /app/dist ./frontend/dist
 COPY . .
 RUN go mod download &&\
     go mod verify &&\

@@ -135,8 +135,12 @@ func StartApi() error {
 	srv := handler.NewDefaultServer(graphql.NewSchema(entClient))
 	srv.Use(entgql.Transactioner{TxOpener: entClient})
 
-	app.Static("/assets", "./assets")
-	app.StaticFile("/", "./index.html")
+	app.Static("/assets", "./frontend/dist/assets")
+
+	app.NoRoute(func(c *gin.Context) {
+		c.File("./frontend/dist/index.html")
+	})
+	// app.StaticFile("/", "./frontend/dist/index.html")
 
 	app.GET("/playground", playgroundHandler())
 	app.POST("/query", graphqlHandler(srv))
