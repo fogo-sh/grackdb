@@ -1,13 +1,15 @@
 import React from "react";
+import ReactMarkdown from "react-markdown";
 import { useQuery } from "urql";
 import { useParams } from "react-router-dom";
 
-import {
-	TechnologiesReference,
-	TechnologyReference,
-} from "../components/Technology";
+import { TechnologiesReference, TechnologyReference } from "../components/Technology";
 import { enumValueToDisplayName } from "../utils";
-import { ProjectDates } from "../components/Project";
+import { ProjectDates, ProjectReference } from "../components/Project";
+import { GithubRepositoryReference } from "../components/Repositories";
+import { DiscordAccountReference } from "../components/DiscordAccount";
+import { SiteReference } from "../components/Site";
+import { UserReference } from "../components/User";
 
 const PROJECTS_BY_PROJECT_ID_QUERY = `
 query ProjectsByProjectId($projectId: ID!) {
@@ -36,18 +38,37 @@ query ProjectsByProjectId($projectId: ID!) {
 					id
 					account {
 						username
+						discriminator
 					}
 				}
 				parentProjects {
+					id
 					type
 					parent {
+						id
 						name
+						technologies {
+							technology {
+								id
+								name
+								colour
+							}
+						}
 					}
 				}
 				childProjects {
+					id
 					type
 					child {
+						id
 						name
+						technologies {
+							technology {
+								id
+								name
+								colour
+							}
+						}
 					}
 				}
 				contributors {
@@ -109,6 +130,89 @@ export function ProjectPage() {
 					</div>
 				))}
 			</div>
+
+			<div className="my-1">
+				{project.repositories.map((repository) => (
+					<GithubRepositoryReference
+						key={repository.id}
+						repository={repository}
+						hasLink
+					/>
+				))}
+				{project.sites.map((site) => (
+					<SiteReference key={site.id} site={site} hasLink />
+				))}
+				{project.discordBots.map((discordBot) => (
+					<DiscordAccountReference
+						key={discordBot.id}
+						discordAccount={discordBot.account}
+						hasLink
+					/>
+				))}
+			</div>
+
+			<ReactMarkdown className="mt-3 mb-4">{project.description}</ReactMarkdown>
+
+			<h2>Contributors</h2>
+			<div className="mx-2">
+				{project.contributors.map((contributor) => (
+					<UserReference key={contributor.id} user={contributor.user} hasLink>
+						{({ userName }) => (
+							<>
+								{userName} <i>({enumValueToDisplayName(contributor.role)})</i>
+							</>
+						)}
+					</UserReference>
+				))}
+			</div>
+
+			{project.parentProjects.length !== 0 && (
+				<>
+					<h2>Parent Projects</h2>
+					<div className="mx-2">
+						{project.parentProjects.map((parentProject) => (
+							<ProjectReference
+								key={parentProject.id}
+								project={parentProject.parent}
+								hasLink
+							>
+								{({ projectName }) => (
+									<>
+										<span>{projectName} <i>({enumValueToDisplayName(parentProject.type)})</i></span>
+										<TechnologiesReference
+											technologies={parentProject.parent.technologies}
+										/>
+									</>
+								)}
+							</ProjectReference>
+						))}
+					</div>
+				</>
+			)}
+
+			{project.childProjects.length !== 0 && (
+				<>
+					<h2>Child Projects</h2>
+					<div className="mx-2">
+						{project.childProjects.map((childProject) => (
+							<ProjectReference
+								key={childProject.id}
+								project={childProject.child}
+								hasLink
+							>
+								{({ projectName }) => (
+									<>
+										<span>{projectName} <i>({enumValueToDisplayName(childProject.type)})</i></span>
+										<TechnologiesReference
+											technologies={childProject.child.technologies}
+										/>
+									</>
+								)}
+							</ProjectReference>
+						))}
+					</div>
+				</>
+			)}
 		</>
 	);
 }
