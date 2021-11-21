@@ -19,8 +19,19 @@ export function ProjectReference({ project, hasLink = false, children }) {
 const DATE_FORMAT = "LLLL do, Y";
 
 export function ProjectDates({ project }) {
-	const startDate = project.startDate ? format(new Date(project.startDate), DATE_FORMAT) : '???';
-	const endDate = project.endDate ? format(new Date(project.endDate), DATE_FORMAT) : '???';
+	const hasStartDate = project.startDate !== null;
+	const hasEndDate = project.endDate !== null;
 
-	return <>{startDate} - {endDate}</>;
+	const startDate = hasStartDate
+		? format(new Date(project.startDate), DATE_FORMAT)
+		: "Present";
+	const endDate = hasEndDate
+		? format(new Date(project.endDate), DATE_FORMAT)
+		: "Present";
+
+	return (
+		<>
+			{startDate} - {endDate}
+		</>
+	);
 }

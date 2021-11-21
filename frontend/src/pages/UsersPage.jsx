@@ -33,7 +33,9 @@ export function UsersPage() {
 			<h2>Users</h2>
 			<div className="mx-2">
 				{users.map((user) => (
-					<UserReference key={user.id} user={user} hasLink />
+					<UserReference key={user.id} user={user} hasLink>
+						{({ userName }) => userName}
+					</UserReference>
 				))}
 			</div>
 		</>
