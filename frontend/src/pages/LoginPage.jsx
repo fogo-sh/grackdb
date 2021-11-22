@@ -87,7 +87,7 @@ function DevelopmentAssumeUser() {
 		navigate("/");
 	}, [assumeDevelopmentUserData]);
 
-	if (fetching || selectedUser === null) {
+	if (fetching || !selectedUser) {
 		return null;
 	}
 

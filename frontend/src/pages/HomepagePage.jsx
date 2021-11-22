@@ -53,6 +53,7 @@ export function HomepagePage() {
 			<p className="text-center">a database</p>
 			<h2>Users</h2>
 			<div className="mx-2">
+				{users.length === 0 && <i>None</i>}
 				{users.map((user) => (
 					<UserReference key={user.id} user={user} hasLink>
 						{({ userName }) => userName}
@@ -61,6 +62,7 @@ export function HomepagePage() {
 			</div>
 			<h2>Projects</h2>
 			<div className="mx-2">
+				{projects.length === 0 && <i>None</i>}
 				{projects.map((project) => (
 					<ProjectReference key={project.id} project={project} hasLink>
 						{({ projectName }) => (

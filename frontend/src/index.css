@@ -23,6 +23,14 @@ a {
 	@apply text-blue-700 font-semibold;
 }
 
+.inp {
+	@apply border border-gray-500 rounded-sm px-2 py-1.5 bg-white;
+}
+
 .btn {
-	@apply border border-gray-500 rounded-sm px-1 py-1.5;
+	@apply border border-gray-500 rounded-sm px-2 py-1.5 bg-white;
+}
+
+.btn:hover {
+	@apply bg-gray-100;
 }

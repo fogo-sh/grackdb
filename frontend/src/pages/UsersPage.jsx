@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "urql";
 
-import { UserReference } from "../components/User";
+import { CreateUserModal, UserReference } from "../components/User";
+import { useAuth } from "../providers/AuthProvider";
 
 const USERS_QUERY = `
 query Users {
@@ -18,6 +19,10 @@ query Users {
 `;
 
 export function UsersPage() {
+	const [dialogOpen, setDialogOpen] = useState(false);
+
+	const { currentUser } = useAuth();
+
 	const [{ fetching, data }] = useQuery({
 		query: USERS_QUERY,
 	});
@@ -30,7 +35,20 @@ export function UsersPage() {
 
 	return (
 		<>
-			<h2>Users</h2>
+			<div className="flex justify-between items-center">
+				<h2 className="h-full my-0">Users</h2>
+				{currentUser && (
+					<>
+						<button className="btn h-1/2" onClick={() => setDialogOpen(true)}>
+							Create
+						</button>
+						<CreateUserModal
+							dialogOpen={dialogOpen}
+							setDialogOpen={setDialogOpen}
+						/>
+					</>
+				)}
+			</div>
 			<div className="mx-2">
 				{users.map((user) => (
 					<UserReference key={user.id} user={user} hasLink>

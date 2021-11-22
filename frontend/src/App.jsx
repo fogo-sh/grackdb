@@ -1,6 +1,7 @@
 import React from "react";
 import { Provider } from "urql";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 import { client } from "./graphql";
 import { HomepagePage } from "./pages/HomepagePage";
@@ -26,13 +27,13 @@ function Header() {
 				</div>
 				{currentUser && <span>Logged in as {currentUser.username}</span>}
 			</div>
-			<div className="flex justify-between">
-				<div className="flex gap-3">
+			<div className="flex flex-col sm:flex-row gap-1 sm:gap-0 justify-between">
+				<div className="flex flex-col sm:flex-row gap-1 sm:gap-3">
 					<Link to="/">GrackDB</Link>
 					<Link to="/users">Users</Link>
 					<Link to="/projects">Projects</Link>
 				</div>
-				<div className="flex gap-3">
+				<div className="flex flex-col sm:flex-row gap-1 sm:gap-3">
 					<a href="/playground">GraphQL Playground</a>
 					{currentUser ? (
 						<Link to="/logout">Logout</Link>
@@ -69,6 +70,7 @@ function App() {
 						<hr className="my-3" />
 						<AppRoutes />
 					</div>
+					<Toaster />
 				</AuthProvider>
 			</Provider>
 		</BrowserRouter>
