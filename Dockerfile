@@ -18,5 +18,6 @@ FROM debian:bullseye-slim
 WORKDIR /app
 COPY --from=frontend-builder /app/dist ./frontend/dist
 COPY --from=go-builder /build/grackdb ./grackdb
+COPY --from=go-builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 ENTRYPOINT ["/app/grackdb"]
