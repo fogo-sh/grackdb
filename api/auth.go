@@ -43,6 +43,7 @@ func handleGithubCallback(c *gin.Context) {
 
 	token, err := githubOauthConfig.Exchange(c, code)
 	if err != nil {
+		fmt.Printf("Error exchanging code: %s\n", err)
 		c.JSON(
 			http.StatusForbidden,
 			gin.H{
@@ -140,6 +141,7 @@ func handleDiscordCallback(c *gin.Context) {
 
 	token, err := discordOauthConfig.Exchange(c, code)
 	if err != nil {
+		fmt.Printf("Error exchanging code: %s\n", err)
 		c.JSON(
 			http.StatusForbidden,
 			gin.H{
