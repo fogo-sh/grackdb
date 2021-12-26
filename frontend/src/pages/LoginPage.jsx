@@ -1,15 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useQuery, useMutation } from "urql";
-import { Listbox } from "@headlessui/react";
-import {
-	FaDiscord,
-	FaGithub,
-	FaCrown,
-	FaCaretDown,
-	FaCheck,
-} from "react-icons/fa";
+import { FaDiscord, FaGithub, FaCrown } from "react-icons/fa";
 import { useAuth } from "../providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import { Select } from "../components/Select";
 
 const LOGIN_QUERY = `
 query Login {
@@ -69,7 +63,11 @@ function DevelopmentAssumeUser() {
 			return;
 		}
 
-		const users = data.users.edges.map((edge) => edge.node);
+		const users = data.users.edges.map(({ node: { id, username } }) => ({
+			id,
+			value: username,
+		}));
+
 		setOptions(users);
 		setSelectedUser(users[0]);
 	}, [data]);
@@ -87,7 +85,7 @@ function DevelopmentAssumeUser() {
 		navigate("/");
 	}, [assumeDevelopmentUserData]);
 
-	if (fetching || !selectedUser) {
+	if (!selectedUser) {
 		return null;
 	}
 
@@ -98,42 +96,12 @@ function DevelopmentAssumeUser() {
 			</p>
 
 			<div className="flex justify-center items-center gap-2 h-10">
-				<Listbox value={selectedUser} onChange={setSelectedUser}>
-					<div className="relative min-w-[15rem] h-full">
-						<Listbox.Button className="relative w-full h-full border border-gray-500 rounded-sm pl-3 pr-2 py-1 flex items-center justify-between mx-auto">
-							{selectedUser.username}{" "}
-							<FaCaretDown className="ml-1 opacity-50" />
-						</Listbox.Button>
-						<Listbox.Options className="absolute w-full mt-1 overflow-auto text-base bg-white rounded-m max-h-60 border border-gray-500">
-							{options.map((option) => (
-								<Listbox.Option key={option.id} value={option}>
-									{({ selected, active }) => (
-										<div
-											className={`${
-												active ? "bg-gray-100" : ""
-											} flex items-center px-2.5 py-1.5`}
-										>
-											<span
-												className={`${
-													selected ? "font-medium" : "font-normal"
-												} block truncate`}
-											>
-												{option.username}
-											</span>
-											{selected ? (
-												<FaCheck
-													className="ml-2 opacity-50"
-													aria-hidden="true"
-												/>
-											) : null}
-										</div>
-									)}
-								</Listbox.Option>
-							))}
-						</Listbox.Options>
-					</div>
-				</Listbox>
-
+				<Select
+					fetching={fetching}
+					options={options}
+					selected={selectedUser}
+					onChange={setSelectedUser}
+				/>
 				<button
 					className="btn flex w-[6rem] my-3 h-full items-center"
 					onClick={assume}
