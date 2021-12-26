@@ -83,6 +83,13 @@ export function UserPage() {
 
 	return (
 		<>
+			{user.avatarUrl !== null && (
+				<img
+					className="w-[10rem] h-[10rem] mx-auto border border-1 mt-5"
+					src={user.avatarUrl}
+					alt={user.username}
+				/>
+			)}
 			<h1 className="text-center">{user.username}</h1>
 			<h2>Accounts</h2>
 			<div className="mx-2">

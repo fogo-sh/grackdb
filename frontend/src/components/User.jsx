@@ -1,6 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Modal } from "./Modal";
 import { Input } from "./Form";
@@ -19,15 +19,18 @@ export function UserReference({ user, hasLink = false, children }) {
 }
 
 const CREATE_USER_MUTATION = `
-mutation CreateUser($username: String!) {
-  createUser(input: {username: $username}) {
+mutation CreateUser($username: String!, $avatarUrl: String) {
+  createUser(input: {username: $username, avatarUrl: $avatarUrl}) {
     id
     username
+		avatarUrl
   }
 }
 `;
 
 export function CreateUserModal({ dialogOpen, setDialogOpen }) {
+	const navigate = useNavigate();
+
 	const [{ data: createUserData }, createUser] =
 		useMutation(CREATE_USER_MUTATION);
 
@@ -45,6 +48,7 @@ export function CreateUserModal({ dialogOpen, setDialogOpen }) {
 			setDialogOpen(false);
 			reset();
 			toast.success(`User ${createUserData.createUser.username} created!`);
+			navigate(`/user/${createUserData.createUser.username}`);
 		}
 	}, [createUserData]);
 
@@ -57,6 +61,7 @@ export function CreateUserModal({ dialogOpen, setDialogOpen }) {
 					name="Username"
 					options={{ required: true }}
 				/>
+				<Input register={register} id="avatarUrl" name="Avatar URL" />
 				{errors.exampleRequired && <span>This field is required</span>}
 				<input className="btn" type="submit" value="Create User" />
 			</form>
