@@ -3,7 +3,10 @@ import ReactMarkdown from "react-markdown";
 import { useQuery } from "urql";
 import { useParams } from "react-router-dom";
 
-import { TechnologiesReference, TechnologyReference } from "../components/Technology";
+import {
+	TechnologiesReference,
+	TechnologyReference,
+} from "../components/Technology";
 import { enumValueToDisplayName } from "../utils";
 import { ProjectDates, ProjectReference } from "../components/Project";
 import { GithubRepositoryReference } from "../components/Repositories";
@@ -155,7 +158,10 @@ export function ProjectPage() {
 
 			<h2>Contributors</h2>
 			<div className="mx-2">
-				{project.contributors.map((contributor) => (
+				{(!project.contributors || project.contributors.length === 0) && (
+					<i>None</i>
+				)}
+				{project.contributors?.map((contributor) => (
 					<UserReference key={contributor.id} user={contributor.user} hasLink>
 						{({ userName }) => (
 							<>
@@ -178,7 +184,13 @@ export function ProjectPage() {
 							>
 								{({ projectName }) => (
 									<>
-										<span>{projectName} <i>({project.name} {enumValueToDisplayName(parentProject.type)})</i></span>
+										<span>
+											{projectName}{" "}
+											<i>
+												({project.name}{" "}
+												{enumValueToDisplayName(parentProject.type)})
+											</i>
+										</span>
 										<TechnologiesReference
 											technologies={parentProject.parent.technologies}
 										/>
@@ -202,7 +214,13 @@ export function ProjectPage() {
 							>
 								{({ projectName }) => (
 									<>
-										<span>{projectName} <i>({enumValueToDisplayName(childProject.type)} {project.name})</i></span>
+										<span>
+											{projectName}{" "}
+											<i>
+												({enumValueToDisplayName(childProject.type)}{" "}
+												{project.name})
+											</i>
+										</span>
 										<TechnologiesReference
 											technologies={childProject.child.technologies}
 										/>
