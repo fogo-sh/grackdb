@@ -1,5 +1,13 @@
 import React from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { FaExternalLinkAlt, FaGithub } from "react-icons/fa";
+import { useMutation } from "urql";
+import { errorMessage } from "../consts";
+import { useErrorNotify } from "../hooks/useErrorNotify";
+import { Input } from "./Form";
+import { Modal } from "./Modal";
 
 export function GithubAccountReference({ githubAccount, hasLink = false }) {
 	return (
@@ -7,14 +15,84 @@ export function GithubAccountReference({ githubAccount, hasLink = false }) {
 			<FaGithub className="mr-1" />
 			{hasLink ? (
 				<>
-					<a href={`https://github.com/${githubAccount.username}`} className="flex items-center">
+					<a
+						href={`https://github.com/${githubAccount.username}`}
+						className="flex items-center"
+					>
 						{githubAccount.username}
-						<FaExternalLinkAlt className="ml-1 text-xs"/>
+						<FaExternalLinkAlt className="ml-1 text-xs" />
 					</a>
 				</>
 			) : (
 				githubAccount.username
 			)}
 		</div>
+	);
+}
+
+const CREATE_GITHUB_ACCOUNT_MUTATION = `
+mutation CreateGithubAccount(
+  $username: String!
+  $owner: Int!
+) {
+  createGithubAccount(
+    input: {
+      username: $username
+      owner: $owner
+    }
+  ) {
+    id
+    username
+  }
+}
+`;
+
+export function CreateGithubAccountModal({
+	user,
+	refetchUser,
+	dialogOpen,
+	setDialogOpen,
+}) {
+	const [{ data: createGithubAccountData, error }, createGithubAccount] =
+		useMutation(CREATE_GITHUB_ACCOUNT_MUTATION);
+	useErrorNotify(error);
+
+	const {
+		register,
+		handleSubmit,
+		reset,
+		formState: { errors },
+	} = useForm();
+
+	const onSubmit = (data) => createGithubAccount({ ...data, owner: user.id });
+
+	useEffect(() => {
+		if (createGithubAccountData) {
+			setDialogOpen(false);
+			reset();
+			toast.success(
+				`Associated ${createGithubAccountData.createGithubAccount.username} with ${user.username}`
+			);
+			refetchUser();
+		}
+	}, [createGithubAccountData]);
+
+	return (
+		<Modal
+			open={dialogOpen}
+			setOpen={setDialogOpen}
+			title="Associate GitHub Account"
+		>
+			<form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
+				<Input
+					register={register}
+					errors={errors}
+					id="username"
+					name="GitHub Username"
+					options={{ required: errorMessage.required }}
+				/>
+				<input className="btn" type="submit" value="Associate GitHub Account" />
+			</form>
+		</Modal>
 	);
 }

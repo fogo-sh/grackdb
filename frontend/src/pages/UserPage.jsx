@@ -1,15 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery } from "urql";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { GithubAccountReference } from "../components/GithubAccount";
-import { DiscordAccountReference } from "../components/DiscordAccount";
+import {
+	CreateGithubAccountModal,
+	GithubAccountReference,
+} from "../components/GithubAccount";
+import {
+	CreateDiscordAccountModal,
+	DiscordAccountReference,
+} from "../components/DiscordAccount";
 import { ProjectReference } from "../components/Project";
 import { TechnologiesReference } from "../components/Technology";
 import { enumValueToDisplayName } from "../utils";
 import { useAuth } from "../providers/AuthProvider";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
+import { useErrorNotify } from "../hooks/useErrorNotify";
+import { DeleteButton } from "../components/DeleteButton";
 
 const USERS_BY_USERNAME_QUERY = `
 query UsersByUsername($username: String!) {
@@ -56,26 +64,78 @@ mutation DeleteUser($id: ID!) {
 }
 `;
 
+const DELETE_DISCORD_ACCOUNT_MUTATION = `
+mutation DeleteDiscordAccount($id: ID!) {
+	deleteDiscordAccount(id: $id) {
+    id
+  }
+}
+`;
+
+const DELETE_GITHUB_ACCOUNT_MUTATION = `
+mutation DeleteGithubAccount($id: ID!) {
+	deleteGithubAccount(id: $id) {
+    id
+  }
+}
+`;
+
 export function UserPage() {
 	const params = useParams();
 	const navigate = useNavigate();
 
-	const [, deleteUser] = useMutation(DELETE_USER_MUTATION);
+	const [createDiscordAccountDialogOpen, setCreateDiscordAccountDialogOpen] =
+		useState(false);
+	const [createGithubAccountDialogOpen, setCreateGithubAccountDialogOpen] =
+		useState(false);
+
+	const [{ error: deleteUserError }, deleteUser] =
+		useMutation(DELETE_USER_MUTATION);
+	useErrorNotify(deleteUserError);
+
+	const [{ error: deleteDiscordAccountError }, deleteDiscordAccount] =
+		useMutation(DELETE_DISCORD_ACCOUNT_MUTATION);
+	useErrorNotify(deleteDiscordAccountError);
+
+	const [{ error: deleteGithubAccountError }, deleteGithubAccount] =
+		useMutation(DELETE_GITHUB_ACCOUNT_MUTATION);
+	useErrorNotify(deleteGithubAccountError);
 
 	const { currentUser } = useAuth();
 
-	const [{ fetching, data }] = useQuery({
+	const [{ fetching, data }, reexecuteUserQuery] = useQuery({
 		query: USERS_BY_USERNAME_QUERY,
 		variables: { username: params.username },
 	});
 
+	const refetchUser = () =>
+		reexecuteUserQuery({ requestPolicy: "network-only" });
+
 	const user = data?.users.edges[0].node;
 
 	const onDeleteUser = useCallback(() => {
-		deleteUser({ id: user.id });
-		navigate("/users");
-		toast.success(`Deleted ${user.username}`);
-	});
+		if (confirm(`Are you sure you want to delete ${user.username}?`)) {
+			deleteUser({ id: user.id });
+			navigate("/users");
+			toast.success(`Deleted ${user.username}`);
+		}
+	}, [user]);
+
+	const onDeleteDiscordAccount = useCallback(
+		(discordAccount) => {
+			deleteDiscordAccount({ id: discordAccount.id });
+			toast.success(`Deleted Discord Account from ${user.username}`);
+		},
+		[user]
+	);
+
+	const onDeleteGithubAccount = useCallback(
+		(githubAccount) => {
+			deleteGithubAccount({ id: githubAccount.id });
+			toast.success(`Deleted GitHub Account from ${user.username}`);
+		},
+		[user]
+	);
 
 	if (fetching) {
 		return null;
@@ -83,23 +143,41 @@ export function UserPage() {
 
 	return (
 		<>
+			{user.avatarUrl !== null && (
+				<img
+					className="w-[10rem] h-[10rem] mx-auto border border-1 mt-5"
+					src={user.avatarUrl}
+					alt={user.username}
+				/>
+			)}
 			<h1 className="text-center">{user.username}</h1>
 			<h2>Accounts</h2>
 			<div className="mx-2">
 				{user.githubAccounts.length === 0 &&
 					user.discordAccounts.length === 0 && <i>None</i>}
 				{user.githubAccounts.map((githubAccount) => (
-					<GithubAccountReference
-						key={githubAccount.id}
-						githubAccount={githubAccount}
-						hasLink
-					/>
+					<div key={githubAccount.id} className="flex gap-3">
+						{currentUser && (
+							<DeleteButton
+								onClick={() => onDeleteGithubAccount(githubAccount)}
+							/>
+						)}
+						<GithubAccountReference
+							key={githubAccount.id}
+							githubAccount={githubAccount}
+							hasLink
+						/>
+					</div>
 				))}
 				{user.discordAccounts.map((discordAccount) => (
-					<DiscordAccountReference
-						key={discordAccount.id}
-						discordAccount={discordAccount}
-					/>
+					<div key={discordAccount.id} className="flex gap-3">
+						{currentUser && (
+							<DeleteButton
+								onClick={() => onDeleteDiscordAccount(discordAccount)}
+							/>
+						)}
+						<DiscordAccountReference discordAccount={discordAccount} />
+					</div>
 				))}
 			</div>
 			<h2>Project Contributions</h2>
@@ -121,9 +199,35 @@ export function UserPage() {
 			{currentUser && (
 				<>
 					<h2>Actions</h2>
-					<button className="btn btn-primary" onClick={() => onDeleteUser()}>
-						Delete User
-					</button>
+					<div className="flex gap-2">
+						<button className="btn btn-primary" onClick={() => onDeleteUser()}>
+							Delete User
+						</button>
+						<button
+							className="btn h-1/2"
+							onClick={() => setCreateDiscordAccountDialogOpen(true)}
+						>
+							Associate Discord Account
+						</button>
+						<CreateDiscordAccountModal
+							user={user}
+							refetchUser={refetchUser}
+							dialogOpen={createDiscordAccountDialogOpen}
+							setDialogOpen={setCreateDiscordAccountDialogOpen}
+						/>
+						<button
+							className="btn h-1/2"
+							onClick={() => setCreateGithubAccountDialogOpen(true)}
+						>
+							Associate GitHub Account
+						</button>
+						<CreateGithubAccountModal
+							user={user}
+							refetchUser={refetchUser}
+							dialogOpen={createGithubAccountDialogOpen}
+							setDialogOpen={setCreateGithubAccountDialogOpen}
+						/>
+					</div>
 				</>
 			)}
 		</>

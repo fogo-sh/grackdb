@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, { createContext, useContext } from "react";
 import { useQuery } from "urql";
 
 const AuthContext = createContext();
@@ -25,7 +25,12 @@ export function AuthProvider({ children }) {
 	};
 
 	return (
-		<AuthContext.Provider value={{ currentUser: data?.currentUser ?? undefined, refreshCurrentUser }}>
+		<AuthContext.Provider
+			value={{
+				currentUser: data?.currentUser ?? undefined,
+				refreshCurrentUser,
+			}}
+		>
 			{children}
 		</AuthContext.Provider>
 	);
