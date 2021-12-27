@@ -4,6 +4,7 @@ import { FaDiscord, FaGithub, FaCrown } from "react-icons/fa";
 import { useAuth } from "../providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { Select } from "../components/Select";
+import { useErrorNotify } from "../hooks/useErrorNotify";
 
 const LOGIN_QUERY = `
 query Login {
@@ -55,8 +56,9 @@ function DevelopmentAssumeUser() {
 		query: DEVELOPMENT_ASSUME_USER_QUERY,
 	});
 
-	const [{ data: assumeDevelopmentUserData }, assumeDevelopmentUser] =
+	const [{ data: assumeDevelopmentUserData, error }, assumeDevelopmentUser] =
 		useMutation(DEVELOPMENT_ASSUME_USER_MUTATION);
+	useErrorNotify(error);
 
 	useEffect(() => {
 		if (data === undefined) {

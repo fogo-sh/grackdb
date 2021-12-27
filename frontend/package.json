@@ -9,6 +9,7 @@
 	},
 	"dependencies": {
 		"@headlessui/react": "^1.4.2",
+		"@hookform/error-message": "^2.0.0",
 		"date-fns": "^2.27.0",
 		"graphql": "^16.2.0",
 		"js-cookie": "^3.0.1",
@@ -27,6 +28,6 @@
 		"postcss": "^8.4.5",
 		"prettier": "2.5.1",
 		"tailwindcss": "^3.0.7",
-		"vite": "^2.7.6"
+		"vite": "^2.7.7"
 	}
 }
