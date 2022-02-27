@@ -4,18 +4,18 @@ import { useQuery } from "urql";
 import { CreateUserModal, UserReference } from "../components/User";
 import { useAuth } from "../providers/AuthProvider";
 
-const USERS_QUERY = `
-query Users {
-	users {
-		edges {
-			node {
-				id
-				username
-				avatarUrl
+const USERS_QUERY = /* GraphQL */ `
+	query Users {
+		users {
+			edges {
+				node {
+					id
+					username
+					avatarUrl
+				}
 			}
 		}
 	}
-}
 `;
 
 export function UsersPage() {

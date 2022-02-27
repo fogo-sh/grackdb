@@ -5,14 +5,14 @@ const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
-const CURRENT_USER_QUERY = `
-query CurrentUser {
-  currentUser {
-    id
-    username
-    avatarUrl
-  }
-}
+const CURRENT_USER_QUERY = /* GraphQL */ `
+	query CurrentUser {
+		currentUser {
+			id
+			username
+			avatarUrl
+		}
+	}
 `;
 
 export function AuthProvider({ children }) {

@@ -19,33 +19,34 @@ import toast from "react-hot-toast";
 import { useErrorNotify } from "../hooks/useErrorNotify";
 import { DeleteButton } from "../components/DeleteButton";
 
-const USERS_BY_USERNAME_QUERY = `
-query UsersByUsername($username: String!) {
-	users(where: {username: $username}) {
-		edges {
-			node {
-				id
-				username
-				avatarUrl
-				githubAccounts {
+const USERS_BY_USERNAME_QUERY = /* GraphQL */ `
+	query UsersByUsername($username: String!) {
+		users(where: { username: $username }) {
+			edges {
+				node {
 					id
 					username
-				}
-				discordAccounts {
-					id
-					username
-					discriminator
-				}
-				projectContributions {
-					role
-					project {
+					avatarUrl
+					githubAccounts {
 						id
-						name
-						technologies {
-							technology {
-								id
-								name
-								colour
+						username
+					}
+					discordAccounts {
+						id
+						username
+						discriminator
+					}
+					projectContributions {
+						role
+						project {
+							id
+							name
+							technologies {
+								technology {
+									id
+									name
+									colour
+								}
 							}
 						}
 					}
@@ -53,31 +54,30 @@ query UsersByUsername($username: String!) {
 			}
 		}
 	}
-}
 `;
 
-const DELETE_USER_MUTATION = `
-mutation DeleteUser($id: ID!) {
-  deleteUser(id: $id) {
-    id
-  }
-}
+const DELETE_USER_MUTATION = /* GraphQL */ `
+	mutation DeleteUser($id: ID!) {
+		deleteUser(id: $id) {
+			id
+		}
+	}
 `;
 
-const DELETE_DISCORD_ACCOUNT_MUTATION = `
-mutation DeleteDiscordAccount($id: ID!) {
-	deleteDiscordAccount(id: $id) {
-    id
-  }
-}
+const DELETE_DISCORD_ACCOUNT_MUTATION = /* GraphQL */ `
+	mutation DeleteDiscordAccount($id: ID!) {
+		deleteDiscordAccount(id: $id) {
+			id
+		}
+	}
 `;
 
-const DELETE_GITHUB_ACCOUNT_MUTATION = `
-mutation DeleteGithubAccount($id: ID!) {
-	deleteGithubAccount(id: $id) {
-    id
-  }
-}
+const DELETE_GITHUB_ACCOUNT_MUTATION = /* GraphQL */ `
+	mutation DeleteGithubAccount($id: ID!) {
+		deleteGithubAccount(id: $id) {
+			id
+		}
+	}
 `;
 
 export function UserPage() {

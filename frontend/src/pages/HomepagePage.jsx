@@ -5,34 +5,34 @@ import { ProjectReference } from "../components/Project";
 import { TechnologiesReference } from "../components/Technology";
 import { UserReference } from "../components/User";
 
-const HOMEPAGE_QUERY = `
-query Homepage {
-	users {
-		edges {
-			node {
-				id
-				username
-				avatarUrl
+const HOMEPAGE_QUERY = /* GraphQL */ `
+	query Homepage {
+		users {
+			edges {
+				node {
+					id
+					username
+					avatarUrl
+				}
 			}
 		}
-	}
-	projects {
-		edges {
-			node {
-				id
-				name
-				technologies {
-					technology {
-						id
-						type
-						name
-						colour
+		projects {
+			edges {
+				node {
+					id
+					name
+					technologies {
+						technology {
+							id
+							type
+							name
+							colour
+						}
 					}
 				}
 			}
 		}
 	}
-}
 `;
 
 export function HomepagePage() {
