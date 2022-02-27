@@ -18,25 +18,25 @@ export function DiscordAccountReference({ discordAccount }) {
 	);
 }
 
-const CREATE_DISCORD_ACCOUNT_MUTATION = `
-mutation CreateDiscordAccount(
-  $discordId: String!
-  $username: String!
-  $discriminator: String!
-  $owner: Int!
-) {
-  createDiscordAccount(
-    input: {
-      discordId: $discordId
-      username: $username
-      discriminator: $discriminator,
-      owner: $owner
-    }
-  ) {
-    id
-    username
-  }
-}
+const CREATE_DISCORD_ACCOUNT_MUTATION = /* GraphQL */ `
+	mutation CreateDiscordAccount(
+		$discordId: String!
+		$username: String!
+		$discriminator: String!
+		$owner: Int!
+	) {
+		createDiscordAccount(
+			input: {
+				discordId: $discordId
+				username: $username
+				discriminator: $discriminator
+				owner: $owner
+			}
+		) {
+			id
+			username
+		}
+	}
 `;
 
 export function CreateDiscordAccountModal({

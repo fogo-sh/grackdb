@@ -6,43 +6,43 @@ import { useNavigate } from "react-router-dom";
 import { Select } from "../components/Select";
 import { useErrorNotify } from "../hooks/useErrorNotify";
 
-const LOGIN_QUERY = `
-query Login {
-  availableAuthProviders {
-    url
-    type
-  }
-	developmentMode
-	users {
-		edges {
-			node {
-				id
-				username
+const LOGIN_QUERY = /* GraphQL */ `
+	query Login {
+		availableAuthProviders {
+			url
+			type
+		}
+		developmentMode
+		users {
+			edges {
+				node {
+					id
+					username
+				}
 			}
 		}
 	}
-}
 `;
 
-const DEVELOPMENT_ASSUME_USER_QUERY = `
-query AssumableUsers {
-	users {
-		edges {
-			node {
-				id
-				username
+const DEVELOPMENT_ASSUME_USER_QUERY = /* GraphQL */ `
+	query AssumableUsers {
+		users {
+			edges {
+				node {
+					id
+					username
+				}
 			}
 		}
 	}
-}
 `;
 
-const DEVELOPMENT_ASSUME_USER_MUTATION = `
-mutation AssumeDevelopmentUser($id: ID!) {
-  assumeDevelopmentUser(id: $id) {
-    id
-  }
-}
+const DEVELOPMENT_ASSUME_USER_MUTATION = /* GraphQL */ `
+	mutation AssumeDevelopmentUser($id: ID!) {
+		assumeDevelopmentUser(id: $id) {
+			id
+		}
+	}
 `;
 
 function DevelopmentAssumeUser() {

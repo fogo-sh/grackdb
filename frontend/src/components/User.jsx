@@ -20,14 +20,14 @@ export function UserReference({ user, hasLink = false, children }) {
 	return <div className="my-2">{children({ userName })}</div>;
 }
 
-const CREATE_USER_MUTATION = `
-mutation CreateUser($username: String!, $avatarUrl: String) {
-  createUser(input: {username: $username, avatarUrl: $avatarUrl}) {
-    id
-    username
-		avatarUrl
-  }
-}
+const CREATE_USER_MUTATION = /* GraphQL */ `
+	mutation CreateUser($username: String!, $avatarUrl: String) {
+		createUser(input: { username: $username, avatarUrl: $avatarUrl }) {
+			id
+			username
+			avatarUrl
+		}
+	}
 `;
 
 export function CreateUserModal({ dialogOpen, setDialogOpen }) {

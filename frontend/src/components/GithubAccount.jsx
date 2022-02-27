@@ -30,21 +30,13 @@ export function GithubAccountReference({ githubAccount, hasLink = false }) {
 	);
 }
 
-const CREATE_GITHUB_ACCOUNT_MUTATION = `
-mutation CreateGithubAccount(
-  $username: String!
-  $owner: Int!
-) {
-  createGithubAccount(
-    input: {
-      username: $username
-      owner: $owner
-    }
-  ) {
-    id
-    username
-  }
-}
+const CREATE_GITHUB_ACCOUNT_MUTATION = /* GraphQL */ `
+	mutation CreateGithubAccount($username: String!, $owner: Int!) {
+		createGithubAccount(input: { username: $username, owner: $owner }) {
+			id
+			username
+		}
+	}
 `;
 
 export function CreateGithubAccountModal({

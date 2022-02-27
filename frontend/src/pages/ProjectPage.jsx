@@ -1,7 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import { useQuery } from "urql";
-import { useParams } from "react-router-dom";
+import { useMutation, useQuery } from "urql";
+import { useNavigate, useParams } from "react-router-dom";
 
 import {
 	TechnologiesReference,
@@ -13,103 +13,132 @@ import { GithubRepositoryReference } from "../components/Repositories";
 import { DiscordAccountReference } from "../components/DiscordAccount";
 import { SiteReference } from "../components/Site";
 import { UserReference } from "../components/User";
+import { useAuth } from "../providers/AuthProvider";
+import { useErrorNotify } from "../hooks/useErrorNotify";
+import toast from "react-hot-toast";
+import { useCallback } from "react";
 
-const PROJECTS_BY_PROJECT_ID_QUERY = `
-query ProjectsByProjectId($projectId: ID!) {
-	projects(where: { id: $projectId }) {
-		edges {
-			node {
-				name
-				description
-				startDate
-				endDate
-				repositories {
+const PROJECTS_BY_PROJECT_ID_QUERY = /* GraphQL */ `
+	query ProjectsByProjectId($projectId: ID!) {
+		projects(where: { id: $projectId }) {
+			edges {
+				node {
 					id
 					name
-					githubAccount {
-						username
-					}
-					githubOrganization {
-						name
-					}
-				}
-				sites {
-					id
-					url
-				}
-				discordBots {
-					id
-					account {
-						username
-						discriminator
-					}
-				}
-				parentProjects {
-					id
-					type
-					parent {
+					description
+					startDate
+					endDate
+					repositories {
 						id
 						name
-						technologies {
-							technology {
-								id
-								name
-								colour
-							}
+						githubAccount {
+							username
+						}
+						githubOrganization {
+							name
 						}
 					}
-				}
-				childProjects {
-					id
-					type
-					child {
+					sites {
 						id
-						name
-						technologies {
-							technology {
-								id
-								name
-								colour
-							}
+						url
+					}
+					discordBots {
+						id
+						account {
+							username
+							discriminator
 						}
 					}
-				}
-				contributors {
-					id
-					role
-					user {
-						username
-					}
-				}
-				technologies {
-					id
-					type
-					technology {
+					parentProjects {
 						id
 						type
-						name
-						colour
+						parent {
+							id
+							name
+							technologies {
+								technology {
+									id
+									name
+									colour
+								}
+							}
+						}
+					}
+					childProjects {
+						id
+						type
+						child {
+							id
+							name
+							technologies {
+								technology {
+									id
+									name
+									colour
+								}
+							}
+						}
+					}
+					contributors {
+						id
+						role
+						user {
+							username
+						}
+					}
+					technologies {
+						id
+						type
+						technology {
+							id
+							type
+							name
+							colour
+						}
 					}
 				}
 			}
 		}
 	}
-}
+`;
+
+const DELETE_PROJECT_MUTATION = /* GraphQL */ `
+	mutation DeleteProject($id: ID!) {
+		deleteProject(id: $id) {
+			id
+		}
+	}
 `;
 
 export function ProjectPage() {
 	const params = useParams();
+	const navigate = useNavigate();
 
 	const [{ fetching, data }] = useQuery({
 		query: PROJECTS_BY_PROJECT_ID_QUERY,
 		variables: { projectId: params.projectId },
 	});
 
+	const [{ error: deleteProjectError }, deleteProject] = useMutation(
+		DELETE_PROJECT_MUTATION
+	);
+	useErrorNotify(deleteProjectError);
+
+	const { currentUser } = useAuth();
+
+	const project = data?.projects.edges[0].node;
+
+	const onDeleteProject = useCallback(() => {
+		if (confirm(`Are you sure you want to delete ${project.name}?`)) {
+			deleteProject({ id: project.id });
+			navigate("/projects");
+			toast.success(`Deleted ${project.name}`);
+		}
+	}, [project]);
+
 	if (fetching) {
 		return null;
 	}
-
-	const project = data.projects.edges[0].node;
 
 	return (
 		<>
@@ -228,6 +257,19 @@ export function ProjectPage() {
 								)}
 							</ProjectReference>
 						))}
+					</div>
+				</>
+			)}
+			{currentUser && (
+				<>
+					<h2>Actions</h2>
+					<div className="flex gap-2">
+						<button
+							className="btn btn-primary"
+							onClick={() => onDeleteProject()}
+						>
+							Delete Project
+						</button>
 					</div>
 				</>
 			)}
