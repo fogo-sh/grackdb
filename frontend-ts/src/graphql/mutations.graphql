@@ -75,6 +75,30 @@ mutation CreateUser($username: String!, $avatarUrl: String) {
   }
 }
 
+mutation DeleteUser($id: ID!) {
+  deleteUser(id: $id) {
+    id
+  }
+}
+
+mutation DeleteDiscordAccount($id: ID!) {
+  deleteDiscordAccount(id: $id) {
+    id
+  }
+}
+
+mutation DeleteGithubAccount($id: ID!) {
+  deleteGithubAccount(id: $id) {
+    id
+  }
+}
+
+mutation DeleteProject($id: ID!) {
+  deleteProject(id: $id) {
+    id
+  }
+}
+
 mutation AssumeDevelopmentUser($id: ID!) {
   assumeDevelopmentUser(id: $id) {
     id

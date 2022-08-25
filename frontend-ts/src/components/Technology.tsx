@@ -20,7 +20,10 @@ export function TechnologyReference({
   }) => React.ReactNode;
 }) {
   const circle = (
-    <Circle className="h-[0.9rem] ml-2 mr-1" fill={technology.colour} />
+    <Circle
+      className="h-[0.9rem] ml-2 mr-1"
+      fill={technology.colour ?? "gray"}
+    />
   );
   const name = technology.name;
 
@@ -31,10 +34,10 @@ export function TechnologyReference({
   );
 }
 
-export function ProjectTechnologiesReference({
+export function TechnologiesReference({
   technologies,
 }: {
-  technologies: ProjectTechnology[];
+  technologies: { technology: Technology }[];
 }) {
   return (
     <div className="flex h-full">

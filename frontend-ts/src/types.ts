@@ -1,13 +1,5 @@
 import { z } from "zod";
 
-export const UserSchema = z.object({
-  id: z.string(),
-  username: z.string(),
-  avatarUrl: z.string().nullable(),
-});
-
-export type User = z.infer<typeof UserSchema>;
-
 export const TechnologySchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -33,3 +25,37 @@ export const ProjectSchema = z.object({
 });
 
 export type Project = z.infer<typeof ProjectSchema>;
+
+export const ProjectContributionSchema = z.object({
+  id: z.string().optional(),
+  role: z.string(), // TODO
+  project: ProjectSchema,
+});
+
+export type ProjectContribution = z.infer<typeof ProjectContributionSchema>;
+
+export const GithubAccountSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+});
+
+export type GithubAccount = z.infer<typeof GithubAccountSchema>;
+
+export const DiscordAccountSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  discriminator: z.string(),
+});
+
+export type DiscordAccount = z.infer<typeof DiscordAccountSchema>;
+
+export const UserSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  avatarUrl: z.string().nullable(),
+  githubAccounts: z.array(GithubAccountSchema).optional(),
+  discordAccounts: z.array(DiscordAccountSchema).optional(),
+  projectContributions: z.array(ProjectContributionSchema).optional(),
+});
+
+export type User = z.infer<typeof UserSchema>;

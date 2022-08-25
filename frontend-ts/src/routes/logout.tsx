@@ -5,15 +5,15 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 
 export function LogoutPage() {
-	const { refreshCurrentUser } = useAuth();
-	const navigate = useNavigate();
+  const { refreshCurrentUser } = useAuth();
+  const navigate = useNavigate();
 
-	useEffect(() => {
-		Cookies.remove("jwt");
-		refreshCurrentUser();
-		navigate("/");
-		toast.success("Logged out successfully");
-	}, []);
+  useEffect(() => {
+    Cookies.remove("jwt");
+    refreshCurrentUser();
+    navigate("/");
+    toast.success("Logged out successfully");
+  }, []);
 
-	return null;
+  return null;
 }

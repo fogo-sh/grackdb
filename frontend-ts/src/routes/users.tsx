@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router-dom";
+import { LoaderFunction, useLoaderData } from "react-router-dom";
 import { z } from "zod";
 import { UserSchema } from "~/types";
 import { dataSource, queryClient } from "~/query";
@@ -11,19 +11,19 @@ const LoaderDataSchema = z.object({
 
 type LoaderData = z.infer<typeof LoaderDataSchema>;
 
-export async function loader() {
-  const homepage = await queryClient.fetchQuery(
+export const loader: LoaderFunction = async () => {
+  const usersQuery = await queryClient.fetchQuery(
     useUsersQuery.getKey(),
     async () => await useUsersQuery.fetcher(dataSource)()
   );
 
-  const users = homepage.users?.edges?.map((edge) => edge?.node);
+  const users = usersQuery.users?.edges?.map((edge) => edge?.node);
 
   const data: LoaderData = LoaderDataSchema.parse({ users });
   return data;
-}
+};
 
-export default function Users() {
+export function UsersPage() {
   const { users } = useLoaderData() as LoaderData;
   const currentUser = undefined;
 

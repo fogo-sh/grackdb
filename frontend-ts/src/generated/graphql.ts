@@ -1985,6 +1985,34 @@ export type CreateUserMutationVariables = Exact<{
 
 export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'User', id: string, username: string, avatarUrl?: string | null } };
 
+export type DeleteUserMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteUserMutation = { __typename?: 'Mutation', deleteUser: { __typename?: 'User', id: string } };
+
+export type DeleteDiscordAccountMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteDiscordAccountMutation = { __typename?: 'Mutation', deleteDiscordAccount: { __typename?: 'DiscordAccount', id: string } };
+
+export type DeleteGithubAccountMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteGithubAccountMutation = { __typename?: 'Mutation', deleteGithubAccount: { __typename?: 'GithubAccount', id: string } };
+
+export type DeleteProjectMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteProjectMutation = { __typename?: 'Mutation', deleteProject: { __typename?: 'Project', id: string } };
+
 export type AssumeDevelopmentUserMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;
@@ -2001,6 +2029,25 @@ export type UsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type UsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string, avatarUrl?: string | null } | null } | null> | null } | null };
+
+export type UsersByUsernameQueryVariables = Exact<{
+  username: Scalars['String'];
+}>;
+
+
+export type UsersByUsernameQuery = { __typename?: 'Query', users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string, avatarUrl?: string | null, githubAccounts?: Array<{ __typename?: 'GithubAccount', id: string, username: string }> | null, discordAccounts?: Array<{ __typename?: 'DiscordAccount', id: string, username: string, discriminator: string }> | null, projectContributions?: Array<{ __typename?: 'ProjectContributor', role: ProjectContributorRole, project: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null } | null } | null> | null } | null };
+
+export type ProjectsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ProjectsQuery = { __typename?: 'Query', projects?: { __typename?: 'ProjectConnection', edges?: Array<{ __typename?: 'ProjectEdge', node?: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, type: TechnologyType, name: string, colour?: string | null } }> | null } | null } | null> | null } | null };
+
+export type ProjectsByProjectIdQueryVariables = Exact<{
+  projectId: Scalars['ID'];
+}>;
+
+
+export type ProjectsByProjectIdQuery = { __typename?: 'Query', projects?: { __typename?: 'ProjectConnection', edges?: Array<{ __typename?: 'ProjectEdge', node?: { __typename?: 'Project', id: string, name: string, description?: string | null, startDate: any, endDate?: any | null, repositories?: Array<{ __typename?: 'Repository', id: string, name: string, githubAccount?: { __typename?: 'GithubAccount', username: string } | null, githubOrganization?: { __typename?: 'GithubOrganization', name: string } | null }> | null, sites?: Array<{ __typename?: 'Site', id: string, url: string }> | null, discordBots?: Array<{ __typename?: 'DiscordBot', id: string, account: { __typename?: 'DiscordAccount', username: string, discriminator: string } }> | null, parentProjects?: Array<{ __typename?: 'ProjectAssociation', id: string, type: ProjectAssociationType, parent: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null, childProjects?: Array<{ __typename?: 'ProjectAssociation', id: string, type: ProjectAssociationType, child: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null, contributors?: Array<{ __typename?: 'ProjectContributor', id: string, role: ProjectContributorRole, user: { __typename?: 'User', username: string } }> | null, technologies?: Array<{ __typename?: 'ProjectTechnology', id: string, type: ProjectTechnologyAssociationType, technology: { __typename?: 'Technology', id: string, type: TechnologyType, name: string, colour?: string | null } }> | null } | null } | null> | null } | null };
 
 export type LoginQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2136,6 +2183,86 @@ export const useCreateUserMutation = <
       options
     );
 useCreateUserMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: CreateUserMutationVariables) => fetcher<CreateUserMutation, CreateUserMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateUserDocument, variables);
+export const DeleteUserDocument = `
+    mutation DeleteUser($id: ID!) {
+  deleteUser(id: $id) {
+    id
+  }
+}
+    `;
+export const useDeleteUserMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      options?: UseMutationOptions<DeleteUserMutation, TError, DeleteUserMutationVariables, TContext>
+    ) =>
+    useMutation<DeleteUserMutation, TError, DeleteUserMutationVariables, TContext>(
+      ['DeleteUser'],
+      (variables?: DeleteUserMutationVariables) => fetcher<DeleteUserMutation, DeleteUserMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteUserDocument, variables)(),
+      options
+    );
+useDeleteUserMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteUserMutationVariables) => fetcher<DeleteUserMutation, DeleteUserMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteUserDocument, variables);
+export const DeleteDiscordAccountDocument = `
+    mutation DeleteDiscordAccount($id: ID!) {
+  deleteDiscordAccount(id: $id) {
+    id
+  }
+}
+    `;
+export const useDeleteDiscordAccountMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      options?: UseMutationOptions<DeleteDiscordAccountMutation, TError, DeleteDiscordAccountMutationVariables, TContext>
+    ) =>
+    useMutation<DeleteDiscordAccountMutation, TError, DeleteDiscordAccountMutationVariables, TContext>(
+      ['DeleteDiscordAccount'],
+      (variables?: DeleteDiscordAccountMutationVariables) => fetcher<DeleteDiscordAccountMutation, DeleteDiscordAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteDiscordAccountDocument, variables)(),
+      options
+    );
+useDeleteDiscordAccountMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteDiscordAccountMutationVariables) => fetcher<DeleteDiscordAccountMutation, DeleteDiscordAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteDiscordAccountDocument, variables);
+export const DeleteGithubAccountDocument = `
+    mutation DeleteGithubAccount($id: ID!) {
+  deleteGithubAccount(id: $id) {
+    id
+  }
+}
+    `;
+export const useDeleteGithubAccountMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      options?: UseMutationOptions<DeleteGithubAccountMutation, TError, DeleteGithubAccountMutationVariables, TContext>
+    ) =>
+    useMutation<DeleteGithubAccountMutation, TError, DeleteGithubAccountMutationVariables, TContext>(
+      ['DeleteGithubAccount'],
+      (variables?: DeleteGithubAccountMutationVariables) => fetcher<DeleteGithubAccountMutation, DeleteGithubAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteGithubAccountDocument, variables)(),
+      options
+    );
+useDeleteGithubAccountMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteGithubAccountMutationVariables) => fetcher<DeleteGithubAccountMutation, DeleteGithubAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteGithubAccountDocument, variables);
+export const DeleteProjectDocument = `
+    mutation DeleteProject($id: ID!) {
+  deleteProject(id: $id) {
+    id
+  }
+}
+    `;
+export const useDeleteProjectMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      options?: UseMutationOptions<DeleteProjectMutation, TError, DeleteProjectMutationVariables, TContext>
+    ) =>
+    useMutation<DeleteProjectMutation, TError, DeleteProjectMutationVariables, TContext>(
+      ['DeleteProject'],
+      (variables?: DeleteProjectMutationVariables) => fetcher<DeleteProjectMutation, DeleteProjectMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectDocument, variables)(),
+      options
+    );
+useDeleteProjectMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteProjectMutationVariables) => fetcher<DeleteProjectMutation, DeleteProjectMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectDocument, variables);
 export const AssumeDevelopmentUserDocument = `
     mutation AssumeDevelopmentUser($id: ID!) {
   assumeDevelopmentUser(id: $id) {
@@ -2234,6 +2361,199 @@ useUsersQuery.getKey = (variables?: UsersQueryVariables) => variables === undefi
 ;
 
 useUsersQuery.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables?: UsersQueryVariables) => fetcher<UsersQuery, UsersQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, UsersDocument, variables);
+export const UsersByUsernameDocument = `
+    query UsersByUsername($username: String!) {
+  users(where: {username: $username}) {
+    edges {
+      node {
+        id
+        username
+        avatarUrl
+        githubAccounts {
+          id
+          username
+        }
+        discordAccounts {
+          id
+          username
+          discriminator
+        }
+        projectContributions {
+          role
+          project {
+            id
+            name
+            technologies {
+              technology {
+                id
+                name
+                colour
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+export const useUsersByUsernameQuery = <
+      TData = UsersByUsernameQuery,
+      TError = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      variables: UsersByUsernameQueryVariables,
+      options?: UseQueryOptions<UsersByUsernameQuery, TError, TData>
+    ) =>
+    useQuery<UsersByUsernameQuery, TError, TData>(
+      ['UsersByUsername', variables],
+      fetcher<UsersByUsernameQuery, UsersByUsernameQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, UsersByUsernameDocument, variables),
+      options
+    );
+
+useUsersByUsernameQuery.getKey = (variables: UsersByUsernameQueryVariables) => ['UsersByUsername', variables];
+;
+
+useUsersByUsernameQuery.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: UsersByUsernameQueryVariables) => fetcher<UsersByUsernameQuery, UsersByUsernameQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, UsersByUsernameDocument, variables);
+export const ProjectsDocument = `
+    query Projects {
+  projects {
+    edges {
+      node {
+        id
+        name
+        technologies {
+          technology {
+            id
+            type
+            name
+            colour
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+export const useProjectsQuery = <
+      TData = ProjectsQuery,
+      TError = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      variables?: ProjectsQueryVariables,
+      options?: UseQueryOptions<ProjectsQuery, TError, TData>
+    ) =>
+    useQuery<ProjectsQuery, TError, TData>(
+      variables === undefined ? ['Projects'] : ['Projects', variables],
+      fetcher<ProjectsQuery, ProjectsQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, ProjectsDocument, variables),
+      options
+    );
+
+useProjectsQuery.getKey = (variables?: ProjectsQueryVariables) => variables === undefined ? ['Projects'] : ['Projects', variables];
+;
+
+useProjectsQuery.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables?: ProjectsQueryVariables) => fetcher<ProjectsQuery, ProjectsQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, ProjectsDocument, variables);
+export const ProjectsByProjectIdDocument = `
+    query ProjectsByProjectId($projectId: ID!) {
+  projects(where: {id: $projectId}) {
+    edges {
+      node {
+        id
+        name
+        description
+        startDate
+        endDate
+        repositories {
+          id
+          name
+          githubAccount {
+            username
+          }
+          githubOrganization {
+            name
+          }
+        }
+        sites {
+          id
+          url
+        }
+        discordBots {
+          id
+          account {
+            username
+            discriminator
+          }
+        }
+        parentProjects {
+          id
+          type
+          parent {
+            id
+            name
+            technologies {
+              technology {
+                id
+                name
+                colour
+              }
+            }
+          }
+        }
+        childProjects {
+          id
+          type
+          child {
+            id
+            name
+            technologies {
+              technology {
+                id
+                name
+                colour
+              }
+            }
+          }
+        }
+        contributors {
+          id
+          role
+          user {
+            username
+          }
+        }
+        technologies {
+          id
+          type
+          technology {
+            id
+            type
+            name
+            colour
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+export const useProjectsByProjectIdQuery = <
+      TData = ProjectsByProjectIdQuery,
+      TError = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      variables: ProjectsByProjectIdQueryVariables,
+      options?: UseQueryOptions<ProjectsByProjectIdQuery, TError, TData>
+    ) =>
+    useQuery<ProjectsByProjectIdQuery, TError, TData>(
+      ['ProjectsByProjectId', variables],
+      fetcher<ProjectsByProjectIdQuery, ProjectsByProjectIdQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, ProjectsByProjectIdDocument, variables),
+      options
+    );
+
+useProjectsByProjectIdQuery.getKey = (variables: ProjectsByProjectIdQueryVariables) => ['ProjectsByProjectId', variables];
+;
+
+useProjectsByProjectIdQuery.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: ProjectsByProjectIdQueryVariables) => fetcher<ProjectsByProjectIdQuery, ProjectsByProjectIdQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, ProjectsByProjectIdDocument, variables);
 export const LoginDocument = `
     query Login {
   availableAuthProviders {

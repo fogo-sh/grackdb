@@ -1,75 +1,60 @@
-import React from "react";
-import { useState } from "react";
-import { useQuery } from "urql";
+import { LoaderFunction, useLoaderData } from "react-router-dom";
+import { z } from "zod";
+import { ProjectReference } from "~/components/Project";
+import { TechnologiesReference } from "~/components/Technology";
+import { useProjectsQuery } from "~/generated/graphql";
+import { dataSource, queryClient } from "~/query";
+import { ProjectSchema } from "~/types";
 
-import { useAuth } from "../providers/AuthProvider";
-import { CreateProjectModal, ProjectReference } from "../components/Project";
-import { TechnologiesReference } from "../components/Technology";
+const LoaderDataSchema = z.object({
+  projects: z.array(ProjectSchema),
+});
 
-const PROJECTS_QUERY = /* GraphQL */ `
-	query Projects {
-		projects {
-			edges {
-				node {
-					id
-					name
-					technologies {
-						technology {
-							id
-							type
-							name
-							colour
-						}
-					}
-				}
-			}
-		}
-	}
-`;
+type LoaderData = z.infer<typeof LoaderDataSchema>;
+
+export const loader: LoaderFunction = async () => {
+  const projectsQuery = await queryClient.fetchQuery(
+    useProjectsQuery.getKey(),
+    async () => await useProjectsQuery.fetcher(dataSource)()
+  );
+
+  const projects = projectsQuery.projects?.edges?.map((edge) => edge?.node);
+
+  const data: LoaderData = LoaderDataSchema.parse({ projects });
+  return data;
+};
 
 export function ProjectsPage() {
-	const [dialogOpen, setDialogOpen] = useState(false);
+  const { projects } = useLoaderData() as LoaderData;
 
-	const { currentUser } = useAuth();
+  const currentUser = undefined; // TODO
 
-	const [{ fetching, data }] = useQuery({
-		query: PROJECTS_QUERY,
-	});
-
-	if (fetching) {
-		return null;
-	}
-
-	const projects = data.projects.edges.map((edge) => edge.node);
-
-	return (
-		<>
-			<div className="flex justify-between items-center">
-				<h2 className="h-full my-0">Projects</h2>
-				{currentUser && (
-					<>
-						<button className="btn h-1/2" onClick={() => setDialogOpen(true)}>
-							Create
-						</button>
-						<CreateProjectModal
-							dialogOpen={dialogOpen}
-							setDialogOpen={setDialogOpen}
-						/>
-					</>
-				)}
-			</div>
-			<div className="mx-2">
-				{projects.map((project) => (
-					<ProjectReference key={project.id} project={project} hasLink>
-						{({ projectName }) => (
-							<>
-								{projectName}
-								<TechnologiesReference technologies={project.technologies} />
-							</>
-						)}
-					</ProjectReference>
-				))}
-			</div>
-		</>
-	);
+  return (
+    <>
+      <div className="flex justify-between items-center">
+        <h2 className="h-full my-0">Projects</h2>
+        {currentUser && (
+          <>
+            <button className="btn h-1/2" onClick={() => alert(true)}>
+              Create
+            </button>
+          </>
+        )}
+      </div>
+      <div className="mx-2">
+        {projects.map((project) => (
+          <ProjectReference key={project.id} project={project} hasLink>
+            {({ projectName }) => (
+              <>
+                {projectName}
+                <TechnologiesReference
+                  technologies={project.technologies ?? []}
+                />
+              </>
+            )}
+          </ProjectReference>
+        ))}
+      </div>
+    </>
+  );
 }

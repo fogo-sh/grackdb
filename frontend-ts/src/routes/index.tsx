@@ -1,11 +1,11 @@
-import { useLoaderData } from "react-router-dom";
+import { LoaderFunction, useLoaderData } from "react-router-dom";
 import { z } from "zod";
 import { dataSource, queryClient } from "~/query";
 import { ProjectSchema, UserSchema } from "~/types";
 import { useHomepageQuery } from "~/generated/graphql";
 import { UserReference } from "~/components/User";
 import { ProjectReference } from "~/components/Project";
-import { ProjectTechnologiesReference } from "~/components/Technology";
+import { TechnologiesReference } from "~/components/Technology";
 
 const LoaderDataSchema = z.object({
   users: z.array(UserSchema),
@@ -14,20 +14,20 @@ const LoaderDataSchema = z.object({
 
 type LoaderData = z.infer<typeof LoaderDataSchema>;
 
-export async function loader() {
-  const homepage = await queryClient.fetchQuery(
+export const loader: LoaderFunction = async () => {
+  const homepageQuery = await queryClient.fetchQuery(
     useHomepageQuery.getKey(),
     async () => await useHomepageQuery.fetcher(dataSource)()
   );
 
-  const users = homepage.users?.edges?.map((edge) => edge?.node);
-  const projects = homepage.projects?.edges?.map((edge) => edge?.node);
+  const users = homepageQuery.users?.edges?.map((edge) => edge?.node);
+  const projects = homepageQuery.projects?.edges?.map((edge) => edge?.node);
 
   const data: LoaderData = LoaderDataSchema.parse({ users, projects });
   return data;
-}
+};
 
-export default function Index() {
+export function IndexPage() {
   const { users, projects } = useLoaderData() as LoaderData;
 
   return (
@@ -51,7 +51,7 @@ export default function Index() {
             {({ projectName }) => (
               <>
                 {projectName}
-                <ProjectTechnologiesReference
+                <TechnologiesReference
                   technologies={project.technologies ?? []}
                 />
               </>
