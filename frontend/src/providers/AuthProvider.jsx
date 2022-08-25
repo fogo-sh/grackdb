@@ -16,7 +16,7 @@ const CURRENT_USER_QUERY = /* GraphQL */ `
 `;
 
 export function AuthProvider({ children }) {
-	const [{ data, refetch }, reexecuteQuery] = useQuery({
+	const [{ data }, reexecuteQuery] = useQuery({
 		query: CURRENT_USER_QUERY,
 	});
 

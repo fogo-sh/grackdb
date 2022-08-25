@@ -1,0 +1,66 @@
+query Homepage {
+  users {
+    edges {
+      node {
+        id
+        username
+        avatarUrl
+      }
+    }
+  }
+  projects {
+    edges {
+      node {
+        id
+        name
+        technologies {
+          technology {
+            id
+            type
+            name
+            colour
+          }
+        }
+      }
+    }
+  }
+}
+
+query Users {
+  users {
+    edges {
+      node {
+        id
+        username
+        avatarUrl
+      }
+    }
+  }
+}
+
+query Login {
+  availableAuthProviders {
+    url
+    type
+  }
+  developmentMode
+  users {
+    edges {
+      node {
+        id
+        username
+      }
+    }
+  }
+}
+
+query AssumableUsers {
+  users {
+    edges {
+      node {
+        id
+        username
+      }
+    }
+  }
+}

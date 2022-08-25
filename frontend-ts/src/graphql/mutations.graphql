@@ -1,0 +1,82 @@
+mutation CreateDiscordAccount(
+  $discordId: String!
+  $username: String!
+  $discriminator: String!
+  $owner: Int!
+) {
+  createDiscordAccount(
+    input: {
+      discordId: $discordId
+      username: $username
+      discriminator: $discriminator
+      owner: $owner
+    }
+  ) {
+    id
+    username
+  }
+}
+
+mutation CreateGithubAccount($username: String!, $owner: Int!) {
+  createGithubAccount(input: { username: $username, owner: $owner }) {
+    id
+    username
+  }
+}
+
+mutation CreateProject(
+  $name: String!
+  $description: String
+  $startDate: Time!
+  $endDate: Time
+) {
+  createProject(
+    input: {
+      name: $name
+      description: $description
+      startDate: $startDate
+      endDate: $endDate
+    }
+  ) {
+    id
+    name
+    description
+    startDate
+    endDate
+  }
+}
+
+mutation CreateProjectTechnology(
+  $type: ProjectTechnologyAssociationType!
+  $technology: Int!
+  $project: Int!
+) {
+  createProjectTechnology(
+    input: { type: $type, technology: $technology, project: $project }
+  ) {
+    id
+    type
+    technology {
+      id
+      name
+    }
+    project {
+      id
+      name
+    }
+  }
+}
+
+mutation CreateUser($username: String!, $avatarUrl: String) {
+  createUser(input: { username: $username, avatarUrl: $avatarUrl }) {
+    id
+    username
+    avatarUrl
+  }
+}
+
+mutation AssumeDevelopmentUser($id: ID!) {
+  assumeDevelopmentUser(id: $id) {
+    id
+  }
+}
