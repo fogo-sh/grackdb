@@ -1,7 +1,9 @@
-import { ActionFunction, Form, useNavigate } from "react-router-dom";
+import { ActionFunction, Form, redirect, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Input } from "~/components/Form";
 import { Modal } from "~/components/Modal";
+import { useCreateUserMutation } from "~/generated/graphql";
+import { dataSource, queryClient } from "~/query";
 
 const ActionDataSchema = z.object({
   username: z.string(),
@@ -11,11 +13,16 @@ const ActionDataSchema = z.object({
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const data = ActionDataSchema.parse(Object.fromEntries(formData));
-  console.log({ data });
+
+  const resp = await queryClient.fetchQuery(
+    useCreateUserMutation.getKey(),
+    async () => await useCreateUserMutation.fetcher(dataSource, data)()
+  );
+
+  return redirect(`/user/${resp.createUser.username}`);
 };
 
 export function UserCreatePage() {
-  const currentUser = undefined; // TODO
   const navigate = useNavigate();
 
   return (

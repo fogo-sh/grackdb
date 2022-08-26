@@ -2082,6 +2082,8 @@ export const useCreateDiscordAccountMutation = <
       (variables?: CreateDiscordAccountMutationVariables) => fetcher<CreateDiscordAccountMutation, CreateDiscordAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateDiscordAccountDocument, variables)(),
       options
     );
+useCreateDiscordAccountMutation.getKey = () => ['CreateDiscordAccount'];
+
 useCreateDiscordAccountMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: CreateDiscordAccountMutationVariables) => fetcher<CreateDiscordAccountMutation, CreateDiscordAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateDiscordAccountDocument, variables);
 export const CreateGithubAccountDocument = `
     mutation CreateGithubAccount($username: String!, $owner: Int!) {
@@ -2103,6 +2105,8 @@ export const useCreateGithubAccountMutation = <
       (variables?: CreateGithubAccountMutationVariables) => fetcher<CreateGithubAccountMutation, CreateGithubAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateGithubAccountDocument, variables)(),
       options
     );
+useCreateGithubAccountMutation.getKey = () => ['CreateGithubAccount'];
+
 useCreateGithubAccountMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: CreateGithubAccountMutationVariables) => fetcher<CreateGithubAccountMutation, CreateGithubAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateGithubAccountDocument, variables);
 export const CreateProjectDocument = `
     mutation CreateProject($name: String!, $description: String, $startDate: Time!, $endDate: Time) {
@@ -2129,6 +2133,8 @@ export const useCreateProjectMutation = <
       (variables?: CreateProjectMutationVariables) => fetcher<CreateProjectMutation, CreateProjectMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateProjectDocument, variables)(),
       options
     );
+useCreateProjectMutation.getKey = () => ['CreateProject'];
+
 useCreateProjectMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: CreateProjectMutationVariables) => fetcher<CreateProjectMutation, CreateProjectMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateProjectDocument, variables);
 export const CreateProjectTechnologyDocument = `
     mutation CreateProjectTechnology($type: ProjectTechnologyAssociationType!, $technology: Int!, $project: Int!) {
@@ -2160,6 +2166,8 @@ export const useCreateProjectTechnologyMutation = <
       (variables?: CreateProjectTechnologyMutationVariables) => fetcher<CreateProjectTechnologyMutation, CreateProjectTechnologyMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateProjectTechnologyDocument, variables)(),
       options
     );
+useCreateProjectTechnologyMutation.getKey = () => ['CreateProjectTechnology'];
+
 useCreateProjectTechnologyMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: CreateProjectTechnologyMutationVariables) => fetcher<CreateProjectTechnologyMutation, CreateProjectTechnologyMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateProjectTechnologyDocument, variables);
 export const CreateUserDocument = `
     mutation CreateUser($username: String!, $avatarUrl: String) {
@@ -2182,6 +2190,8 @@ export const useCreateUserMutation = <
       (variables?: CreateUserMutationVariables) => fetcher<CreateUserMutation, CreateUserMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateUserDocument, variables)(),
       options
     );
+useCreateUserMutation.getKey = () => ['CreateUser'];
+
 useCreateUserMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: CreateUserMutationVariables) => fetcher<CreateUserMutation, CreateUserMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateUserDocument, variables);
 export const DeleteUserDocument = `
     mutation DeleteUser($id: ID!) {
@@ -2202,6 +2212,8 @@ export const useDeleteUserMutation = <
       (variables?: DeleteUserMutationVariables) => fetcher<DeleteUserMutation, DeleteUserMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteUserDocument, variables)(),
       options
     );
+useDeleteUserMutation.getKey = () => ['DeleteUser'];
+
 useDeleteUserMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteUserMutationVariables) => fetcher<DeleteUserMutation, DeleteUserMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteUserDocument, variables);
 export const DeleteDiscordAccountDocument = `
     mutation DeleteDiscordAccount($id: ID!) {
@@ -2222,6 +2234,8 @@ export const useDeleteDiscordAccountMutation = <
       (variables?: DeleteDiscordAccountMutationVariables) => fetcher<DeleteDiscordAccountMutation, DeleteDiscordAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteDiscordAccountDocument, variables)(),
       options
     );
+useDeleteDiscordAccountMutation.getKey = () => ['DeleteDiscordAccount'];
+
 useDeleteDiscordAccountMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteDiscordAccountMutationVariables) => fetcher<DeleteDiscordAccountMutation, DeleteDiscordAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteDiscordAccountDocument, variables);
 export const DeleteGithubAccountDocument = `
     mutation DeleteGithubAccount($id: ID!) {
@@ -2242,6 +2256,8 @@ export const useDeleteGithubAccountMutation = <
       (variables?: DeleteGithubAccountMutationVariables) => fetcher<DeleteGithubAccountMutation, DeleteGithubAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteGithubAccountDocument, variables)(),
       options
     );
+useDeleteGithubAccountMutation.getKey = () => ['DeleteGithubAccount'];
+
 useDeleteGithubAccountMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteGithubAccountMutationVariables) => fetcher<DeleteGithubAccountMutation, DeleteGithubAccountMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteGithubAccountDocument, variables);
 export const DeleteProjectDocument = `
     mutation DeleteProject($id: ID!) {
@@ -2262,6 +2278,8 @@ export const useDeleteProjectMutation = <
       (variables?: DeleteProjectMutationVariables) => fetcher<DeleteProjectMutation, DeleteProjectMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectDocument, variables)(),
       options
     );
+useDeleteProjectMutation.getKey = () => ['DeleteProject'];
+
 useDeleteProjectMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteProjectMutationVariables) => fetcher<DeleteProjectMutation, DeleteProjectMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectDocument, variables);
 export const AssumeDevelopmentUserDocument = `
     mutation AssumeDevelopmentUser($id: ID!) {
@@ -2282,6 +2300,8 @@ export const useAssumeDevelopmentUserMutation = <
       (variables?: AssumeDevelopmentUserMutationVariables) => fetcher<AssumeDevelopmentUserMutation, AssumeDevelopmentUserMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, AssumeDevelopmentUserDocument, variables)(),
       options
     );
+useAssumeDevelopmentUserMutation.getKey = () => ['AssumeDevelopmentUser'];
+
 useAssumeDevelopmentUserMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: AssumeDevelopmentUserMutationVariables) => fetcher<AssumeDevelopmentUserMutation, AssumeDevelopmentUserMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, AssumeDevelopmentUserDocument, variables);
 export const HomepageDocument = `
     query Homepage {
