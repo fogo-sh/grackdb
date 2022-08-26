@@ -60,24 +60,5 @@ export function CreateUserModal({ dialogOpen, setDialogOpen }) {
     }
   }, [createUserData]);
 
-  return (
-    <Modal open={dialogOpen} setOpen={setDialogOpen} title="Create User">
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          register={register}
-          errors={errors}
-          id="username"
-          name="Username"
-          options={{ required: errorMessage.required }}
-        />
-        <Input
-          register={register}
-          errors={errors}
-          id="avatarUrl"
-          name="Avatar URL"
-        />
-        <input className="btn" type="submit" value="Create User" />
-      </form>
-    </Modal>
-  );
+  return null;
 }

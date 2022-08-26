@@ -42,11 +42,11 @@ const DATE_FORMAT = "LLLL do, Y";
 export function ProjectDates({ project }: { project: Project }) {
   const startDate =
     project.startDate !== null
-      ? format(new Date(project.startDate), DATE_FORMAT)
+      ? format(new Date(project.startDate ?? "???"), DATE_FORMAT)
       : "Present";
   const endDate =
     project.endDate !== null
-      ? format(new Date(project.endDate), DATE_FORMAT)
+      ? format(new Date(project.endDate ?? "???"), DATE_FORMAT)
       : "Present";
 
   return (

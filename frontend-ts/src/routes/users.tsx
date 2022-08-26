@@ -1,4 +1,4 @@
-import { LoaderFunction, useLoaderData } from "react-router-dom";
+import { Link, LoaderFunction, Outlet, useLoaderData } from "react-router-dom";
 import { z } from "zod";
 import { UserSchema } from "~/types";
 import { dataSource, queryClient } from "~/query";
@@ -25,18 +25,16 @@ export const loader: LoaderFunction = async () => {
 
 export function UsersPage() {
   const { users } = useLoaderData() as LoaderData;
-  const currentUser = undefined;
+  const currentUser = true; // TODO
 
   return (
     <>
       <div className="flex justify-between items-center">
         <h2 className="h-full my-0">Users</h2>
         {currentUser && (
-          <>
-            <button className="btn h-1/2" onClick={() => alert(true)}>
-              Create
-            </button>
-          </>
+          <Link to="./create">
+            <button className="btn h-1/2">Create</button>
+          </Link>
         )}
       </div>
       <div className="mx-2">
@@ -46,6 +44,7 @@ export function UsersPage() {
           </UserReference>
         ))}
       </div>
+      <Outlet />
     </>
   );
 }

@@ -1,16 +1,21 @@
 import { Dialog } from "@headlessui/react";
+import React from "react";
 
-export function Modal({ open, setOpen, title, children }) {
-  if (!open) {
-    return null;
-  }
-
+export function Modal({
+  title,
+  children,
+  close,
+}: {
+  title: string;
+  children: React.ReactElement;
+  close: () => void;
+}) {
   return (
     <Dialog
       as="div"
       className="fixed inset-0 z-10 overflow-y-auto"
-      open={open}
-      onClose={() => setOpen(false)}
+      open
+      onClose={() => close()}
     >
       <div className="min-h-screen px-4 text-center">
         <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-40" />

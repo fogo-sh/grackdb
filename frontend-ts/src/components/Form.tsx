@@ -1,10 +1,26 @@
-export function Input({ id, name, type = "text" }) {
+export function Input({
+  id,
+  name,
+  display,
+  type = "text",
+}: {
+  id: string;
+  name: string;
+  display: string;
+  type?: HTMLInputElement["type"];
+}) {
   return (
     <div className="flex flex-col">
       <label htmlFor={id} className="mb-1">
-        {name}
+        {display}
       </label>
-      <input className="inp" id={id} autoComplete="off" type={type} />
+      <input
+        className="inp"
+        id={id}
+        autoComplete="off"
+        type={type}
+        name={name}
+      />
     </div>
   );
 }
