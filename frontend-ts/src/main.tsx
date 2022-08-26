@@ -3,12 +3,13 @@ import ReactDOM from "react-dom/client";
 import { DataBrowserRouter, Route } from "react-router-dom";
 import "./index.css";
 
-import { RootPage } from "./routes/root";
 import ErrorPage from "./error-page";
+import { RootPage } from "./routes/root";
 import { IndexPage, loader as indexLoader } from "./routes/index";
 import { UsersPage, loader as usersLoader } from "./routes/users";
 import { UserPage, loader as userLoader } from "./routes/user";
 import { ProjectsPage, loader as projectsLoader } from "./routes/projects";
+import { ProjectPage, loader as projectLoader } from "./routes/project";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -25,6 +26,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           path="projects"
           element={<ProjectsPage />}
           loader={projectsLoader}
+        />
+        <Route
+          path="project/:id"
+          element={<ProjectPage />}
+          loader={projectLoader}
         />
       </Route>
     </DataBrowserRouter>

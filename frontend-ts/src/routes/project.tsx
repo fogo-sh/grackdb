@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router-dom";
+import { LoaderFunction, useLoaderData } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { enumValueToDisplayName } from "~/utils";
 import {
@@ -10,9 +10,47 @@ import { GithubRepositoryReference } from "~/components/Repositories";
 import { DiscordAccountReference } from "~/components/DiscordAccount";
 import { SiteReference } from "~/components/Site";
 import { UserReference } from "~/components/User";
+import {
+  ProjectSchema,
+  ProjectAssociationSchema,
+  ProjectContributorSchema,
+} from "~/types";
+import { z } from "zod";
+import invariant from "tiny-invariant";
+import { useProjectsByProjectIdQuery } from "~/generated/graphql";
+import { dataSource, queryClient } from "~/query";
+
+const LoaderDataSchema = z.object({
+  // we merge here due to circular import issue stuff
+  project: ProjectSchema.merge(
+    z.object({
+      contributors: z.array(ProjectContributorSchema),
+      parentProjects: z.array(ProjectAssociationSchema),
+      childProjects: z.array(ProjectAssociationSchema),
+    })
+  ),
+});
+
+type LoaderData = z.infer<typeof LoaderDataSchema>;
+
+export const loader: LoaderFunction = async ({ params }) => {
+  const id = params.id;
+  invariant(id);
+
+  const userQuery = await queryClient.fetchQuery(
+    useProjectsByProjectIdQuery.getKey({ projectId: id }),
+    async () =>
+      await useProjectsByProjectIdQuery.fetcher(dataSource, { projectId: id })()
+  );
+
+  const project = userQuery.projects?.edges?.map((edge) => edge?.node)[0];
+
+  const data: LoaderData = LoaderDataSchema.parse({ project });
+  return data;
+};
 
 export function ProjectPage() {
-  const { project } = useLoaderData();
+  const { project } = useLoaderData() as LoaderData;
 
   const currentUser = undefined; // TODO
 
@@ -23,14 +61,14 @@ export function ProjectPage() {
         <ProjectDates project={project} />
       </p>
       <div className="flex h-full justify-around">
-        {project.technologies.map(({ id, type, technology }) => (
+        {(project.technologies ?? []).map(({ id, type, technology }) => (
           <div key={id} className="flex">
             <TechnologyReference key={technology.id} technology={technology}>
               {({ circle, name }) => (
                 <>
                   {circle}{" "}
                   <span>
-                    {enumValueToDisplayName(type)} {name}
+                    {enumValueToDisplayName(type ?? "???")} {name}
                   </span>
                 </>
               )}
@@ -40,33 +78,34 @@ export function ProjectPage() {
       </div>
 
       <div className="my-1">
-        {project.repositories.map((repository) => (
+        {(project.repositories ?? []).map((repository) => (
           <GithubRepositoryReference
             key={repository.id}
             repository={repository}
             hasLink
           />
         ))}
-        {project.sites.map((site) => (
+        {(project.sites ?? []).map((site) => (
           <SiteReference key={site.id} site={site} hasLink />
         ))}
-        {project.discordBots.map((discordBot) => (
+        {(project.discordBots ?? []).map((discordBot) => (
           <DiscordAccountReference
             key={discordBot.id}
             discordAccount={discordBot.account}
-            hasLink
           />
         ))}
       </div>
 
-      <ReactMarkdown className="mt-3 mb-4">{project.description}</ReactMarkdown>
+      <ReactMarkdown className="mt-3 mb-4">
+        {project.description ?? "_No description_"}
+      </ReactMarkdown>
 
       <h2>Contributors</h2>
       <div className="mx-2">
         {(!project.contributors || project.contributors.length === 0) && (
           <i>None</i>
         )}
-        {project.contributors?.map((contributor) => (
+        {project.contributors.map((contributor) => (
           <UserReference key={contributor.id} user={contributor.user} hasLink>
             {({ userName }) => (
               <>
@@ -97,7 +136,7 @@ export function ProjectPage() {
                       </i>
                     </span>
                     <TechnologiesReference
-                      technologies={parentProject.parent.technologies}
+                      technologies={parentProject.parent?.technologies ?? []}
                     />
                   </>
                 )}
@@ -127,7 +166,7 @@ export function ProjectPage() {
                       </i>
                     </span>
                     <TechnologiesReference
-                      technologies={childProject.child.technologies}
+                      technologies={childProject.child?.technologies ?? []}
                     />
                   </>
                 )}

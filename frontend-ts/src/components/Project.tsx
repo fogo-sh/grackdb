@@ -12,7 +12,7 @@ export function ProjectReference({
   hasLink = false,
   children,
 }: {
-  project: Project;
+  project?: Project | null;
   hasLink: boolean;
   children: ({
     projectName,
@@ -20,6 +20,10 @@ export function ProjectReference({
     projectName: string | JSX.Element;
   }) => React.ReactNode;
 }) {
+  if (project === undefined || project === null) {
+    return <>???</>;
+  }
+
   const projectName = hasLink ? (
     <Link to={`/project/${project.id}`}>{project.name}</Link>
   ) : (

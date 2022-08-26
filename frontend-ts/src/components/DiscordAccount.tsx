@@ -1,11 +1,16 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { FaDiscord } from "react-icons/fa";
+import { DiscordAccount } from "~/types";
 
 import { Input } from "./Form";
 import { Modal } from "./Modal";
 
-export function DiscordAccountReference({ discordAccount }) {
+export function DiscordAccountReference({
+  discordAccount,
+}: {
+  discordAccount: DiscordAccount;
+}) {
   return (
     <div className="flex my-2 items-center">
       <FaDiscord className="mr-1" /> {discordAccount.username}
