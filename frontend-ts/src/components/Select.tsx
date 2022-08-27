@@ -1,11 +1,17 @@
 import { Listbox } from "@headlessui/react";
 import { FaCaretDown, FaCheck } from "react-icons/fa";
 
-export function Select({ fetching, options, selected, onChange }) {
-  if (fetching) {
-    return null;
-  }
+export type SelectItem = { id: string; value: string };
 
+export function Select({
+  options,
+  selected,
+  onChange,
+}: {
+  options: SelectItem[];
+  selected?: SelectItem;
+  onChange: (item: SelectItem) => void;
+}) {
   return (
     <Listbox value={selected} onChange={onChange}>
       <div className="relative min-w-[15rem] h-full">

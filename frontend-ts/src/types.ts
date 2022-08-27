@@ -1,4 +1,12 @@
 import { z } from "zod";
+import { AuthProviderType } from "./generated/graphql";
+
+export const AuthProviderSchema = z.object({
+  type: z.nativeEnum(AuthProviderType),
+  url: z.string(),
+});
+
+export type AuthProvider = z.infer<typeof AuthProviderSchema>;
 
 export const RepositorySchema = z.object({
   id: z.string(),

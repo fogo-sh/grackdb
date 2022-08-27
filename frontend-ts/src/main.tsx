@@ -14,6 +14,12 @@ import {
 import { UserPage, loader as userLoader } from "./routes/user";
 import { ProjectsPage, loader as projectsLoader } from "./routes/projects";
 import { ProjectPage, loader as projectLoader } from "./routes/project";
+import { LoginPage, loader as loginLoader } from "./routes/login";
+import {
+  AssumeUserPage,
+  loader as assumeUserLoader,
+  action as assumeUserAction,
+} from "./routes/login-assume-user";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -42,6 +48,14 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           element={<ProjectPage />}
           loader={projectLoader}
         />
+        <Route path="login" element={<LoginPage />} loader={loginLoader}>
+          <Route
+            path="assume"
+            element={<AssumeUserPage />}
+            loader={assumeUserLoader}
+            action={assumeUserAction}
+          />
+        </Route>
       </Route>
     </DataBrowserRouter>
   </React.StrictMode>
