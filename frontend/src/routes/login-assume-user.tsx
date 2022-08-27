@@ -77,7 +77,7 @@ export function AssumeUserPage() {
   const [selectedUser, setSelectedUser] = useState<SelectItem>();
 
   return (
-    <Modal close={() => navigate("..")}>
+    <Modal close={() => navigate(-1)}>
       <p className="text-center mb-3 italic font-semibold">
         ⭐ Super Secret Developer Assume User Tool ⭐
       </p>

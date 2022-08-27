@@ -26,7 +26,7 @@ export function UserCreatePage() {
   const navigate = useNavigate();
 
   return (
-    <Modal title="Create User" close={() => navigate("..")}>
+    <Modal title="Create User" close={() => navigate(-1)}>
       <Form method="post" className="flex flex-col gap-4">
         <Input id="username" display="Username" />
         <Input id="avatarUrl" display="Avatar URL" />

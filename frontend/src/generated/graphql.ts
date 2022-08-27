@@ -2013,6 +2013,13 @@ export type DeleteProjectMutationVariables = Exact<{
 
 export type DeleteProjectMutation = { __typename?: 'Mutation', deleteProject: { __typename?: 'Project', id: string } };
 
+export type DeleteProjectTechnologyMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteProjectTechnologyMutation = { __typename?: 'Mutation', deleteProjectTechnology: { __typename?: 'ProjectTechnology', id: string } };
+
 export type AssumeDevelopmentUserMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;
@@ -2298,6 +2305,28 @@ export const useDeleteProjectMutation = <
 useDeleteProjectMutation.getKey = () => ['DeleteProject'];
 
 useDeleteProjectMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteProjectMutationVariables) => fetcher<DeleteProjectMutation, DeleteProjectMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectDocument, variables);
+export const DeleteProjectTechnologyDocument = `
+    mutation DeleteProjectTechnology($id: ID!) {
+  deleteProjectTechnology(id: $id) {
+    id
+  }
+}
+    `;
+export const useDeleteProjectTechnologyMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      options?: UseMutationOptions<DeleteProjectTechnologyMutation, TError, DeleteProjectTechnologyMutationVariables, TContext>
+    ) =>
+    useMutation<DeleteProjectTechnologyMutation, TError, DeleteProjectTechnologyMutationVariables, TContext>(
+      ['DeleteProjectTechnology'],
+      (variables?: DeleteProjectTechnologyMutationVariables) => fetcher<DeleteProjectTechnologyMutation, DeleteProjectTechnologyMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectTechnologyDocument, variables)(),
+      options
+    );
+useDeleteProjectTechnologyMutation.getKey = () => ['DeleteProjectTechnology'];
+
+useDeleteProjectTechnologyMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteProjectTechnologyMutationVariables) => fetcher<DeleteProjectTechnologyMutation, DeleteProjectTechnologyMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectTechnologyDocument, variables);
 export const AssumeDevelopmentUserDocument = `
     mutation AssumeDevelopmentUser($id: ID!) {
   assumeDevelopmentUser(id: $id) {

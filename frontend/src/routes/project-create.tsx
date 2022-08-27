@@ -50,7 +50,7 @@ export function ProjectCreatePage() {
   // etc.
 
   return (
-    <Modal title="Create Project" close={() => navigate("..")}>
+    <Modal title="Create Project" close={() => navigate(-1)}>
       <Form method="post" className="flex flex-col gap-4">
         <Input id="name" display="Name" />
         <Input id="description" display="Description" />

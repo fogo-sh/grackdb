@@ -56,7 +56,7 @@ export function UserDeleteThing() {
   const navigate = useNavigate();
 
   return (
-    <Modal title="Are you sure?" close={() => navigate("..")}>
+    <Modal title="Are you sure?" close={() => navigate(-1)}>
       <Form method="post" className="flex flex-col gap-4">
         <input className="btn" type="submit" value="Delete" />
       </Form>

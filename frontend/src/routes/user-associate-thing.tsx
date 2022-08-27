@@ -101,7 +101,7 @@ export function UserAssociateThing() {
   const username = params.username;
 
   return (
-    <Modal title="Associate" close={() => navigate(`/user/${username}`)}>
+    <Modal title="Associate" close={() => navigate(-1)}>
       <Form method="post" className="flex flex-col gap-4">
         {thing === "discord-account" && <AssociateDiscord />}
         {thing === "github-account" && <AssociateGitHub />}

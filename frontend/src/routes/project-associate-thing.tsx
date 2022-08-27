@@ -128,7 +128,7 @@ export function ProjectAssociateThing() {
   const id = params.id;
 
   return (
-    <Modal title="Associate" close={() => navigate(`/project/${id}`)}>
+    <Modal title="Associate" close={() => navigate(-1)}>
       <Form method="post" className="flex flex-col gap-4">
         {thing === "technology" && <AssociateTechnology />}
         <input className="btn" type="submit" value="Associate" />

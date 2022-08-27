@@ -20,6 +20,7 @@ import invariant from "tiny-invariant";
 import { useProjectsByProjectIdQuery } from "~/generated/graphql";
 import { dataSource, queryClient } from "~/query";
 import { useCurrentUser } from "./root";
+import { DeleteButton } from "~/components/DeleteButton";
 
 const LoaderDataSchema = z.object({
   // we merge here due to circular import issue stuff
@@ -65,6 +66,11 @@ export function ProjectPage() {
       <div className="flex h-full justify-around">
         {(project.technologies ?? []).map(({ id, type, technology }) => (
           <div key={id} className="flex">
+            {currentUser && (
+              <Link to={`./delete/technology-reference/${id}`}>
+                <DeleteButton />
+              </Link>
+            )}
             <TechnologyReference key={technology.id} technology={technology}>
               {({ circle, name }) => (
                 <>
@@ -81,20 +87,31 @@ export function ProjectPage() {
 
       <div className="my-1">
         {(project.repositories ?? []).map((repository) => (
-          <GithubRepositoryReference
-            key={repository.id}
-            repository={repository}
-            hasLink
-          />
+          <div key={repository.id} className="flex gap-3">
+            {currentUser && (
+              <Link to={`./delete/repository-reference/${repository.id}`}>
+                <DeleteButton />
+              </Link>
+            )}
+            <GithubRepositoryReference
+              key={repository.id}
+              repository={repository}
+              hasLink
+            />
+          </div>
         ))}
         {(project.sites ?? []).map((site) => (
           <SiteReference key={site.id} site={site} hasLink />
         ))}
         {(project.discordBots ?? []).map((discordBot) => (
-          <DiscordAccountReference
-            key={discordBot.id}
-            discordAccount={discordBot.account}
-          />
+          <div key={discordBot.id} className="flex gap-3">
+            {currentUser && (
+              <Link to={`./delete/discord-bot-reference/${discordBot.id}`}>
+                <DeleteButton />
+              </Link>
+            )}
+            <DiscordAccountReference discordAccount={discordBot.account} />
+          </div>
         ))}
       </div>
 
@@ -110,9 +127,14 @@ export function ProjectPage() {
         {project.contributors.map((contributor) => (
           <UserReference key={contributor.id} user={contributor.user} hasLink>
             {({ userName }) => (
-              <>
+              <div className="flex items-center gap-x-3">
+                {currentUser && (
+                  <Link to={`./delete/contributor/${contributor.id}`}>
+                    <DeleteButton />
+                  </Link>
+                )}
                 {userName} <i>({enumValueToDisplayName(contributor.role)})</i>
-              </>
+              </div>
             )}
           </UserReference>
         ))}
@@ -130,13 +152,22 @@ export function ProjectPage() {
               >
                 {({ projectName }) => (
                   <>
-                    <span>
-                      {projectName}{" "}
-                      <i>
-                        ({project.name}{" "}
-                        {enumValueToDisplayName(parentProject.type)})
-                      </i>
-                    </span>
+                    <div className="flex items-center gap-x-3">
+                      {currentUser && (
+                        <Link
+                          to={`./delete/project-reference/${parentProject.id}`}
+                        >
+                          <DeleteButton />
+                        </Link>
+                      )}
+                      <span>
+                        {projectName}{" "}
+                        <i>
+                          ({enumValueToDisplayName(parentProject.type)}{" "}
+                          {project.name})
+                        </i>
+                      </span>
+                    </div>
                     <TechnologiesReference
                       technologies={parentProject.parent?.technologies ?? []}
                     />
@@ -160,13 +191,22 @@ export function ProjectPage() {
               >
                 {({ projectName }) => (
                   <>
-                    <span>
-                      {projectName}{" "}
-                      <i>
-                        ({enumValueToDisplayName(childProject.type)}{" "}
-                        {project.name})
-                      </i>
-                    </span>
+                    <div className="flex items-center gap-x-3">
+                      {currentUser && (
+                        <Link
+                          to={`./delete/project-reference/${childProject.id}`}
+                        >
+                          <DeleteButton />
+                        </Link>
+                      )}
+                      <span>
+                        {projectName}{" "}
+                        <i>
+                          ({enumValueToDisplayName(childProject.type)}{" "}
+                          {project.name})
+                        </i>
+                      </span>
+                    </div>
                     <TechnologiesReference
                       technologies={childProject.child?.technologies ?? []}
                     />

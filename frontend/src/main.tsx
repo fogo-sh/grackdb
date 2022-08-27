@@ -37,6 +37,10 @@ import {
   action as projectDeleteAction,
 } from "./routes/project-delete";
 import {
+  ProjectDeleteThing,
+  action as projectDeleteThingAction,
+} from "./routes/project-delete-thing";
+import {
   ProjectAssociateThing,
   loader as projectAssociateThingLoader,
   action as projectAssociateThingAction,
@@ -104,6 +108,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             path="delete"
             element={<ProjectDeletePage />}
             action={projectDeleteAction}
+          />
+          <Route
+            path="delete/:thing/:thingId"
+            element={<ProjectDeleteThing />}
+            action={projectDeleteThingAction}
           />
           <Route
             path="associate/:thing"
