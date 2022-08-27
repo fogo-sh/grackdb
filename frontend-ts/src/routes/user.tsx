@@ -102,12 +102,12 @@ export function UserPage() {
             <Link to="./delete">
               <button className="btn btn-primary">Delete User</button>
             </Link>
-            <Link to="./associate-discord-account">
+            <Link to="./associate/discord-account">
               <button className="btn btn-primary">
                 Associate Discord Account
               </button>
             </Link>
-            <Link to="./associate-github-account">
+            <Link to="./associate/github-account">
               <button className="btn btn-primary">
                 Associate GitHub Account
               </button>

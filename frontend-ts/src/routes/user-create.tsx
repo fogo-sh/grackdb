@@ -28,8 +28,8 @@ export function UserCreatePage() {
   return (
     <Modal title="Create User" close={() => navigate("..")}>
       <Form method="post" className="flex flex-col gap-4">
-        <Input id="username" name="username" display="Username" />
-        <Input id="avatarUrl" name="avatarUrl" display="Avatar URL" />
+        <Input id="username" display="Username" />
+        <Input id="avatarUrl" display="Avatar URL" />
         <input className="btn" type="submit" value="Create User" />
       </Form>
     </Modal>

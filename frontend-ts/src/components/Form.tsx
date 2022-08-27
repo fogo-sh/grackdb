@@ -1,11 +1,9 @@
 export function Input({
   id,
-  name,
   display,
   type = "text",
 }: {
   id: string;
-  name: string;
   display: string;
   type?: HTMLInputElement["type"];
 }) {
@@ -14,13 +12,7 @@ export function Input({
       <label htmlFor={id} className="mb-1">
         {display}
       </label>
-      <input
-        className="inp"
-        id={id}
-        autoComplete="off"
-        type={type}
-        name={name}
-      />
+      <input className="inp" id={id} name={id} autoComplete="off" type={type} />
     </div>
   );
 }

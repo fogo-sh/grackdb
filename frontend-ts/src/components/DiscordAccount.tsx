@@ -58,27 +58,6 @@ export function CreateDiscordAccountModal({
       title="Associate Discord Account"
     >
       <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          register={register}
-          errors={errors}
-          id="username"
-          name="Discord Username"
-          options={{ required: errorMessage.required }}
-        />
-        <Input
-          register={register}
-          errors={errors}
-          id="discriminator"
-          name="Discord Discriminator"
-          options={{ required: errorMessage.required }}
-        />
-        <Input
-          register={register}
-          errors={errors}
-          id="discordId"
-          name="Discord ID"
-          options={{ required: errorMessage.required }}
-        />
         <input
           className="btn"
           type="submit"
