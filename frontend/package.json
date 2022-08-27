@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^1.6.6",
-    "@tanstack/react-query": "^4.2.1",
+    "@tanstack/react-query": "^4.2.3",
     "date-fns": "^2.29.2",
     "graphql": "^16.6.0",
     "js-cookie": "^3.0.1",
@@ -24,7 +24,7 @@
     "zod": "^3.18.0"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "2.11.6",
+    "@graphql-codegen/cli": "2.11.8",
     "@graphql-codegen/typescript": "2.7.3",
     "@graphql-codegen/typescript-operations": "2.5.3",
     "@graphql-codegen/typescript-react-query": "^4.0.1",
@@ -35,8 +35,8 @@
     "autoprefixer": "^10.4.8",
     "postcss": "^8.4.16",
     "tailwindcss": "^3.1.8",
-    "typescript": "^4.6.4",
-    "vite": "^3.0.7",
+    "typescript": "^4.8.2",
+    "vite": "^3.0.9",
     "vite-tsconfig-paths": "^3.5.0"
   }
 }
