@@ -9,11 +9,15 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { z } from "zod";
-import { UserSchema } from "~/types";
-import { useAssumableUsersQuery } from "~/generated/graphql";
+import {
+  useAssumableUsersQuery,
+  useAssumeDevelopmentUserMutation,
+  useUserIdFromUsernameQuery,
+} from "~/generated/graphql";
 import { dataSource, queryClient } from "~/query";
 import { Select, SelectItem } from "~/components/Select";
 import { Modal } from "~/components/Modal";
+import invariant from "tiny-invariant";
 
 /*
   const navigate = useNavigate();
@@ -83,12 +87,28 @@ export const loader: LoaderFunction = async () => {
   return data;
 };
 
-const ActionDataSchema = z.object({});
+const ActionDataSchema = z.object({
+  username: z.string(),
+});
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  console.log(Object.fromEntries(formData));
-  // const data = ActionDataSchema.parse(Object.fromEntries(formData));
+  const { username } = ActionDataSchema.parse(Object.fromEntries(formData));
+
+  const userIdQuery = await queryClient.fetchQuery(
+    useUserIdFromUsernameQuery.getKey({ username }),
+    async () =>
+      await useUserIdFromUsernameQuery.fetcher(dataSource, { username })()
+  );
+
+  const id = userIdQuery?.users?.edges?.[0]?.node?.id;
+  invariant(id);
+
+  await queryClient.fetchQuery(
+    useAssumeDevelopmentUserMutation.getKey(),
+    async () =>
+      await useAssumeDevelopmentUserMutation.fetcher(dataSource, { id })()
+  );
 
   return redirect("/");
 };
@@ -114,6 +134,11 @@ export function AssumeUserPage() {
           options={options ?? []}
           selected={selectedUser}
           onChange={setSelectedUser}
+        />
+        <input
+          type="hidden"
+          name="username"
+          value={selectedUser?.value ?? ""}
         />
         <button
           className="btn flex w-[6rem] my-3 h-full items-center"
