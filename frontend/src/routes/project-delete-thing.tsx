@@ -31,6 +31,26 @@ export const action: ActionFunction = async ({ params }) => {
     return redirect(`/project/${id}`);
   }
 
+  if (thing === "repository-reference") {
+    alert("todo");
+    return;
+  }
+
+  if (thing === "discord-bot-reference") {
+    alert("todo");
+    return;
+  }
+
+  if (thing === "contributor") {
+    alert("todo");
+    return;
+  }
+
+  if (thing === "project-reference") {
+    alert("todo");
+    return;
+  }
+
   throw new Error("Unknown thing");
 };
 
