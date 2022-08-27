@@ -11,6 +11,7 @@ import { dataSource, queryClient } from "~/query";
 import { z } from "zod";
 import { useUsersByUsernameQuery } from "~/generated/graphql";
 import invariant from "tiny-invariant";
+import { useCurrentUser } from "./root";
 
 const LoaderDataSchema = z.object({
   user: UserSchema,
@@ -35,8 +36,8 @@ export const loader: LoaderFunction = async ({ params }) => {
 };
 
 export function UserPage() {
-  const currentUser = undefined; // TODO
   const { user } = useLoaderData() as LoaderData;
+  const currentUser = useCurrentUser();
 
   return (
     <>

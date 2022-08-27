@@ -4,6 +4,7 @@ import { UserSchema } from "~/types";
 import { dataSource, queryClient } from "~/query";
 import { useUsersQuery } from "~/generated/graphql";
 import { UserReference } from "~/components/User";
+import { useCurrentUser } from "./root";
 
 const LoaderDataSchema = z.object({
   users: z.array(UserSchema),
@@ -25,7 +26,7 @@ export const loader: LoaderFunction = async () => {
 
 export function UsersPage() {
   const { users } = useLoaderData() as LoaderData;
-  const currentUser = true; // TODO
+  const currentUser = useCurrentUser();
 
   return (
     <>

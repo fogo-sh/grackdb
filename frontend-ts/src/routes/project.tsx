@@ -19,6 +19,7 @@ import { z } from "zod";
 import invariant from "tiny-invariant";
 import { useProjectsByProjectIdQuery } from "~/generated/graphql";
 import { dataSource, queryClient } from "~/query";
+import { useCurrentUser } from "./root";
 
 const LoaderDataSchema = z.object({
   // we merge here due to circular import issue stuff
@@ -52,7 +53,7 @@ export const loader: LoaderFunction = async ({ params }) => {
 export function ProjectPage() {
   const { project } = useLoaderData() as LoaderData;
 
-  const currentUser = undefined; // TODO
+  const currentUser = useCurrentUser();
 
   return (
     <>

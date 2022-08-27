@@ -5,6 +5,7 @@ import { TechnologiesReference } from "~/components/Technology";
 import { useProjectsQuery } from "~/generated/graphql";
 import { dataSource, queryClient } from "~/query";
 import { ProjectSchema } from "~/types";
+import { useCurrentUser } from "./root";
 
 const LoaderDataSchema = z.object({
   projects: z.array(ProjectSchema),
@@ -27,7 +28,7 @@ export const loader: LoaderFunction = async () => {
 export function ProjectsPage() {
   const { projects } = useLoaderData() as LoaderData;
 
-  const currentUser = undefined; // TODO
+  const currentUser = useCurrentUser();
 
   return (
     <>
