@@ -16,6 +16,10 @@ import {
   UserDeletePage,
   action as userDeleteAction,
 } from "./routes/user-delete";
+import {
+  UserDeleteThing,
+  action as userDeleteThingAction,
+} from "./routes/user-delete-thing";
 import { ProjectsPage, loader as projectsLoader } from "./routes/projects";
 import { ProjectPage, loader as projectLoader } from "./routes/project";
 import {
@@ -52,6 +56,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             path="delete"
             element={<UserDeletePage />}
             action={userDeleteAction}
+          />
+          <Route
+            path="delete/:thing/:thingId"
+            element={<UserDeleteThing />}
+            action={userDeleteThingAction}
           />
         </Route>
         <Route
