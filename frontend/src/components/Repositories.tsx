@@ -1,15 +1,17 @@
 import { FaExternalLinkAlt, FaGithub } from "react-icons/fa";
-import { GithubRepository } from "~/types";
+import { Repository } from "~/types";
 
 export function GithubRepositoryReference({
   repository,
   hasLink = false,
 }: {
-  repository: GithubRepository;
+  repository: Repository;
   hasLink: boolean;
 }) {
   const parent =
-    repository.githubAccount?.username ?? repository.githubOrganization?.name;
+    repository.githubAccount?.username ??
+    repository.githubOrganization?.name ??
+    "???";
 
   const path = `${parent}/${repository.name}`;
 

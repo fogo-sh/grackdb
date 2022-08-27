@@ -13,10 +13,33 @@ export const AuthProviderSchema = z.object({
 
 export type AuthProvider = z.infer<typeof AuthProviderSchema>;
 
+export const GithubAccountSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+});
+
+export type GithubAccount = z.infer<typeof GithubAccountSchema>;
+
+export const GithubOrganizationSchema = z.object({
+  id: z.string().nullish(),
+  name: z.string(),
+});
+
+export type GithubOrganization = z.infer<typeof GithubOrganizationSchema>;
+
+export const GithubRepositorySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
+export type GithubRepository = z.infer<typeof GithubRepositorySchema>;
+
 export const RepositorySchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().nullish(),
+  githubAccount: GithubAccountSchema.nullish(),
+  githubOrganization: GithubOrganizationSchema.nullish(),
 });
 
 export type Repository = z.infer<typeof RepositorySchema>;
@@ -89,29 +112,6 @@ export const ProjectContributionSchema = z.object({
 });
 
 export type ProjectContribution = z.infer<typeof ProjectContributionSchema>;
-
-export const GithubAccountSchema = z.object({
-  id: z.string(),
-  username: z.string(),
-});
-
-export type GithubAccount = z.infer<typeof GithubAccountSchema>;
-
-export const GithubOrganizationSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-});
-
-export type GithubOrganization = z.infer<typeof GithubOrganizationSchema>;
-
-export const GithubRepositorySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  githubAccount: GithubAccountSchema.nullish(),
-  githubOrganization: GithubOrganizationSchema.nullish(),
-});
-
-export type GithubRepository = z.infer<typeof GithubRepositorySchema>;
 
 export const UserSchema = z.object({
   id: z.string().optional(),

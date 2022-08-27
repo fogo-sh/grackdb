@@ -47,6 +47,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   const project = userQuery.projects?.edges?.map((edge) => edge?.node)[0];
 
   const data: LoaderData = LoaderDataSchema.parse({ project });
+
   return data;
 };
 
