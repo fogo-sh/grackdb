@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
+import { User } from "~/types";
+
 import grackUrl from "~/images/grack.png";
 
-export function Header() {
-  const currentUser = undefined; // TODO
+export function Header({ currentUser }: { currentUser: User | null }) {
   return (
     <>
       <div className="flex items-center justify-between">

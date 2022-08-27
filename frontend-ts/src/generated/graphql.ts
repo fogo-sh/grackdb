@@ -2059,6 +2059,11 @@ export type AssumableUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type AssumableUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string } | null } | null> | null } | null };
 
+export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, username: string, avatarUrl?: string | null } | null };
+
 
 export const CreateDiscordAccountDocument = `
     mutation CreateDiscordAccount($discordId: String!, $username: String!, $discriminator: String!, $owner: Int!) {
@@ -2639,3 +2644,30 @@ useAssumableUsersQuery.getKey = (variables?: AssumableUsersQueryVariables) => va
 ;
 
 useAssumableUsersQuery.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables?: AssumableUsersQueryVariables) => fetcher<AssumableUsersQuery, AssumableUsersQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, AssumableUsersDocument, variables);
+export const CurrentUserDocument = `
+    query CurrentUser {
+  currentUser {
+    id
+    username
+    avatarUrl
+  }
+}
+    `;
+export const useCurrentUserQuery = <
+      TData = CurrentUserQuery,
+      TError = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      variables?: CurrentUserQueryVariables,
+      options?: UseQueryOptions<CurrentUserQuery, TError, TData>
+    ) =>
+    useQuery<CurrentUserQuery, TError, TData>(
+      variables === undefined ? ['CurrentUser'] : ['CurrentUser', variables],
+      fetcher<CurrentUserQuery, CurrentUserQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CurrentUserDocument, variables),
+      options
+    );
+
+useCurrentUserQuery.getKey = (variables?: CurrentUserQueryVariables) => variables === undefined ? ['CurrentUser'] : ['CurrentUser', variables];
+;
+
+useCurrentUserQuery.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables?: CurrentUserQueryVariables) => fetcher<CurrentUserQuery, CurrentUserQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CurrentUserDocument, variables);

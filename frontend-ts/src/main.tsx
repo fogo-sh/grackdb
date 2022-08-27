@@ -4,7 +4,7 @@ import { DataBrowserRouter, Route } from "react-router-dom";
 import "./index.css";
 
 import ErrorPage from "./error-page";
-import { RootPage } from "./routes/root";
+import { RootPage, loader as rootLoader } from "./routes/root";
 import { IndexPage, loader as indexLoader } from "./routes/index";
 import { UsersPage, loader as usersLoader } from "./routes/users";
 import {
@@ -20,11 +20,17 @@ import {
   loader as assumeUserLoader,
   action as assumeUserAction,
 } from "./routes/login-assume-user";
+import { LogoutPage, loader as logoutLoader } from "./routes/logout";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <DataBrowserRouter>
-      <Route path="/" element={<RootPage />} errorElement={<ErrorPage />}>
+      <Route
+        path="/"
+        element={<RootPage />}
+        loader={rootLoader}
+        errorElement={<ErrorPage />}
+      >
         <Route path="" element={<IndexPage />} loader={indexLoader} />
         <Route path="users/" element={<UsersPage />} loader={usersLoader}>
           <Route
@@ -56,6 +62,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             action={assumeUserAction}
           />
         </Route>
+        <Route path="logout" element={<LogoutPage />} loader={logoutLoader} />
       </Route>
     </DataBrowserRouter>
   </React.StrictMode>

@@ -1,19 +1,13 @@
 import Cookies from "js-cookie";
-import { useEffect } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../providers/AuthProvider";
+import { LoaderFunction, redirect } from "react-router-dom";
+
+export const loader: LoaderFunction = async () => {
+  Cookies.remove("jwt");
+  toast.success("Logged out successfully");
+  return redirect("/");
+};
 
 export function LogoutPage() {
-  const { refreshCurrentUser } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    Cookies.remove("jwt");
-    refreshCurrentUser();
-    navigate("/");
-    toast.success("Logged out successfully");
-  }, []);
-
   return null;
 }

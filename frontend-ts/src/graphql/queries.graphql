@@ -200,3 +200,11 @@ query AssumableUsers {
     }
   }
 }
+
+query CurrentUser {
+  currentUser {
+    id
+    username
+    avatarUrl
+  }
+}
