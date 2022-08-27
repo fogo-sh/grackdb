@@ -3,34 +3,34 @@
 @tailwind utilities;
 
 body {
-	margin: 0;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-		"Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-		sans-serif;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1 {
-	@apply text-2xl my-3 font-semibold;
+  @apply text-2xl my-3 font-semibold;
 }
 
 h2 {
-	@apply text-xl my-3 font-semibold;
+  @apply text-xl my-3 font-semibold;
 }
 
 a {
-	@apply text-blue-700 font-semibold;
+  @apply text-blue-700 font-semibold;
 }
 
 .inp {
-	@apply border border-gray-500 rounded-sm px-2 py-1.5 bg-white;
+  @apply border border-gray-500 rounded-sm px-2 py-1.5 bg-white;
 }
 
 .btn {
-	@apply border border-gray-500 rounded-sm px-2 py-1.5 bg-white;
+  @apply border border-gray-500 rounded-sm px-2 py-1.5 bg-white;
 }
 
 .btn:hover {
-	@apply bg-gray-100;
+  @apply bg-gray-100;
 }
