@@ -63,73 +63,79 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         loader={rootLoader}
         errorElement={<ErrorPage />}
       >
-        <Route path="" element={<IndexPage />} loader={indexLoader} />
-        <Route path="users/" element={<UsersPage />} loader={usersLoader}>
+        <Route errorElement={<ErrorPage />}>
+          <Route path="" element={<IndexPage />} loader={indexLoader} />
+          <Route path="users/" element={<UsersPage />} loader={usersLoader}>
+            <Route
+              path="create"
+              element={<UserCreatePage />}
+              action={userCreateAction}
+            />
+          </Route>
           <Route
-            path="create"
-            element={<UserCreatePage />}
-            action={userCreateAction}
-          />
+            path="user/:username"
+            element={<UserPage />}
+            loader={userLoader}
+          >
+            <Route
+              path="delete"
+              element={<UserDeletePage />}
+              action={userDeleteAction}
+            />
+            <Route
+              path="delete/:thing/:thingId"
+              element={<UserDeleteThing />}
+              action={userDeleteThingAction}
+            />
+            <Route
+              path="associate/:thing"
+              element={<UserAssociateThing />}
+              action={userAssociateThingAction}
+            />
+          </Route>
+          <Route
+            path="projects"
+            element={<ProjectsPage />}
+            loader={projectsLoader}
+          >
+            <Route
+              path="create"
+              element={<ProjectCreatePage />}
+              action={projectCreateAction}
+            />
+          </Route>
+          <Route
+            path="project/:id"
+            element={<ProjectPage />}
+            loader={projectLoader}
+          >
+            <Route
+              path="delete"
+              element={<ProjectDeletePage />}
+              action={projectDeleteAction}
+            />
+            <Route
+              path="delete/:thing/:thingId"
+              element={<ProjectDeleteThing />}
+              action={projectDeleteThingAction}
+            />
+            <Route
+              path="associate/:thing"
+              element={<ProjectAssociateThing />}
+              loader={projectAssociateThingLoader}
+              action={projectAssociateThingAction}
+            />
+          </Route>
+          <Route path="login" element={<LoginPage />} loader={loginLoader}>
+            <Route
+              path="assume"
+              element={<AssumeUserPage />}
+              loader={assumeUserLoader}
+              action={assumeUserAction}
+            />
+          </Route>
+          <Route path="logout" element={<LogoutPage />} loader={logoutLoader} />
         </Route>
-        <Route path="user/:username" element={<UserPage />} loader={userLoader}>
-          <Route
-            path="delete"
-            element={<UserDeletePage />}
-            action={userDeleteAction}
-          />
-          <Route
-            path="delete/:thing/:thingId"
-            element={<UserDeleteThing />}
-            action={userDeleteThingAction}
-          />
-          <Route
-            path="associate/:thing"
-            element={<UserAssociateThing />}
-            action={userAssociateThingAction}
-          />
-        </Route>
-        <Route
-          path="projects"
-          element={<ProjectsPage />}
-          loader={projectsLoader}
-        >
-          <Route
-            path="create"
-            element={<ProjectCreatePage />}
-            action={projectCreateAction}
-          />
-        </Route>
-        <Route
-          path="project/:id"
-          element={<ProjectPage />}
-          loader={projectLoader}
-        >
-          <Route
-            path="delete"
-            element={<ProjectDeletePage />}
-            action={projectDeleteAction}
-          />
-          <Route
-            path="delete/:thing/:thingId"
-            element={<ProjectDeleteThing />}
-            action={projectDeleteThingAction}
-          />
-          <Route
-            path="associate/:thing"
-            element={<ProjectAssociateThing />}
-            loader={projectAssociateThingLoader}
-            action={projectAssociateThingAction}
-          />
-        </Route>
-        <Route path="login" element={<LoginPage />} loader={loginLoader}>
-          <Route
-            path="assume"
-            element={<AssumeUserPage />}
-            loader={assumeUserLoader}
-            action={assumeUserAction}
-          />
-        </Route>
-        <Route path="logout" element={<LogoutPage />} loader={logoutLoader} />
       </Route>
     </DataBrowserRouter>
   </React.StrictMode>
