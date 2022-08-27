@@ -1,0 +1,220 @@
+query Homepage {
+  users {
+    edges {
+      node {
+        id
+        username
+        avatarUrl
+      }
+    }
+  }
+  projects {
+    edges {
+      node {
+        id
+        name
+        technologies {
+          technology {
+            id
+            type
+            name
+            colour
+          }
+        }
+      }
+    }
+  }
+}
+
+query Users {
+  users {
+    edges {
+      node {
+        id
+        username
+        avatarUrl
+      }
+    }
+  }
+}
+
+query UsersByUsername($username: String!) {
+  users(where: { username: $username }) {
+    edges {
+      node {
+        id
+        username
+        avatarUrl
+        githubAccounts {
+          id
+          username
+        }
+        discordAccounts {
+          id
+          username
+          discriminator
+        }
+        projectContributions {
+          role
+          project {
+            id
+            name
+            technologies {
+              technology {
+                id
+                name
+                colour
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+query UserIdFromUsername($username: String!) {
+  users(where: { username: $username }) {
+    edges {
+      node {
+        id
+      }
+    }
+  }
+}
+
+query Projects {
+  projects {
+    edges {
+      node {
+        id
+        name
+        technologies {
+          technology {
+            id
+            type
+            name
+            colour
+          }
+        }
+      }
+    }
+  }
+}
+
+query ProjectsByProjectId($projectId: ID!) {
+  projects(where: { id: $projectId }) {
+    edges {
+      node {
+        id
+        name
+        description
+        startDate
+        endDate
+        repositories {
+          id
+          name
+          githubAccount {
+            username
+          }
+          githubOrganization {
+            name
+          }
+        }
+        sites {
+          id
+          url
+        }
+        discordBots {
+          id
+          account {
+            username
+            discriminator
+          }
+        }
+        parentProjects {
+          id
+          type
+          parent {
+            id
+            name
+            technologies {
+              technology {
+                id
+                name
+                colour
+              }
+            }
+          }
+        }
+        childProjects {
+          id
+          type
+          child {
+            id
+            name
+            technologies {
+              technology {
+                id
+                name
+                colour
+              }
+            }
+          }
+        }
+        contributors {
+          id
+          role
+          user {
+            username
+          }
+        }
+        technologies {
+          id
+          type
+          technology {
+            id
+            type
+            name
+            colour
+          }
+        }
+      }
+    }
+  }
+}
+
+query Login {
+  availableAuthProviders {
+    url
+    type
+  }
+  developmentMode
+  users {
+    edges {
+      node {
+        id
+        username
+      }
+    }
+  }
+}
+
+query AssumableUsers {
+  users {
+    edges {
+      node {
+        id
+        username
+      }
+    }
+  }
+}
+
+query CurrentUser {
+  currentUser {
+    id
+    username
+    avatarUrl
+  }
+}

@@ -1,0 +1,13 @@
+overwrite: true
+schema: "http://localhost:8081/query"
+documents: "src/**/*.graphql"
+generates:
+  src/generated/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-query
+    config:
+      exposeFetcher: true
+      exposeQueryKeys: true
+      exposeMutationKeys: true
