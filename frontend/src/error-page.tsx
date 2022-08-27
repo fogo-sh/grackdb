@@ -1,5 +1,10 @@
 import { useRouteError } from "react-router-dom";
 
+const errorToText = (error: any) => {
+  const text = error.statusText || error.message;
+  return text;
+};
+
 export default function ErrorPage() {
   const error = useRouteError() as any; // TODO any usage, probably fine
   console.error(error);
@@ -10,8 +15,10 @@ export default function ErrorPage() {
       <p className="text-lg text-red-700">
         Sorry, an unexpected error has occurred.
       </p>
-      <div className="my-3 p-3 bg-black text-white rounded-lg">
-        <p>{error.statusText || error.message}</p>
+      <div className="my-3 p-3 bg-black text-white rounded-lg overflow-scroll">
+        <pre>
+          <p>{errorToText(error)}</p>
+        </pre>
       </div>
     </div>
   );

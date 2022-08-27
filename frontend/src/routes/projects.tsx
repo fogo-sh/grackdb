@@ -1,4 +1,4 @@
-import { Link, LoaderFunction, useLoaderData } from "react-router-dom";
+import { Link, LoaderFunction, Outlet, useLoaderData } from "react-router-dom";
 import { z } from "zod";
 import { ProjectReference } from "~/components/Project";
 import { TechnologiesReference } from "~/components/Technology";
@@ -53,6 +53,7 @@ export function ProjectsPage() {
           </ProjectReference>
         ))}
       </div>
+      <Outlet />
     </>
   );
 }

@@ -25,6 +25,10 @@ import {
   action as userAssociateThingAction,
 } from "./routes/user-associate-thing";
 import { ProjectsPage, loader as projectsLoader } from "./routes/projects";
+import {
+  ProjectCreatePage,
+  action as projectCreateAction,
+} from "./routes/project-create";
 import { ProjectPage, loader as projectLoader } from "./routes/project";
 import {
   ProjectDeletePage,
@@ -76,7 +80,13 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           path="projects"
           element={<ProjectsPage />}
           loader={projectsLoader}
-        />
+        >
+          <Route
+            path="create"
+            element={<ProjectCreatePage />}
+            action={projectCreateAction}
+          />
+        </Route>
         <Route
           path="project/:id"
           element={<ProjectPage />}
