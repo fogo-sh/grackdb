@@ -84,8 +84,15 @@ export function UserPage() {
           <ProjectReference key={project?.id} project={project} hasLink>
             {({ projectName }) => (
               <>
-                <div>
-                  {projectName} <i>({enumValueToDisplayName(role)})</i>
+                <div className="flex items-center gap-x-3">
+                  {currentUser && (
+                    <Link to={`./delete/contribution/${project?.id}`}>
+                      <DeleteButton />
+                    </Link>
+                  )}
+                  <div>
+                    {projectName} <i>({enumValueToDisplayName(role)})</i>
+                  </div>
                 </div>
                 <TechnologiesReference
                   technologies={project?.technologies ?? []}

@@ -105,6 +105,24 @@ mutation DeleteProjectTechnology($id: ID!) {
   }
 }
 
+mutation DeleteProjectAssociation($id: ID!) {
+  deleteProjectAssociation(id: $id) {
+    id
+  }
+}
+
+mutation DeleteProjectContributor($id: ID!) {
+  deleteProjectContributor(id: $id) {
+    id
+  }
+}
+
+mutation RemoveRepositoryProject($id: ID!) {
+  updateRepository(id: $id, input: { project: null }) {
+    id
+  }
+}
+
 mutation AssumeDevelopmentUser($id: ID!) {
   assumeDevelopmentUser(id: $id) {
     id

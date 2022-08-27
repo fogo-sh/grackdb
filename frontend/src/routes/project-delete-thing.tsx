@@ -7,7 +7,12 @@ import {
 } from "react-router-dom";
 import invariant from "tiny-invariant";
 import { Modal } from "~/components/Modal";
-import { useDeleteProjectTechnologyMutation } from "~/generated/graphql";
+import {
+  useDeleteProjectAssociationMutation,
+  useDeleteProjectContributorMutation,
+  useDeleteProjectTechnologyMutation,
+  useRemoveRepositoryProjectMutation,
+} from "~/generated/graphql";
 import { dataSource, queryClient } from "~/query";
 
 export const action: ActionFunction = async ({ params }) => {
@@ -32,23 +37,45 @@ export const action: ActionFunction = async ({ params }) => {
   }
 
   if (thing === "repository-reference") {
-    alert("todo");
-    return;
+    // TODO fix this, might require nint changes / context
+    throw new Error("Project reference deletion not supported yet");
+    /*
+    await queryClient.fetchQuery(
+      useRemoveRepositoryProjectMutation.getKey(),
+      async () =>
+        await useRemoveRepositoryProjectMutation.fetcher(dataSource, {
+          id: thingId,
+        })()
+    );
+    return redirect(`/project/${id}`);
+    */
   }
 
   if (thing === "discord-bot-reference") {
-    alert("todo");
-    return;
+    // TODO fix this, might require nint changes / context
+    throw new Error("Discord bot reference deletion not supported yet");
   }
 
   if (thing === "contributor") {
-    alert("todo");
-    return;
+    await queryClient.fetchQuery(
+      useDeleteProjectContributorMutation.getKey(),
+      async () =>
+        await useDeleteProjectContributorMutation.fetcher(dataSource, {
+          id: thingId,
+        })()
+    );
+    return redirect(`/project/${id}`);
   }
 
   if (thing === "project-reference") {
-    alert("todo");
-    return;
+    await queryClient.fetchQuery(
+      useDeleteProjectAssociationMutation.getKey(),
+      async () =>
+        await useDeleteProjectAssociationMutation.fetcher(dataSource, {
+          id: thingId,
+        })()
+    );
+    return redirect(`/project/${id}`);
   }
 
   throw new Error("Unknown thing");

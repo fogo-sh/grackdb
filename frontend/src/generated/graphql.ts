@@ -2020,6 +2020,27 @@ export type DeleteProjectTechnologyMutationVariables = Exact<{
 
 export type DeleteProjectTechnologyMutation = { __typename?: 'Mutation', deleteProjectTechnology: { __typename?: 'ProjectTechnology', id: string } };
 
+export type DeleteProjectAssociationMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteProjectAssociationMutation = { __typename?: 'Mutation', deleteProjectAssociation: { __typename?: 'ProjectAssociation', id: string } };
+
+export type DeleteProjectContributorMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteProjectContributorMutation = { __typename?: 'Mutation', deleteProjectContributor: { __typename?: 'ProjectContributor', id: string } };
+
+export type RemoveRepositoryProjectMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type RemoveRepositoryProjectMutation = { __typename?: 'Mutation', updateRepository: { __typename?: 'Repository', id: string } };
+
 export type AssumeDevelopmentUserMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;
@@ -2327,6 +2348,72 @@ export const useDeleteProjectTechnologyMutation = <
 useDeleteProjectTechnologyMutation.getKey = () => ['DeleteProjectTechnology'];
 
 useDeleteProjectTechnologyMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteProjectTechnologyMutationVariables) => fetcher<DeleteProjectTechnologyMutation, DeleteProjectTechnologyMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectTechnologyDocument, variables);
+export const DeleteProjectAssociationDocument = `
+    mutation DeleteProjectAssociation($id: ID!) {
+  deleteProjectAssociation(id: $id) {
+    id
+  }
+}
+    `;
+export const useDeleteProjectAssociationMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      options?: UseMutationOptions<DeleteProjectAssociationMutation, TError, DeleteProjectAssociationMutationVariables, TContext>
+    ) =>
+    useMutation<DeleteProjectAssociationMutation, TError, DeleteProjectAssociationMutationVariables, TContext>(
+      ['DeleteProjectAssociation'],
+      (variables?: DeleteProjectAssociationMutationVariables) => fetcher<DeleteProjectAssociationMutation, DeleteProjectAssociationMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectAssociationDocument, variables)(),
+      options
+    );
+useDeleteProjectAssociationMutation.getKey = () => ['DeleteProjectAssociation'];
+
+useDeleteProjectAssociationMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteProjectAssociationMutationVariables) => fetcher<DeleteProjectAssociationMutation, DeleteProjectAssociationMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectAssociationDocument, variables);
+export const DeleteProjectContributorDocument = `
+    mutation DeleteProjectContributor($id: ID!) {
+  deleteProjectContributor(id: $id) {
+    id
+  }
+}
+    `;
+export const useDeleteProjectContributorMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      options?: UseMutationOptions<DeleteProjectContributorMutation, TError, DeleteProjectContributorMutationVariables, TContext>
+    ) =>
+    useMutation<DeleteProjectContributorMutation, TError, DeleteProjectContributorMutationVariables, TContext>(
+      ['DeleteProjectContributor'],
+      (variables?: DeleteProjectContributorMutationVariables) => fetcher<DeleteProjectContributorMutation, DeleteProjectContributorMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectContributorDocument, variables)(),
+      options
+    );
+useDeleteProjectContributorMutation.getKey = () => ['DeleteProjectContributor'];
+
+useDeleteProjectContributorMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: DeleteProjectContributorMutationVariables) => fetcher<DeleteProjectContributorMutation, DeleteProjectContributorMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, DeleteProjectContributorDocument, variables);
+export const RemoveRepositoryProjectDocument = `
+    mutation RemoveRepositoryProject($id: ID!) {
+  updateRepository(id: $id, input: {project: null}) {
+    id
+  }
+}
+    `;
+export const useRemoveRepositoryProjectMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      options?: UseMutationOptions<RemoveRepositoryProjectMutation, TError, RemoveRepositoryProjectMutationVariables, TContext>
+    ) =>
+    useMutation<RemoveRepositoryProjectMutation, TError, RemoveRepositoryProjectMutationVariables, TContext>(
+      ['RemoveRepositoryProject'],
+      (variables?: RemoveRepositoryProjectMutationVariables) => fetcher<RemoveRepositoryProjectMutation, RemoveRepositoryProjectMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, RemoveRepositoryProjectDocument, variables)(),
+      options
+    );
+useRemoveRepositoryProjectMutation.getKey = () => ['RemoveRepositoryProject'];
+
+useRemoveRepositoryProjectMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: RemoveRepositoryProjectMutationVariables) => fetcher<RemoveRepositoryProjectMutation, RemoveRepositoryProjectMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, RemoveRepositoryProjectDocument, variables);
 export const AssumeDevelopmentUserDocument = `
     mutation AssumeDevelopmentUser($id: ID!) {
   assumeDevelopmentUser(id: $id) {

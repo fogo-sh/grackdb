@@ -4,6 +4,7 @@ import { Modal } from "~/components/Modal";
 import {
   useDeleteDiscordAccountMutation,
   useDeleteGithubAccountMutation,
+  useDeleteProjectContributorMutation,
   useUserIdFromUsernameQuery,
 } from "~/generated/graphql";
 import { dataSource, queryClient } from "~/query";
@@ -43,6 +44,17 @@ export const action: ActionFunction = async ({ params }) => {
       useDeleteDiscordAccountMutation.getKey(),
       async () =>
         await useDeleteDiscordAccountMutation.fetcher(dataSource, {
+          id: thingId,
+        })()
+    );
+    return redirect(`/user/${username}`);
+  }
+
+  if (thing === "contribution") {
+    await queryClient.fetchQuery(
+      useDeleteProjectContributorMutation.getKey(),
+      async () =>
+        await useDeleteProjectContributorMutation.fetcher(dataSource, {
           id: thingId,
         })()
     );

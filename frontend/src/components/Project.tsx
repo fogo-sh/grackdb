@@ -27,7 +27,7 @@ export function ProjectReference({
   );
 
   return (
-    <div className="flex justify-between my-2 h-6 items-center">
+    <div className="flex justify-between my-2 items-center">
       {children({ projectName })}
     </div>
   );
