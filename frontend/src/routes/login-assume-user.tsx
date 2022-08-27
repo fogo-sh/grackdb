@@ -19,50 +19,6 @@ import { Select, SelectItem } from "~/components/Select";
 import { Modal } from "~/components/Modal";
 import invariant from "tiny-invariant";
 
-/*
-  const navigate = useNavigate();
-  const { refreshCurrentUser } = useAuth();
-
-  const [{ fetching, data }] = useQuery({
-    query: DEVELOPMENT_ASSUME_USER_QUERY,
-  });
-
-  const [{ data: assumeDevelopmentUserData, error }, assumeDevelopmentUser] =
-    useMutation(DEVELOPMENT_ASSUME_USER_MUTATION);
-  useErrorNotify(error);
-
-  useEffect(() => {
-    if (data === undefined) {
-      return;
-    }
-
-    const users = data.users.edges.map(({ node: { id, username } }) => ({
-      id,
-      value: username,
-    }));
-
-    setOptions(users);
-    setSelectedUser(users[0]);
-  }, [data]);
-
-  const assume = useCallback(() => {
-    assumeDevelopmentUser({ id: selectedUser.id });
-  }, [selectedUser]);
-
-  useEffect(() => {
-    if (assumeDevelopmentUserData === undefined) {
-      return;
-    }
-
-    refreshCurrentUser();
-    navigate("/");
-  }, [assumeDevelopmentUserData]);
-
-  if (!selectedUser) {
-    return null;
-  }
-*/
-
 const LoaderDataSchema = z.object({
   options: z.array(z.object({ id: z.string(), value: z.string() })),
 });

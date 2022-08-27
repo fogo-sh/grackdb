@@ -1,6 +1,13 @@
 import { FaExternalLinkAlt, FaGlobe } from "react-icons/fa";
+import { Site } from "~/types";
 
-export function SiteReference({ site, hasLink = false }) {
+export function SiteReference({
+  site,
+  hasLink = false,
+}: {
+  site: Site;
+  hasLink: boolean;
+}) {
   return (
     <div className="flex my-2 items-center">
       <FaGlobe className="mr-1" />

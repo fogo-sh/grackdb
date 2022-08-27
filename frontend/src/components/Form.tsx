@@ -18,5 +18,6 @@ export function Input({
 }
 
 /*
+  TODO error state
   <p className="text-sm italic text-red-600 mt-0.5">{message}</p>
 */

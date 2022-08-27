@@ -97,6 +97,22 @@ export const GithubAccountSchema = z.object({
 
 export type GithubAccount = z.infer<typeof GithubAccountSchema>;
 
+export const GithubOrganizationSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
+export type GithubOrganization = z.infer<typeof GithubOrganizationSchema>;
+
+export const GithubRepositorySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  githubAccount: GithubAccountSchema.nullish(),
+  githubOrganization: GithubOrganizationSchema.nullish(),
+});
+
+export type GithubRepository = z.infer<typeof GithubRepositorySchema>;
+
 export const UserSchema = z.object({
   id: z.string().optional(),
   username: z.string(),
