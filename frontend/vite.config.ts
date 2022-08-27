@@ -14,6 +14,9 @@ export default defineConfig({
       "/oauth": {
         target: "http://localhost:8081/",
       },
+      "/playground": {
+        target: "http://localhost:8081/",
+      },
     },
   },
 });

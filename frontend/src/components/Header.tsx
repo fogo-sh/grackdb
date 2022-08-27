@@ -19,7 +19,7 @@ export function Header({ currentUser }: { currentUser: User | null }) {
           <Link to="/projects">Projects</Link>
         </div>
         <div className="flex flex-col sm:flex-row gap-1 sm:gap-3">
-          <a href="/playground">GraphQL Playground</a>
+          <a href="/playground/">GraphQL Playground</a>
           {currentUser ? (
             <Link to="/logout">Logout</Link>
           ) : (

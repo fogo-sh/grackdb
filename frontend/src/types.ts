@@ -14,7 +14,7 @@ export const AuthProviderSchema = z.object({
 export type AuthProvider = z.infer<typeof AuthProviderSchema>;
 
 export const GithubAccountSchema = z.object({
-  id: z.string(),
+  id: z.string().nullish(),
   username: z.string(),
 });
 
