@@ -11,6 +11,8 @@ import { DiscordAccountReference } from "~/components/DiscordAccount";
 import { ProjectReference } from "~/components/Project";
 import { TechnologiesReference } from "~/components/Technology";
 import { useCurrentUser } from "./root";
+import { FaEdit } from "react-icons/fa";
+import { useState } from "react";
 
 const LoaderDataSchema = z.object({
   user: UserSchema,
@@ -38,6 +40,8 @@ export function UserPage() {
   const { user } = useLoaderData() as LoaderData;
   const currentUser = useCurrentUser();
 
+  const [editing, setEditing] = useState(false);
+
   return (
     <>
       {user.avatarUrl !== null && (
@@ -54,7 +58,7 @@ export function UserPage() {
           user.discordAccounts?.length === 0 && <i>None</i>}
         {user.githubAccounts?.map((githubAccount) => (
           <div key={githubAccount.id} className="flex gap-3">
-            {currentUser && (
+            {editing && (
               <Link to={`./delete/github-account/${githubAccount.id}`}>
                 <DeleteButton />
               </Link>
@@ -68,7 +72,7 @@ export function UserPage() {
         ))}
         {user.discordAccounts?.map((discordAccount) => (
           <div key={discordAccount.id} className="flex gap-3">
-            {currentUser && (
+            {editing && (
               <Link to={`./delete/discord-account/${discordAccount.id}`}>
                 <DeleteButton />
               </Link>
@@ -85,7 +89,7 @@ export function UserPage() {
             {({ projectName }) => (
               <>
                 <div className="flex items-center gap-x-3">
-                  {currentUser && (
+                  {editing && (
                     <Link to={`./delete/contribution/${project?.id}`}>
                       <DeleteButton />
                     </Link>
@@ -105,20 +109,30 @@ export function UserPage() {
       {currentUser && (
         <>
           <h2>Actions</h2>
-          <div className="flex gap-2">
-            <Link to="./delete">
-              <button className="btn btn-primary">Delete User</button>
-            </Link>
-            <Link to="./associate/discord-account">
-              <button className="btn btn-primary">
-                Associate Discord Account
-              </button>
-            </Link>
-            <Link to="./associate/github-account">
-              <button className="btn btn-primary">
-                Associate GitHub Account
-              </button>
-            </Link>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className="btn float-right flex items-center gap-x-2"
+              onClick={() => setEditing(!editing)}
+            >
+              <FaEdit /> {editing ? "Stop Editing" : "Edit"}
+            </button>
+            {editing && (
+              <>
+                <Link to="./delete">
+                  <button className="btn btn-primary">Delete User</button>
+                </Link>
+                <Link to="./associate/discord-account">
+                  <button className="btn btn-primary">
+                    Associate Discord Account
+                  </button>
+                </Link>
+                <Link to="./associate/github-account">
+                  <button className="btn btn-primary">
+                    Associate GitHub Account
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
         </>
       )}

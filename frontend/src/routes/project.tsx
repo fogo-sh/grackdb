@@ -21,6 +21,8 @@ import { useProjectsByProjectIdQuery } from "~/generated/graphql";
 import { dataSource, queryClient } from "~/query";
 import { useCurrentUser } from "./root";
 import { DeleteButton } from "~/components/DeleteButton";
+import { FaEdit } from "react-icons/fa";
+import { useState } from "react";
 
 const LoaderDataSchema = z.object({
   // we merge here due to circular import issue stuff
@@ -54,8 +56,9 @@ export const loader: LoaderFunction = async ({ params }) => {
 
 export function ProjectPage() {
   const { project } = useLoaderData() as LoaderData;
-
   const currentUser = useCurrentUser();
+
+  const [editing, setEditing] = useState(false);
 
   return (
     <>
@@ -66,7 +69,7 @@ export function ProjectPage() {
       <div className="flex h-full justify-around">
         {(project.technologies ?? []).map(({ id, type, technology }) => (
           <div key={id} className="flex">
-            {currentUser && (
+            {editing && (
               <Link to={`./delete/technology-reference/${id}`}>
                 <DeleteButton />
               </Link>
@@ -88,7 +91,7 @@ export function ProjectPage() {
       <div className="my-1">
         {(project.repositories ?? []).map((repository) => (
           <div key={repository.id} className="flex gap-3">
-            {currentUser && (
+            {editing && (
               <Link to={`./delete/repository-reference/${repository.id}`}>
                 <DeleteButton />
               </Link>
@@ -105,7 +108,7 @@ export function ProjectPage() {
         ))}
         {(project.discordBots ?? []).map((discordBot) => (
           <div key={discordBot.id} className="flex gap-3">
-            {currentUser && (
+            {editing && (
               <Link to={`./delete/discord-bot-reference/${discordBot.id}`}>
                 <DeleteButton />
               </Link>
@@ -128,7 +131,7 @@ export function ProjectPage() {
           <UserReference key={contributor.id} user={contributor.user} hasLink>
             {({ userName }) => (
               <div className="flex items-center gap-x-3">
-                {currentUser && (
+                {editing && (
                   <Link to={`./delete/contributor/${contributor.id}`}>
                     <DeleteButton />
                   </Link>
@@ -153,7 +156,7 @@ export function ProjectPage() {
                 {({ projectName }) => (
                   <>
                     <div className="flex items-center gap-x-3">
-                      {currentUser && (
+                      {editing && (
                         <Link
                           to={`./delete/project-reference/${parentProject.id}`}
                         >
@@ -192,7 +195,7 @@ export function ProjectPage() {
                 {({ projectName }) => (
                   <>
                     <div className="flex items-center gap-x-3">
-                      {currentUser && (
+                      {editing && (
                         <Link
                           to={`./delete/project-reference/${childProject.id}`}
                         >
@@ -220,13 +223,25 @@ export function ProjectPage() {
       {currentUser && (
         <>
           <h2>Actions</h2>
-          <div className="flex gap-2">
-            <Link to="./delete">
-              <button className="btn btn-primary">Delete Project</button>
-            </Link>
-            <Link to="./associate/technology">
-              <button className="btn btn-primary">Associate Technology</button>
-            </Link>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className="btn float-right flex items-center gap-x-2"
+              onClick={() => setEditing(!editing)}
+            >
+              <FaEdit /> {editing ? "Stop Editing" : "Edit"}
+            </button>
+            {editing && (
+              <>
+                <Link to="./delete">
+                  <button className="btn btn-primary">Delete Project</button>
+                </Link>
+                <Link to="./associate/technology">
+                  <button className="btn btn-primary">
+                    Associate Technology
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
         </>
       )}
