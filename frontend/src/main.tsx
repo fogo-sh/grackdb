@@ -23,6 +23,7 @@ import {
 } from "./routes/user-delete-thing";
 import {
   UserAssociateThing,
+  loader as userAssociateThingLoader,
   action as userAssociateThingAction,
 } from "./routes/user-associate-thing";
 
@@ -90,6 +91,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             <Route
               path="associate/:thing"
               element={<UserAssociateThing />}
+              loader={userAssociateThingLoader}
               action={userAssociateThingAction}
             />
           </Route>

@@ -1,20 +1,54 @@
 import {
   ActionFunction,
   Form,
+  LoaderFunction,
   redirect,
+  useLoaderData,
   useNavigate,
   useParams,
 } from "react-router-dom";
 import invariant from "tiny-invariant";
 import { z } from "zod";
-import { Input } from "~/components/Form";
+import { Input, SelectInput } from "~/components/Form";
 import { Modal } from "~/components/Modal";
 import {
+  ProjectContributorRole,
   useCreateDiscordAccountMutation,
   useCreateGithubAccountMutation,
+  useCreateProjectContributorMutation,
+  useProjectsQuery,
   useUserIdFromUsernameQuery,
 } from "~/generated/graphql";
 import { dataSource, queryClient } from "~/query";
+
+const LoaderDataSchema = z.object({
+  projectOptions: z.array(z.object({ id: z.string(), value: z.string() })),
+});
+
+type LoaderData = z.infer<typeof LoaderDataSchema>;
+
+export const loader: LoaderFunction = async ({ params }) => {
+  let projectOptions = [] as any;
+
+  if (params.thing === "project-contribution") {
+    const projectsQuery = await queryClient.fetchQuery(
+      useProjectsQuery.getKey(),
+      async () => await useProjectsQuery.fetcher(dataSource)()
+    );
+
+    const projects =
+      projectsQuery.projects?.edges?.map((edge) => edge?.node) ?? [];
+
+    projectOptions = projects.map((project) => ({
+      id: project?.id,
+      value: project?.name,
+    }));
+  }
+
+  const data: LoaderData = LoaderDataSchema.parse({ projectOptions });
+
+  return data;
+};
 
 const CreateGithubAccountSchema = z.object({
   username: z.string(),
@@ -26,6 +60,12 @@ const CreateDiscordAccountSchema = z.object({
   discriminator: z.string(),
   discordId: z.string(),
   owner: z.number(),
+});
+
+const CreateProjectContributionSchema = z.object({
+  role: z.nativeEnum(ProjectContributorRole),
+  project: z.number(),
+  user: z.number(),
 });
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -73,6 +113,20 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect(`/user/${username}`);
   }
 
+  if (thing === "project-contribution") {
+    const data = CreateProjectContributionSchema.parse({
+      ...entries,
+      user: Number(id),
+      project: Number(entries.project),
+    });
+    await queryClient.fetchQuery(
+      useCreateProjectContributorMutation.getKey(),
+      async () =>
+        await useCreateProjectContributorMutation.fetcher(dataSource, data)()
+    );
+    return redirect(`/user/${username}`);
+  }
+
   throw new Error("Unknown thing");
 };
 
@@ -94,17 +148,36 @@ function AssociateGitHub() {
   );
 }
 
+const projectContributorRoleOptions = Object.entries(
+  ProjectContributorRole
+).map(([k, v]) => ({ id: v, value: k }));
+
+function AssociateProjectContribution() {
+  const { projectOptions } = useLoaderData() as LoaderData;
+
+  return (
+    <>
+      <SelectInput
+        id="role"
+        display="Role"
+        options={projectContributorRoleOptions}
+      />
+      <SelectInput id="project" display="Project" options={projectOptions} />
+    </>
+  );
+}
+
 export function UserAssociateThing() {
   const navigate = useNavigate();
   const params = useParams();
   const thing = params.thing;
-  const username = params.username;
 
   return (
     <Modal title="Associate" close={() => navigate(-1)}>
       <Form method="post" className="flex flex-col gap-4">
         {thing === "discord-account" && <AssociateDiscord />}
         {thing === "github-account" && <AssociateGitHub />}
+        {thing === "project-contribution" && <AssociateProjectContribution />}
         <input className="btn" type="submit" value="Associate" />
       </Form>
     </Modal>

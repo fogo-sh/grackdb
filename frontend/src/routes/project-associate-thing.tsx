@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   ActionFunction,
   Form,
@@ -10,8 +9,8 @@ import {
 } from "react-router-dom";
 import invariant from "tiny-invariant";
 import { z } from "zod";
+import { SelectInput } from "~/components/Form";
 import { Modal } from "~/components/Modal";
-import { Select, SelectItem } from "~/components/Select";
 import {
   ProjectTechnologyAssociationType,
   useCreateProjectTechnologyMutation,
@@ -83,40 +82,19 @@ const associationTypeOptions = Object.entries(
 
 function AssociateTechnology() {
   const { technologyOptions } = useLoaderData() as LoaderData;
-  const [selectedAssociationType, setSelectedAssociationType] =
-    useState<SelectItem>();
-  const [selectedTechnology, setSelectedTechnology] = useState<SelectItem>();
-
-  // TODO create a 'SelectInput' wrapper that makes all of this stuff nicer
 
   return (
     <>
-      <div>
-        <p className="mb-1">Association Type</p>
-        <Select
-          options={associationTypeOptions}
-          selected={selectedAssociationType}
-          onChange={setSelectedAssociationType}
-        />
-        <input
-          type="hidden"
-          name="type"
-          value={selectedAssociationType?.id ?? ""}
-        />
-      </div>
-      <div>
-        <p className="mb-1">Technology</p>
-        <Select
-          options={technologyOptions ?? []}
-          selected={selectedTechnology}
-          onChange={setSelectedTechnology}
-        />
-        <input
-          type="hidden"
-          name="technology"
-          value={selectedTechnology?.id ?? ""}
-        />
-      </div>
+      <SelectInput
+        id="type"
+        display="Association Type"
+        options={associationTypeOptions}
+      />
+      <SelectInput
+        id="technology"
+        display="Technology"
+        options={technologyOptions}
+      />
     </>
   );
 }

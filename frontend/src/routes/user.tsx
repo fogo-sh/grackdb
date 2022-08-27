@@ -131,6 +131,11 @@ export function UserPage() {
                     Associate GitHub Account
                   </button>
                 </Link>
+                <Link to="./associate/project-contribution">
+                  <button className="btn btn-primary">
+                    Associate Project Contribution
+                  </button>
+                </Link>
               </>
             )}
           </div>

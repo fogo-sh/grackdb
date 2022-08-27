@@ -67,6 +67,18 @@ mutation CreateProjectTechnology(
   }
 }
 
+mutation CreateProjectContributor(
+  $role: ProjectContributorRole!
+  $project: Int!
+  $user: Int!
+) {
+  createProjectContributor(
+    input: { role: $role, project: $project, user: $user }
+  ) {
+    id
+  }
+}
+
 mutation CreateUser($username: String!, $avatarUrl: String) {
   createUser(input: { username: $username, avatarUrl: $avatarUrl }) {
     id

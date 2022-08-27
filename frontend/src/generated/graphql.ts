@@ -1977,6 +1977,15 @@ export type CreateProjectTechnologyMutationVariables = Exact<{
 
 export type CreateProjectTechnologyMutation = { __typename?: 'Mutation', createProjectTechnology: { __typename?: 'ProjectTechnology', id: string, type: ProjectTechnologyAssociationType, technology: { __typename?: 'Technology', id: string, name: string }, project: { __typename?: 'Project', id: string, name: string } } };
 
+export type CreateProjectContributorMutationVariables = Exact<{
+  role: ProjectContributorRole;
+  project: Scalars['Int'];
+  user: Scalars['Int'];
+}>;
+
+
+export type CreateProjectContributorMutation = { __typename?: 'Mutation', createProjectContributor: { __typename?: 'ProjectContributor', id: string } };
+
 export type CreateUserMutationVariables = Exact<{
   username: Scalars['String'];
   avatarUrl?: InputMaybe<Scalars['String']>;
@@ -2214,6 +2223,28 @@ export const useCreateProjectTechnologyMutation = <
 useCreateProjectTechnologyMutation.getKey = () => ['CreateProjectTechnology'];
 
 useCreateProjectTechnologyMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: CreateProjectTechnologyMutationVariables) => fetcher<CreateProjectTechnologyMutation, CreateProjectTechnologyMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateProjectTechnologyDocument, variables);
+export const CreateProjectContributorDocument = `
+    mutation CreateProjectContributor($role: ProjectContributorRole!, $project: Int!, $user: Int!) {
+  createProjectContributor(input: {role: $role, project: $project, user: $user}) {
+    id
+  }
+}
+    `;
+export const useCreateProjectContributorMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      options?: UseMutationOptions<CreateProjectContributorMutation, TError, CreateProjectContributorMutationVariables, TContext>
+    ) =>
+    useMutation<CreateProjectContributorMutation, TError, CreateProjectContributorMutationVariables, TContext>(
+      ['CreateProjectContributor'],
+      (variables?: CreateProjectContributorMutationVariables) => fetcher<CreateProjectContributorMutation, CreateProjectContributorMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateProjectContributorDocument, variables)(),
+      options
+    );
+useCreateProjectContributorMutation.getKey = () => ['CreateProjectContributor'];
+
+useCreateProjectContributorMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: CreateProjectContributorMutationVariables) => fetcher<CreateProjectContributorMutation, CreateProjectContributorMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateProjectContributorDocument, variables);
 export const CreateUserDocument = `
     mutation CreateUser($username: String!, $avatarUrl: String) {
   createUser(input: {username: $username, avatarUrl: $avatarUrl}) {
