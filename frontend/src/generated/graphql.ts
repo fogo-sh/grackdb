@@ -2056,6 +2056,11 @@ export type ProjectsByProjectIdQueryVariables = Exact<{
 
 export type ProjectsByProjectIdQuery = { __typename?: 'Query', projects?: { __typename?: 'ProjectConnection', edges?: Array<{ __typename?: 'ProjectEdge', node?: { __typename?: 'Project', id: string, name: string, description?: string | null, startDate: any, endDate?: any | null, repositories?: Array<{ __typename?: 'Repository', id: string, name: string, githubAccount?: { __typename?: 'GithubAccount', username: string } | null, githubOrganization?: { __typename?: 'GithubOrganization', name: string } | null }> | null, sites?: Array<{ __typename?: 'Site', id: string, url: string }> | null, discordBots?: Array<{ __typename?: 'DiscordBot', id: string, account: { __typename?: 'DiscordAccount', username: string, discriminator: string } }> | null, parentProjects?: Array<{ __typename?: 'ProjectAssociation', id: string, type: ProjectAssociationType, parent: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null, childProjects?: Array<{ __typename?: 'ProjectAssociation', id: string, type: ProjectAssociationType, child: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null, contributors?: Array<{ __typename?: 'ProjectContributor', id: string, role: ProjectContributorRole, user: { __typename?: 'User', username: string } }> | null, technologies?: Array<{ __typename?: 'ProjectTechnology', id: string, type: ProjectTechnologyAssociationType, technology: { __typename?: 'Technology', id: string, type: TechnologyType, name: string, colour?: string | null } }> | null } | null } | null> | null } | null };
 
+export type TechnologiesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type TechnologiesQuery = { __typename?: 'Query', technologies?: { __typename?: 'TechnologyConnection', edges?: Array<{ __typename?: 'TechnologyEdge', node?: { __typename?: 'Technology', id: string, name: string, colour?: string | null } | null } | null> | null } | null };
+
 export type LoginQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2615,6 +2620,37 @@ useProjectsByProjectIdQuery.getKey = (variables: ProjectsByProjectIdQueryVariabl
 ;
 
 useProjectsByProjectIdQuery.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: ProjectsByProjectIdQueryVariables) => fetcher<ProjectsByProjectIdQuery, ProjectsByProjectIdQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, ProjectsByProjectIdDocument, variables);
+export const TechnologiesDocument = `
+    query Technologies {
+  technologies {
+    edges {
+      node {
+        id
+        name
+        colour
+      }
+    }
+  }
+}
+    `;
+export const useTechnologiesQuery = <
+      TData = TechnologiesQuery,
+      TError = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      variables?: TechnologiesQueryVariables,
+      options?: UseQueryOptions<TechnologiesQuery, TError, TData>
+    ) =>
+    useQuery<TechnologiesQuery, TError, TData>(
+      variables === undefined ? ['Technologies'] : ['Technologies', variables],
+      fetcher<TechnologiesQuery, TechnologiesQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, TechnologiesDocument, variables),
+      options
+    );
+
+useTechnologiesQuery.getKey = (variables?: TechnologiesQueryVariables) => variables === undefined ? ['Technologies'] : ['Technologies', variables];
+;
+
+useTechnologiesQuery.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables?: TechnologiesQueryVariables) => fetcher<TechnologiesQuery, TechnologiesQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, TechnologiesDocument, variables);
 export const LoginDocument = `
     query Login {
   availableAuthProviders {

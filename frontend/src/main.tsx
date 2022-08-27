@@ -6,6 +6,7 @@ import "./index.css";
 import ErrorPage from "./error-page";
 import { RootPage, loader as rootLoader } from "./routes/root";
 import { IndexPage, loader as indexLoader } from "./routes/index";
+
 import { UsersPage, loader as usersLoader } from "./routes/users";
 import {
   UserCreatePage,
@@ -24,6 +25,7 @@ import {
   UserAssociateThing,
   action as userAssociateThingAction,
 } from "./routes/user-associate-thing";
+
 import { ProjectsPage, loader as projectsLoader } from "./routes/projects";
 import {
   ProjectCreatePage,
@@ -34,6 +36,12 @@ import {
   ProjectDeletePage,
   action as projectDeleteAction,
 } from "./routes/project-delete";
+import {
+  ProjectAssociateThing,
+  loader as projectAssociateThingLoader,
+  action as projectAssociateThingAction,
+} from "./routes/project-associate-thing";
+
 import { LoginPage, loader as loginLoader } from "./routes/login";
 import {
   AssumeUserPage,
@@ -96,6 +104,12 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             path="delete"
             element={<ProjectDeletePage />}
             action={projectDeleteAction}
+          />
+          <Route
+            path="associate/:thing"
+            element={<ProjectAssociateThing />}
+            loader={projectAssociateThingLoader}
+            action={projectAssociateThingAction}
           />
         </Route>
         <Route path="login" element={<LoginPage />} loader={loginLoader}>

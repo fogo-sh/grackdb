@@ -18,7 +18,7 @@ export function Select({
         <Listbox.Button className="relative w-full h-full border border-gray-500 rounded-sm pl-3 pr-2 py-1 flex items-center justify-between mx-auto">
           {selected?.value ?? "???"} <FaCaretDown className="ml-1 opacity-50" />
         </Listbox.Button>
-        <Listbox.Options className="absolute w-full mt-1 overflow-auto text-base bg-white rounded-m max-h-60 border border-gray-500">
+        <Listbox.Options className="absolute z-10 w-full mt-1 overflow-auto text-base bg-white rounded-m max-h-60 border border-gray-500">
           {options.map((option) => (
             <Listbox.Option key={option.id} value={option}>
               {({ selected, active }) => (

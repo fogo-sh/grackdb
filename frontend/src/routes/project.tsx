@@ -184,12 +184,9 @@ export function ProjectPage() {
             <Link to="./delete">
               <button className="btn btn-primary">Delete Project</button>
             </Link>
-            {/*
-            TODO build out associate technology page
-            <Link to="./associate">
+            <Link to="./associate/technology">
               <button className="btn btn-primary">Associate Technology</button>
             </Link>
-            */}
           </div>
         </>
       )}

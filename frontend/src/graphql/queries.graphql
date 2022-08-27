@@ -184,6 +184,18 @@ query ProjectsByProjectId($projectId: ID!) {
   }
 }
 
+query Technologies {
+  technologies {
+    edges {
+      node {
+        id
+        name
+        colour
+      }
+    }
+  }
+}
+
 query Login {
   availableAuthProviders {
     url
