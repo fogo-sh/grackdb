@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { AuthProviderType } from "./generated/graphql";
+import {
+  AuthProviderType,
+  ProjectAssociationType,
+  ProjectContributorRole,
+  ProjectTechnologyAssociationType,
+} from "./generated/graphql";
 
 export const AuthProviderSchema = z.object({
   type: z.nativeEnum(AuthProviderType),
@@ -48,7 +53,7 @@ export type Technology = z.infer<typeof TechnologySchema>;
 
 export const ProjectTechnologySchema = z.object({
   id: z.string().optional(),
-  type: z.string().optional(), // TODO fetch enum from generated.ts
+  type: z.nativeEnum(ProjectTechnologyAssociationType),
   technology: TechnologySchema,
 });
 
@@ -70,7 +75,7 @@ export type Project = z.infer<typeof ProjectSchema>;
 
 export const ProjectAssociationSchema = z.object({
   id: z.string(),
-  type: z.string(), // TODO
+  type: z.nativeEnum(ProjectAssociationType),
   parent: ProjectSchema.nullish(),
   child: ProjectSchema.nullish(),
 });
@@ -79,7 +84,7 @@ export type ProjectAssociation = z.infer<typeof ProjectAssociationSchema>;
 
 export const ProjectContributionSchema = z.object({
   id: z.string().optional(),
-  role: z.string(), // TODO
+  role: z.nativeEnum(ProjectContributorRole),
   project: ProjectSchema,
 });
 
@@ -103,10 +108,10 @@ export const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>;
 
-export const ProjectContributorSchema = z.object({
-  id: z.string().optional(),
-  role: z.string(), // TODO
-  user: UserSchema,
-});
+export const ProjectContributorSchema = ProjectContributionSchema.merge(
+  z.object({
+    user: UserSchema,
+  })
+);
 
 export type ProjectContributor = z.infer<typeof ProjectContributorSchema>;

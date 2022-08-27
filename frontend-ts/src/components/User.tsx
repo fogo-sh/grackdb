@@ -1,9 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-import { Modal } from "./Modal";
-import { Input } from "./Form";
-import React, { useEffect } from "react";
-import toast from "react-hot-toast";
+import React from "react";
 import { User } from "~/types";
 
 export function UserReference({
@@ -26,39 +23,4 @@ export function UserReference({
   );
 
   return <div className="my-2">{children({ userName })}</div>;
-}
-
-const CREATE_USER_MUTATION = /* GraphQL */ ``;
-
-export function CreateUserModal({ dialogOpen, setDialogOpen }) {
-  const navigate = useNavigate();
-
-  const [{ data: createUserData, error }, createUser] =
-    useMutation(CREATE_USER_MUTATION);
-  useErrorNotify(error);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm();
-
-  const onSubmit = ({ username, avatarUrl }) => {
-    createUser({
-      username,
-      avatarUrl: avatarUrl !== "" ? avatarUrl : undefined,
-    });
-  };
-
-  useEffect(() => {
-    if (createUserData) {
-      setDialogOpen(false);
-      reset();
-      toast.success(`User ${createUserData.createUser.username} created!`);
-      navigate(`/user/${createUserData.createUser.username}`);
-    }
-  }, [createUserData]);
-
-  return null;
 }
