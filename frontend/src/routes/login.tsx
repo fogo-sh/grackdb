@@ -58,11 +58,13 @@ export function LoginPage() {
             </button>
           </a>
         ))}
-        <Link to="./assume">
-          <button className="btn flex w-[10rem] mt-4 my-2">
-            <div className="flex items-center mx-auto">⭐ Assume User</div>
-          </button>
-        </Link>
+        {developmentMode && (
+          <Link to="./assume">
+            <button className="btn flex w-[10rem] mt-4 my-2">
+              <div className="flex items-center mx-auto">⭐ Assume User</div>
+            </button>
+          </Link>
+        )}
       </div>
       <Outlet />
     </>
