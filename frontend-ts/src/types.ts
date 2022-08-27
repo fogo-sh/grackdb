@@ -53,7 +53,7 @@ export type Technology = z.infer<typeof TechnologySchema>;
 
 export const ProjectTechnologySchema = z.object({
   id: z.string().optional(),
-  type: z.nativeEnum(ProjectTechnologyAssociationType),
+  type: z.nativeEnum(ProjectTechnologyAssociationType).nullish(),
   technology: TechnologySchema,
 });
 
@@ -85,7 +85,7 @@ export type ProjectAssociation = z.infer<typeof ProjectAssociationSchema>;
 export const ProjectContributionSchema = z.object({
   id: z.string().optional(),
   role: z.nativeEnum(ProjectContributorRole),
-  project: ProjectSchema,
+  project: ProjectSchema.nullish(),
 });
 
 export type ProjectContribution = z.infer<typeof ProjectContributionSchema>;

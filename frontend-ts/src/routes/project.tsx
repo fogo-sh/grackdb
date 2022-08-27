@@ -1,4 +1,4 @@
-import { LoaderFunction, useLoaderData } from "react-router-dom";
+import { Link, LoaderFunction, Outlet, useLoaderData } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { enumValueToDisplayName } from "~/utils";
 import {
@@ -180,15 +180,16 @@ export function ProjectPage() {
         <>
           <h2>Actions</h2>
           <div className="flex gap-2">
-            <button className="btn btn-primary" onClick={() => alert(true)}>
-              Delete Project
-            </button>
-            <button className="btn btn-primary" onClick={() => alert(true)}>
-              Associate Technology
-            </button>
+            <Link to="./delete">
+              <button className="btn btn-primary">Delete Project</button>
+            </Link>
+            <Link to="./associate">
+              <button className="btn btn-primary">Associate Technology</button>
+            </Link>
           </div>
         </>
       )}
+      <Outlet />
     </>
   );
 }

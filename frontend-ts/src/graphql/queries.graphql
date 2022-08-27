@@ -73,6 +73,16 @@ query UsersByUsername($username: String!) {
   }
 }
 
+query UserIdFromUsername($username: String!) {
+  users(where: { username: $username }) {
+    edges {
+      node {
+        id
+      }
+    }
+  }
+}
+
 query Projects {
   projects {
     edges {

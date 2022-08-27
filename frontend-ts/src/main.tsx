@@ -12,8 +12,16 @@ import {
   action as userCreateAction,
 } from "./routes/user-create";
 import { UserPage, loader as userLoader } from "./routes/user";
+import {
+  UserDeletePage,
+  action as userDeleteAction,
+} from "./routes/user-delete";
 import { ProjectsPage, loader as projectsLoader } from "./routes/projects";
 import { ProjectPage, loader as projectLoader } from "./routes/project";
+import {
+  ProjectDeletePage,
+  action as projectDeleteAction,
+} from "./routes/project-delete";
 import { LoginPage, loader as loginLoader } from "./routes/login";
 import {
   AssumeUserPage,
@@ -39,11 +47,13 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             action={userCreateAction}
           />
         </Route>
-        <Route
-          path="user/:username"
-          element={<UserPage />}
-          loader={userLoader}
-        />
+        <Route path="user/:username" element={<UserPage />} loader={userLoader}>
+          <Route
+            path="delete"
+            element={<UserDeletePage />}
+            action={userDeleteAction}
+          />
+        </Route>
         <Route
           path="projects"
           element={<ProjectsPage />}
@@ -53,7 +63,13 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           path="project/:id"
           element={<ProjectPage />}
           loader={projectLoader}
-        />
+        >
+          <Route
+            path="delete"
+            element={<ProjectDeletePage />}
+            action={projectDeleteAction}
+          />
+        </Route>
         <Route path="login" element={<LoginPage />} loader={loginLoader}>
           <Route
             path="assume"

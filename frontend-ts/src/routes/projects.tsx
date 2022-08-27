@@ -1,4 +1,4 @@
-import { LoaderFunction, useLoaderData } from "react-router-dom";
+import { Link, LoaderFunction, useLoaderData } from "react-router-dom";
 import { z } from "zod";
 import { ProjectReference } from "~/components/Project";
 import { TechnologiesReference } from "~/components/Technology";
@@ -27,7 +27,6 @@ export const loader: LoaderFunction = async () => {
 
 export function ProjectsPage() {
   const { projects } = useLoaderData() as LoaderData;
-
   const currentUser = useCurrentUser();
 
   return (
@@ -35,11 +34,9 @@ export function ProjectsPage() {
       <div className="flex justify-between items-center">
         <h2 className="h-full my-0">Projects</h2>
         {currentUser && (
-          <>
-            <button className="btn h-1/2" onClick={() => alert(true)}>
-              Create
-            </button>
-          </>
+          <Link to="./create">
+            <button className="btn h-1/2">Create</button>
+          </Link>
         )}
       </div>
       <div className="mx-2">

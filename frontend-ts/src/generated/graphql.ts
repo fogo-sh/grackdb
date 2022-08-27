@@ -2037,6 +2037,13 @@ export type UsersByUsernameQueryVariables = Exact<{
 
 export type UsersByUsernameQuery = { __typename?: 'Query', users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string, avatarUrl?: string | null, githubAccounts?: Array<{ __typename?: 'GithubAccount', id: string, username: string }> | null, discordAccounts?: Array<{ __typename?: 'DiscordAccount', id: string, username: string, discriminator: string }> | null, projectContributions?: Array<{ __typename?: 'ProjectContributor', role: ProjectContributorRole, project: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null } | null } | null> | null } | null };
 
+export type UserIdFromUsernameQueryVariables = Exact<{
+  username: Scalars['String'];
+}>;
+
+
+export type UserIdFromUsernameQuery = { __typename?: 'Query', users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string } | null } | null> | null } | null };
+
 export type ProjectsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2440,6 +2447,35 @@ useUsersByUsernameQuery.getKey = (variables: UsersByUsernameQueryVariables) => [
 ;
 
 useUsersByUsernameQuery.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: UsersByUsernameQueryVariables) => fetcher<UsersByUsernameQuery, UsersByUsernameQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, UsersByUsernameDocument, variables);
+export const UserIdFromUsernameDocument = `
+    query UserIdFromUsername($username: String!) {
+  users(where: {username: $username}) {
+    edges {
+      node {
+        id
+      }
+    }
+  }
+}
+    `;
+export const useUserIdFromUsernameQuery = <
+      TData = UserIdFromUsernameQuery,
+      TError = unknown
+    >(
+      dataSource: { endpoint: string, fetchParams?: RequestInit },
+      variables: UserIdFromUsernameQueryVariables,
+      options?: UseQueryOptions<UserIdFromUsernameQuery, TError, TData>
+    ) =>
+    useQuery<UserIdFromUsernameQuery, TError, TData>(
+      ['UserIdFromUsername', variables],
+      fetcher<UserIdFromUsernameQuery, UserIdFromUsernameQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, UserIdFromUsernameDocument, variables),
+      options
+    );
+
+useUserIdFromUsernameQuery.getKey = (variables: UserIdFromUsernameQueryVariables) => ['UserIdFromUsername', variables];
+;
+
+useUserIdFromUsernameQuery.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: UserIdFromUsernameQueryVariables) => fetcher<UserIdFromUsernameQuery, UserIdFromUsernameQueryVariables>(dataSource.endpoint, dataSource.fetchParams || {}, UserIdFromUsernameDocument, variables);
 export const ProjectsDocument = `
     query Projects {
   projects {

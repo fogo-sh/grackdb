@@ -1,16 +1,15 @@
-import { LoaderFunction, useLoaderData } from "react-router-dom";
-
+import { Link, LoaderFunction, Outlet, useLoaderData } from "react-router-dom";
+import { z } from "zod";
+import invariant from "tiny-invariant";
+import { enumValueToDisplayName } from "~/utils";
+import { UserSchema } from "~/types";
+import { dataSource, queryClient } from "~/query";
+import { DeleteButton } from "~/components/DeleteButton";
+import { useUsersByUsernameQuery } from "~/generated/graphql";
 import { GithubAccountReference } from "~/components/GithubAccount";
 import { DiscordAccountReference } from "~/components/DiscordAccount";
 import { ProjectReference } from "~/components/Project";
 import { TechnologiesReference } from "~/components/Technology";
-import { enumValueToDisplayName } from "~/utils";
-import { DeleteButton } from "~/components/DeleteButton";
-import { UserSchema } from "~/types";
-import { dataSource, queryClient } from "~/query";
-import { z } from "zod";
-import { useUsersByUsernameQuery } from "~/generated/graphql";
-import invariant from "tiny-invariant";
 import { useCurrentUser } from "./root";
 
 const LoaderDataSchema = z.object({
@@ -55,7 +54,11 @@ export function UserPage() {
           user.discordAccounts?.length === 0 && <i>None</i>}
         {user.githubAccounts?.map((githubAccount) => (
           <div key={githubAccount.id} className="flex gap-3">
-            {currentUser && <DeleteButton onClick={() => alert(true)} />}
+            {currentUser && (
+              <Link to={`./delete/github-account/${githubAccount.id}`}>
+                <DeleteButton />
+              </Link>
+            )}
             <GithubAccountReference
               key={githubAccount.id}
               githubAccount={githubAccount}
@@ -65,7 +68,11 @@ export function UserPage() {
         ))}
         {user.discordAccounts?.map((discordAccount) => (
           <div key={discordAccount.id} className="flex gap-3">
-            {currentUser && <DeleteButton onClick={() => alert(true)} />}
+            {currentUser && (
+              <Link to={`./delete/discord-account/${discordAccount.id}`}>
+                <DeleteButton />
+              </Link>
+            )}
             <DiscordAccountReference discordAccount={discordAccount} />
           </div>
         ))}
@@ -74,14 +81,14 @@ export function UserPage() {
       <div className="mx-2">
         {user.projectContributions?.length === 0 && <i>None</i>}
         {user.projectContributions?.map(({ role, project }) => (
-          <ProjectReference key={project.id} project={project} hasLink>
+          <ProjectReference key={project?.id} project={project} hasLink>
             {({ projectName }) => (
               <>
                 <div>
                   {projectName} <i>({enumValueToDisplayName(role)})</i>
                 </div>
                 <TechnologiesReference
-                  technologies={project.technologies ?? []}
+                  technologies={project?.technologies ?? []}
                 />
               </>
             )}
@@ -92,18 +99,23 @@ export function UserPage() {
         <>
           <h2>Actions</h2>
           <div className="flex gap-2">
-            <button className="btn btn-primary" onClick={() => alert(true)}>
-              Delete User
-            </button>
-            <button className="btn h-1/2" onClick={() => alert(true)}>
-              Associate Discord Account
-            </button>
-            <button className="btn h-1/2" onClick={() => alert(true)}>
-              Associate GitHub Account
-            </button>
+            <Link to="./delete">
+              <button className="btn btn-primary">Delete User</button>
+            </Link>
+            <Link to="./associate-discord-account">
+              <button className="btn btn-primary">
+                Associate Discord Account
+              </button>
+            </Link>
+            <Link to="./associate-github-account">
+              <button className="btn btn-primary">
+                Associate GitHub Account
+              </button>
+            </Link>
           </div>
         </>
       )}
+      <Outlet />
     </>
   );
 }
