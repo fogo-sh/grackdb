@@ -3,8 +3,10 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+
 	"github.com/fogo-sh/grackdb/ent/privacy"
 	"github.com/fogo-sh/grackdb/ent/rules"
 )
@@ -47,5 +49,12 @@ func (Site) Policy() ent.Policy {
 		Query: privacy.QueryPolicy{
 			privacy.AlwaysAllowRule(),
 		},
+	}
+}
+
+func (Site) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField("sites"),
 	}
 }

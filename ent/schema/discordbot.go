@@ -3,7 +3,9 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
+
 	"github.com/fogo-sh/grackdb/ent/privacy"
 	"github.com/fogo-sh/grackdb/ent/rules"
 )
@@ -46,5 +48,12 @@ func (DiscordBot) Policy() ent.Policy {
 		Query: privacy.QueryPolicy{
 			privacy.AlwaysAllowRule(),
 		},
+	}
+}
+
+func (DiscordBot) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField("discordBots"),
 	}
 }

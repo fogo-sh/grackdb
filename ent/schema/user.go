@@ -3,8 +3,10 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+
 	"github.com/fogo-sh/grackdb/ent/privacy"
 	"github.com/fogo-sh/grackdb/ent/rules"
 )
@@ -24,7 +26,10 @@ func (User) Fields() []ent.Field {
 			),
 		field.String("avatar_url").
 			Optional().
-			Nillable(),
+			Nillable().
+			Annotations(
+				entgql.MapsTo("avatarUrl"),
+			),
 	}
 }
 
@@ -49,5 +54,12 @@ func (User) Policy() ent.Policy {
 		Query: privacy.QueryPolicy{
 			privacy.AlwaysAllowRule(),
 		},
+	}
+}
+
+func (User) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField("users"),
 	}
 }
