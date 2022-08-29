@@ -3,7 +3,7 @@ import {
   AuthProviderType,
   ProjectAssociationType,
   ProjectContributorRole,
-  ProjectTechnologyAssociationType,
+  ProjectTechnologyType,
 } from "./generated/graphql";
 
 export const AuthProviderSchema = z.object({
@@ -76,7 +76,7 @@ export type Technology = z.infer<typeof TechnologySchema>;
 
 export const ProjectTechnologySchema = z.object({
   id: z.string().optional(),
-  type: z.nativeEnum(ProjectTechnologyAssociationType).nullish(),
+  type: z.nativeEnum(ProjectTechnologyType).nullish(),
   technology: TechnologySchema,
 });
 

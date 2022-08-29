@@ -4,7 +4,7 @@ query Homepage {
       node {
         id
         username
-        avatarUrl
+        avatarURL
       }
     }
   }
@@ -32,7 +32,7 @@ query Users {
       node {
         id
         username
-        avatarUrl
+        avatarURL
       }
     }
   }
@@ -44,7 +44,7 @@ query UsersByUsername($username: String!) {
       node {
         id
         username
-        avatarUrl
+        avatarURL
         githubAccounts {
           id
           username
@@ -227,6 +227,6 @@ query CurrentUser {
   currentUser {
     id
     username
-    avatarUrl
+    avatarURL
   }
 }

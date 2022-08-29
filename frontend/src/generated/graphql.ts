@@ -97,7 +97,7 @@ export type CreateProjectInput = {
 export type CreateProjectTechnologyInput = {
   project: Scalars['Int'];
   technology: Scalars['Int'];
-  type: ProjectTechnologyAssociationType;
+  type: ProjectTechnologyType;
 };
 
 export type CreateRepositoryInput = {
@@ -111,7 +111,7 @@ export type CreateRepositoryInput = {
 export type CreateRepositoryTechnologyInput = {
   repository: Scalars['Int'];
   technology: Scalars['Int'];
-  type: RepositoryTechnologyAssociationType;
+  type: RepositoryTechnologyType;
 };
 
 export type CreateSiteInput = {
@@ -141,31 +141,42 @@ export type CreateUserInput = {
 export type DiscordAccount = Node & {
   __typename?: 'DiscordAccount';
   bot?: Maybe<DiscordBot>;
-  discordId: Scalars['String'];
+  discordID: Scalars['String'];
   discriminator: Scalars['String'];
   id: Scalars['ID'];
   owner?: Maybe<User>;
   username: Scalars['String'];
 };
 
+/** A connection to a list of items. */
 export type DiscordAccountConnection = {
   __typename?: 'DiscordAccountConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<DiscordAccountEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type DiscordAccountEdge = {
   __typename?: 'DiscordAccountEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<DiscordAccount>;
 };
 
+/** Ordering options for DiscordAccount connections */
 export type DiscordAccountOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<DiscordAccountOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order DiscordAccounts. */
+  field: DiscordAccountOrderField;
 };
 
+/** Properties by which DiscordAccount connections can be ordered. */
 export enum DiscordAccountOrderField {
   DiscordId = 'DISCORD_ID',
   Discriminator = 'DISCRIMINATOR',
@@ -247,16 +258,23 @@ export type DiscordBot = Node & {
   repository?: Maybe<Repository>;
 };
 
+/** A connection to a list of items. */
 export type DiscordBotConnection = {
   __typename?: 'DiscordBotConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<DiscordBotEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type DiscordBotEdge = {
   __typename?: 'DiscordBotEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<DiscordBot>;
 };
 
@@ -297,24 +315,35 @@ export type GithubAccount = Node & {
   username: Scalars['String'];
 };
 
+/** A connection to a list of items. */
 export type GithubAccountConnection = {
   __typename?: 'GithubAccountConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<GithubAccountEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type GithubAccountEdge = {
   __typename?: 'GithubAccountEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<GithubAccount>;
 };
 
+/** Ordering options for GithubAccount connections */
 export type GithubAccountOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<GithubAccountOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order GithubAccounts. */
+  field: GithubAccountOrderField;
 };
 
+/** Properties by which GithubAccount connections can be ordered. */
 export enum GithubAccountOrderField {
   Username = 'USERNAME'
 }
@@ -370,16 +399,23 @@ export type GithubOrganization = Node & {
   repositories?: Maybe<Array<Repository>>;
 };
 
+/** A connection to a list of items. */
 export type GithubOrganizationConnection = {
   __typename?: 'GithubOrganizationConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<GithubOrganizationEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type GithubOrganizationEdge = {
   __typename?: 'GithubOrganizationEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<GithubOrganization>;
 };
 
@@ -391,28 +427,40 @@ export type GithubOrganizationMember = Node & {
   role: GithubOrganizationMemberRole;
 };
 
+/** A connection to a list of items. */
 export type GithubOrganizationMemberConnection = {
   __typename?: 'GithubOrganizationMemberConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<GithubOrganizationMemberEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type GithubOrganizationMemberEdge = {
   __typename?: 'GithubOrganizationMemberEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<GithubOrganizationMember>;
 };
 
+/** Ordering options for GithubOrganizationMember connections */
 export type GithubOrganizationMemberOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<GithubOrganizationMemberOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order GithubOrganizationMembers. */
+  field: GithubOrganizationMemberOrderField;
 };
 
+/** Properties by which GithubOrganizationMember connections can be ordered. */
 export enum GithubOrganizationMemberOrderField {
   Role = 'ROLE'
 }
 
+/** GithubOrganizationMemberRole is enum for the field role */
 export enum GithubOrganizationMemberRole {
   Admin = 'ADMIN',
   Member = 'MEMBER'
@@ -448,11 +496,15 @@ export type GithubOrganizationMemberWhereInput = {
   roleNotIn?: InputMaybe<Array<GithubOrganizationMemberRole>>;
 };
 
+/** Ordering options for GithubOrganization connections */
 export type GithubOrganizationOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<GithubOrganizationOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order GithubOrganizations. */
+  field: GithubOrganizationOrderField;
 };
 
+/** Properties by which GithubOrganization connections can be ordered. */
 export enum GithubOrganizationOrderField {
   DisplayName = 'DISPLAY_NAME',
   Name = 'NAME'
@@ -808,20 +860,36 @@ export type MutationUpdateUserArgs = {
   input: UpdateUserInput;
 };
 
+/**
+ * An object with an ID.
+ * Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
+ */
 export type Node = {
+  /** The id of the object. */
   id: Scalars['ID'];
 };
 
+/** Possible directions in which to order a list of items when provided an `orderBy` argument. */
 export enum OrderDirection {
+  /** Specifies an ascending order for a given `orderBy` argument. */
   Asc = 'ASC',
+  /** Specifies a descending order for a given `orderBy` argument. */
   Desc = 'DESC'
 }
 
+/**
+ * Information about pagination in a connection.
+ * https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
+ */
 export type PageInfo = {
   __typename?: 'PageInfo';
+  /** When paginating forwards, the cursor to continue. */
   endCursor?: Maybe<Scalars['Cursor']>;
+  /** When paginating forwards, are there more items? */
   hasNextPage: Scalars['Boolean'];
+  /** When paginating backwards, are there more items? */
   hasPreviousPage: Scalars['Boolean'];
+  /** When paginating backwards, the cursor to continue. */
   startCursor?: Maybe<Scalars['Cursor']>;
 };
 
@@ -849,28 +917,40 @@ export type ProjectAssociation = Node & {
   type: ProjectAssociationType;
 };
 
+/** A connection to a list of items. */
 export type ProjectAssociationConnection = {
   __typename?: 'ProjectAssociationConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<ProjectAssociationEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type ProjectAssociationEdge = {
   __typename?: 'ProjectAssociationEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<ProjectAssociation>;
 };
 
+/** Ordering options for ProjectAssociation connections */
 export type ProjectAssociationOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<ProjectAssociationOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order ProjectAssociations. */
+  field: ProjectAssociationOrderField;
 };
 
+/** Properties by which ProjectAssociation connections can be ordered. */
 export enum ProjectAssociationOrderField {
   Type = 'TYPE'
 }
 
+/** ProjectAssociationType is enum for the field type */
 export enum ProjectAssociationType {
   BasedOff = 'BASED_OFF',
   InspiredBy = 'INSPIRED_BY',
@@ -908,10 +988,14 @@ export type ProjectAssociationWhereInput = {
   typeNotIn?: InputMaybe<Array<ProjectAssociationType>>;
 };
 
+/** A connection to a list of items. */
 export type ProjectConnection = {
   __typename?: 'ProjectConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<ProjectEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
@@ -923,28 +1007,40 @@ export type ProjectContributor = Node & {
   user: User;
 };
 
+/** A connection to a list of items. */
 export type ProjectContributorConnection = {
   __typename?: 'ProjectContributorConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<ProjectContributorEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type ProjectContributorEdge = {
   __typename?: 'ProjectContributorEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<ProjectContributor>;
 };
 
+/** Ordering options for ProjectContributor connections */
 export type ProjectContributorOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<ProjectContributorOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order ProjectContributors. */
+  field: ProjectContributorOrderField;
 };
 
+/** Properties by which ProjectContributor connections can be ordered. */
 export enum ProjectContributorOrderField {
   Role = 'ROLE'
 }
 
+/** ProjectContributorRole is enum for the field role */
 export enum ProjectContributorRole {
   Contributor = 'CONTRIBUTOR',
   Owner = 'OWNER'
@@ -980,17 +1076,24 @@ export type ProjectContributorWhereInput = {
   roleNotIn?: InputMaybe<Array<ProjectContributorRole>>;
 };
 
+/** An edge in a connection. */
 export type ProjectEdge = {
   __typename?: 'ProjectEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<Project>;
 };
 
+/** Ordering options for Project connections */
 export type ProjectOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<ProjectOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order Projects. */
+  field: ProjectOrderField;
 };
 
+/** Properties by which Project connections can be ordered. */
 export enum ProjectOrderField {
   Description = 'DESCRIPTION',
   EndDate = 'END_DATE',
@@ -1003,36 +1106,48 @@ export type ProjectTechnology = Node & {
   id: Scalars['ID'];
   project: Project;
   technology: Technology;
-  type: ProjectTechnologyAssociationType;
+  type: ProjectTechnologyType;
 };
 
-export enum ProjectTechnologyAssociationType {
+/** A connection to a list of items. */
+export type ProjectTechnologyConnection = {
+  __typename?: 'ProjectTechnologyConnection';
+  /** A list of edges. */
+  edges?: Maybe<Array<Maybe<ProjectTechnologyEdge>>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** An edge in a connection. */
+export type ProjectTechnologyEdge = {
+  __typename?: 'ProjectTechnologyEdge';
+  /** A cursor for use in pagination. */
+  cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
+  node?: Maybe<ProjectTechnology>;
+};
+
+/** Ordering options for ProjectTechnology connections */
+export type ProjectTechnologyOrder = {
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order ProjectTechnologies. */
+  field: ProjectTechnologyOrderField;
+};
+
+/** Properties by which ProjectTechnology connections can be ordered. */
+export enum ProjectTechnologyOrderField {
+  Type = 'TYPE'
+}
+
+/** ProjectTechnologyType is enum for the field type */
+export enum ProjectTechnologyType {
   Contains = 'CONTAINS',
   Implements = 'IMPLEMENTS',
   Uses = 'USES',
   WrittenIn = 'WRITTEN_IN'
-}
-
-export type ProjectTechnologyConnection = {
-  __typename?: 'ProjectTechnologyConnection';
-  edges?: Maybe<Array<Maybe<ProjectTechnologyEdge>>>;
-  pageInfo: PageInfo;
-  totalCount: Scalars['Int'];
-};
-
-export type ProjectTechnologyEdge = {
-  __typename?: 'ProjectTechnologyEdge';
-  cursor: Scalars['Cursor'];
-  node?: Maybe<ProjectTechnology>;
-};
-
-export type ProjectTechnologyOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<ProjectTechnologyOrderField>;
-};
-
-export enum ProjectTechnologyOrderField {
-  Type = 'TYPE'
 }
 
 /**
@@ -1059,10 +1174,10 @@ export type ProjectTechnologyWhereInput = {
   not?: InputMaybe<ProjectTechnologyWhereInput>;
   or?: InputMaybe<Array<ProjectTechnologyWhereInput>>;
   /** type field predicates */
-  type?: InputMaybe<ProjectTechnologyAssociationType>;
-  typeIn?: InputMaybe<Array<ProjectTechnologyAssociationType>>;
-  typeNEQ?: InputMaybe<ProjectTechnologyAssociationType>;
-  typeNotIn?: InputMaybe<Array<ProjectTechnologyAssociationType>>;
+  type?: InputMaybe<ProjectTechnologyType>;
+  typeIn?: InputMaybe<Array<ProjectTechnologyType>>;
+  typeNEQ?: InputMaybe<ProjectTechnologyType>;
+  typeNotIn?: InputMaybe<Array<ProjectTechnologyType>>;
 };
 
 /**
@@ -1160,21 +1275,25 @@ export type Query = {
   availableAuthProviders?: Maybe<Array<Maybe<AuthProvider>>>;
   currentUser?: Maybe<User>;
   developmentMode: Scalars['Boolean'];
-  discordAccounts?: Maybe<DiscordAccountConnection>;
-  discordBots?: Maybe<DiscordBotConnection>;
-  githubAccounts?: Maybe<GithubAccountConnection>;
-  githubOrganizationMembers?: Maybe<GithubOrganizationMemberConnection>;
-  githubOrganizations?: Maybe<GithubOrganizationConnection>;
-  projectAssociations?: Maybe<ProjectAssociationConnection>;
-  projectContributors?: Maybe<ProjectContributorConnection>;
-  projectTechnologies?: Maybe<ProjectTechnologyConnection>;
-  projects?: Maybe<ProjectConnection>;
-  repositories?: Maybe<RepositoryConnection>;
-  repositoryTechnologies?: Maybe<RepositoryTechnologyConnection>;
-  sites?: Maybe<SiteConnection>;
-  technologies?: Maybe<TechnologyConnection>;
-  technologyAssociations?: Maybe<TechnologyAssociationConnection>;
-  users?: Maybe<UserConnection>;
+  discordAccounts: DiscordAccountConnection;
+  discordBots: DiscordBotConnection;
+  githubAccounts: GithubAccountConnection;
+  githubOrganizationMembers: GithubOrganizationMemberConnection;
+  githubOrganizations: GithubOrganizationConnection;
+  /** Fetches an object given its ID. */
+  node?: Maybe<Node>;
+  /** Lookup nodes by a list of IDs. */
+  nodes: Array<Maybe<Node>>;
+  projectAssociations: ProjectAssociationConnection;
+  projectContributors: ProjectContributorConnection;
+  projectTechnologies: ProjectTechnologyConnection;
+  projects: ProjectConnection;
+  repositories: RepositoryConnection;
+  repositoryTechnologies: RepositoryTechnologyConnection;
+  sites: SiteConnection;
+  technologies: TechnologyConnection;
+  technologyAssociations: TechnologyAssociationConnection;
+  users: UserConnection;
 };
 
 
@@ -1224,6 +1343,16 @@ export type QueryGithubOrganizationsArgs = {
   last?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<GithubOrganizationOrder>;
   where?: InputMaybe<GithubOrganizationWhereInput>;
+};
+
+
+export type QueryNodeArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type QueryNodesArgs = {
+  ids: Array<Scalars['ID']>;
 };
 
 
@@ -1336,26 +1465,38 @@ export type Repository = Node & {
   name: Scalars['String'];
   project: Project;
   sites?: Maybe<Array<Site>>;
+  technologies?: Maybe<Array<RepositoryTechnology>>;
 };
 
+/** A connection to a list of items. */
 export type RepositoryConnection = {
   __typename?: 'RepositoryConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<RepositoryEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type RepositoryEdge = {
   __typename?: 'RepositoryEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<Repository>;
 };
 
+/** Ordering options for Repository connections */
 export type RepositoryOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<RepositoryOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order Repositories. */
+  field: RepositoryOrderField;
 };
 
+/** Properties by which Repository connections can be ordered. */
 export enum RepositoryOrderField {
   Description = 'DESCRIPTION',
   Name = 'NAME'
@@ -1366,36 +1507,48 @@ export type RepositoryTechnology = Node & {
   id: Scalars['ID'];
   repository: Repository;
   technology: Technology;
-  type: RepositoryTechnologyAssociationType;
+  type: RepositoryTechnologyType;
 };
 
-export enum RepositoryTechnologyAssociationType {
+/** A connection to a list of items. */
+export type RepositoryTechnologyConnection = {
+  __typename?: 'RepositoryTechnologyConnection';
+  /** A list of edges. */
+  edges?: Maybe<Array<Maybe<RepositoryTechnologyEdge>>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** An edge in a connection. */
+export type RepositoryTechnologyEdge = {
+  __typename?: 'RepositoryTechnologyEdge';
+  /** A cursor for use in pagination. */
+  cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
+  node?: Maybe<RepositoryTechnology>;
+};
+
+/** Ordering options for RepositoryTechnology connections */
+export type RepositoryTechnologyOrder = {
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order RepositoryTechnologies. */
+  field: RepositoryTechnologyOrderField;
+};
+
+/** Properties by which RepositoryTechnology connections can be ordered. */
+export enum RepositoryTechnologyOrderField {
+  Type = 'TYPE'
+}
+
+/** RepositoryTechnologyType is enum for the field type */
+export enum RepositoryTechnologyType {
   Contains = 'CONTAINS',
   Implements = 'IMPLEMENTS',
   Uses = 'USES',
   WrittenIn = 'WRITTEN_IN'
-}
-
-export type RepositoryTechnologyConnection = {
-  __typename?: 'RepositoryTechnologyConnection';
-  edges?: Maybe<Array<Maybe<RepositoryTechnologyEdge>>>;
-  pageInfo: PageInfo;
-  totalCount: Scalars['Int'];
-};
-
-export type RepositoryTechnologyEdge = {
-  __typename?: 'RepositoryTechnologyEdge';
-  cursor: Scalars['Cursor'];
-  node?: Maybe<RepositoryTechnology>;
-};
-
-export type RepositoryTechnologyOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<RepositoryTechnologyOrderField>;
-};
-
-export enum RepositoryTechnologyOrderField {
-  Type = 'TYPE'
 }
 
 /**
@@ -1422,10 +1575,10 @@ export type RepositoryTechnologyWhereInput = {
   not?: InputMaybe<RepositoryTechnologyWhereInput>;
   or?: InputMaybe<Array<RepositoryTechnologyWhereInput>>;
   /** type field predicates */
-  type?: InputMaybe<RepositoryTechnologyAssociationType>;
-  typeIn?: InputMaybe<Array<RepositoryTechnologyAssociationType>>;
-  typeNEQ?: InputMaybe<RepositoryTechnologyAssociationType>;
-  typeNotIn?: InputMaybe<Array<RepositoryTechnologyAssociationType>>;
+  type?: InputMaybe<RepositoryTechnologyType>;
+  typeIn?: InputMaybe<Array<RepositoryTechnologyType>>;
+  typeNEQ?: InputMaybe<RepositoryTechnologyType>;
+  typeNotIn?: InputMaybe<Array<RepositoryTechnologyType>>;
 };
 
 /**
@@ -1503,24 +1656,35 @@ export type Site = Node & {
   url: Scalars['String'];
 };
 
+/** A connection to a list of items. */
 export type SiteConnection = {
   __typename?: 'SiteConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<SiteEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type SiteEdge = {
   __typename?: 'SiteEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<Site>;
 };
 
+/** Ordering options for Site connections */
 export type SiteOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<SiteOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order Sites. */
+  field: SiteOrderField;
 };
 
+/** Properties by which Site connections can be ordered. */
 export enum SiteOrderField {
   Url = 'URL'
 }
@@ -1585,28 +1749,40 @@ export type TechnologyAssociation = Node & {
   type: TechnologyAssociationType;
 };
 
+/** A connection to a list of items. */
 export type TechnologyAssociationConnection = {
   __typename?: 'TechnologyAssociationConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<TechnologyAssociationEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type TechnologyAssociationEdge = {
   __typename?: 'TechnologyAssociationEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<TechnologyAssociation>;
 };
 
+/** Ordering options for TechnologyAssociation connections */
 export type TechnologyAssociationOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<TechnologyAssociationOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order TechnologyAssociations. */
+  field: TechnologyAssociationOrderField;
 };
 
+/** Properties by which TechnologyAssociation connections can be ordered. */
 export enum TechnologyAssociationOrderField {
   Type = 'TYPE'
 }
 
+/** TechnologyAssociationType is enum for the field type */
 export enum TechnologyAssociationType {
   Implements = 'IMPLEMENTS',
   Uses = 'USES',
@@ -1643,24 +1819,35 @@ export type TechnologyAssociationWhereInput = {
   typeNotIn?: InputMaybe<Array<TechnologyAssociationType>>;
 };
 
+/** A connection to a list of items. */
 export type TechnologyConnection = {
   __typename?: 'TechnologyConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<TechnologyEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type TechnologyEdge = {
   __typename?: 'TechnologyEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<Technology>;
 };
 
+/** Ordering options for Technology connections */
 export type TechnologyOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<TechnologyOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order Technologies. */
+  field: TechnologyOrderField;
 };
 
+/** Properties by which Technology connections can be ordered. */
 export enum TechnologyOrderField {
   Colour = 'COLOUR',
   Description = 'DESCRIPTION',
@@ -1668,6 +1855,7 @@ export enum TechnologyOrderField {
   Type = 'TYPE'
 }
 
+/** TechnologyType is enum for the field type */
 export enum TechnologyType {
   Algorithm = 'ALGORITHM',
   Database = 'DATABASE',
@@ -1809,7 +1997,7 @@ export type UpdateProjectInput = {
 export type UpdateProjectTechnologyInput = {
   project?: InputMaybe<Scalars['Int']>;
   technology?: InputMaybe<Scalars['Int']>;
-  type?: InputMaybe<ProjectTechnologyAssociationType>;
+  type?: InputMaybe<ProjectTechnologyType>;
 };
 
 export type UpdateRepositoryInput = {
@@ -1823,7 +2011,7 @@ export type UpdateRepositoryInput = {
 export type UpdateRepositoryTechnologyInput = {
   repository?: InputMaybe<Scalars['Int']>;
   technology?: InputMaybe<Scalars['Int']>;
-  type?: InputMaybe<RepositoryTechnologyAssociationType>;
+  type?: InputMaybe<RepositoryTechnologyType>;
 };
 
 export type UpdateSiteInput = {
@@ -1852,7 +2040,7 @@ export type UpdateUserInput = {
 
 export type User = Node & {
   __typename?: 'User';
-  avatarUrl?: Maybe<Scalars['String']>;
+  avatarURL?: Maybe<Scalars['String']>;
   discordAccounts?: Maybe<Array<DiscordAccount>>;
   githubAccounts?: Maybe<Array<GithubAccount>>;
   id: Scalars['ID'];
@@ -1860,24 +2048,35 @@ export type User = Node & {
   username: Scalars['String'];
 };
 
+/** A connection to a list of items. */
 export type UserConnection = {
   __typename?: 'UserConnection';
+  /** A list of edges. */
   edges?: Maybe<Array<Maybe<UserEdge>>>;
+  /** Information to aid in pagination. */
   pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
   totalCount: Scalars['Int'];
 };
 
+/** An edge in a connection. */
 export type UserEdge = {
   __typename?: 'UserEdge';
+  /** A cursor for use in pagination. */
   cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
   node?: Maybe<User>;
 };
 
+/** Ordering options for User connections */
 export type UserOrder = {
-  direction: OrderDirection;
-  field?: InputMaybe<UserOrderField>;
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order Users. */
+  field: UserOrderField;
 };
 
+/** Properties by which User connections can be ordered. */
 export enum UserOrderField {
   Username = 'USERNAME'
 }
@@ -1969,13 +2168,13 @@ export type CreateProjectMutationVariables = Exact<{
 export type CreateProjectMutation = { __typename?: 'Mutation', createProject: { __typename?: 'Project', id: string, name: string, description?: string | null, startDate: any, endDate?: any | null } };
 
 export type CreateProjectTechnologyMutationVariables = Exact<{
-  type: ProjectTechnologyAssociationType;
+  type: ProjectTechnologyType;
   technology: Scalars['Int'];
   project: Scalars['Int'];
 }>;
 
 
-export type CreateProjectTechnologyMutation = { __typename?: 'Mutation', createProjectTechnology: { __typename?: 'ProjectTechnology', id: string, type: ProjectTechnologyAssociationType, technology: { __typename?: 'Technology', id: string, name: string }, project: { __typename?: 'Project', id: string, name: string } } };
+export type CreateProjectTechnologyMutation = { __typename?: 'Mutation', createProjectTechnology: { __typename?: 'ProjectTechnology', id: string, type: ProjectTechnologyType, technology: { __typename?: 'Technology', id: string, name: string }, project: { __typename?: 'Project', id: string, name: string } } };
 
 export type CreateProjectContributorMutationVariables = Exact<{
   role: ProjectContributorRole;
@@ -1992,7 +2191,7 @@ export type CreateUserMutationVariables = Exact<{
 }>;
 
 
-export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'User', id: string, username: string, avatarUrl?: string | null } };
+export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'User', id: string, username: string, avatarURL?: string | null } };
 
 export type DeleteUserMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -2060,58 +2259,58 @@ export type AssumeDevelopmentUserMutation = { __typename?: 'Mutation', assumeDev
 export type HomepageQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type HomepageQuery = { __typename?: 'Query', users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string, avatarUrl?: string | null } | null } | null> | null } | null, projects?: { __typename?: 'ProjectConnection', edges?: Array<{ __typename?: 'ProjectEdge', node?: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, type: TechnologyType, name: string, colour?: string | null } }> | null } | null } | null> | null } | null };
+export type HomepageQuery = { __typename?: 'Query', users: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string, avatarURL?: string | null } | null } | null> | null }, projects: { __typename?: 'ProjectConnection', edges?: Array<{ __typename?: 'ProjectEdge', node?: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, type: TechnologyType, name: string, colour?: string | null } }> | null } | null } | null> | null } };
 
 export type UsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string, avatarUrl?: string | null } | null } | null> | null } | null };
+export type UsersQuery = { __typename?: 'Query', users: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string, avatarURL?: string | null } | null } | null> | null } };
 
 export type UsersByUsernameQueryVariables = Exact<{
   username: Scalars['String'];
 }>;
 
 
-export type UsersByUsernameQuery = { __typename?: 'Query', users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string, avatarUrl?: string | null, githubAccounts?: Array<{ __typename?: 'GithubAccount', id: string, username: string }> | null, discordAccounts?: Array<{ __typename?: 'DiscordAccount', id: string, username: string, discriminator: string }> | null, projectContributions?: Array<{ __typename?: 'ProjectContributor', role: ProjectContributorRole, project: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null } | null } | null> | null } | null };
+export type UsersByUsernameQuery = { __typename?: 'Query', users: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string, avatarURL?: string | null, githubAccounts?: Array<{ __typename?: 'GithubAccount', id: string, username: string }> | null, discordAccounts?: Array<{ __typename?: 'DiscordAccount', id: string, username: string, discriminator: string }> | null, projectContributions?: Array<{ __typename?: 'ProjectContributor', role: ProjectContributorRole, project: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null } | null } | null> | null } };
 
 export type UserIdFromUsernameQueryVariables = Exact<{
   username: Scalars['String'];
 }>;
 
 
-export type UserIdFromUsernameQuery = { __typename?: 'Query', users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string } | null } | null> | null } | null };
+export type UserIdFromUsernameQuery = { __typename?: 'Query', users: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string } | null } | null> | null } };
 
 export type ProjectsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ProjectsQuery = { __typename?: 'Query', projects?: { __typename?: 'ProjectConnection', edges?: Array<{ __typename?: 'ProjectEdge', node?: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, type: TechnologyType, name: string, colour?: string | null } }> | null } | null } | null> | null } | null };
+export type ProjectsQuery = { __typename?: 'Query', projects: { __typename?: 'ProjectConnection', edges?: Array<{ __typename?: 'ProjectEdge', node?: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, type: TechnologyType, name: string, colour?: string | null } }> | null } | null } | null> | null } };
 
 export type ProjectsByProjectIdQueryVariables = Exact<{
   projectId: Scalars['ID'];
 }>;
 
 
-export type ProjectsByProjectIdQuery = { __typename?: 'Query', projects?: { __typename?: 'ProjectConnection', edges?: Array<{ __typename?: 'ProjectEdge', node?: { __typename?: 'Project', id: string, name: string, description?: string | null, startDate: any, endDate?: any | null, repositories?: Array<{ __typename?: 'Repository', id: string, name: string, githubAccount?: { __typename?: 'GithubAccount', username: string } | null, githubOrganization?: { __typename?: 'GithubOrganization', name: string } | null }> | null, sites?: Array<{ __typename?: 'Site', id: string, url: string }> | null, discordBots?: Array<{ __typename?: 'DiscordBot', id: string, account: { __typename?: 'DiscordAccount', username: string, discriminator: string } }> | null, parentProjects?: Array<{ __typename?: 'ProjectAssociation', id: string, type: ProjectAssociationType, parent: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null, childProjects?: Array<{ __typename?: 'ProjectAssociation', id: string, type: ProjectAssociationType, child: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null, contributors?: Array<{ __typename?: 'ProjectContributor', id: string, role: ProjectContributorRole, user: { __typename?: 'User', username: string } }> | null, technologies?: Array<{ __typename?: 'ProjectTechnology', id: string, type: ProjectTechnologyAssociationType, technology: { __typename?: 'Technology', id: string, type: TechnologyType, name: string, colour?: string | null } }> | null } | null } | null> | null } | null };
+export type ProjectsByProjectIdQuery = { __typename?: 'Query', projects: { __typename?: 'ProjectConnection', edges?: Array<{ __typename?: 'ProjectEdge', node?: { __typename?: 'Project', id: string, name: string, description?: string | null, startDate: any, endDate?: any | null, repositories?: Array<{ __typename?: 'Repository', id: string, name: string, githubAccount?: { __typename?: 'GithubAccount', username: string } | null, githubOrganization?: { __typename?: 'GithubOrganization', name: string } | null }> | null, sites?: Array<{ __typename?: 'Site', id: string, url: string }> | null, discordBots?: Array<{ __typename?: 'DiscordBot', id: string, account: { __typename?: 'DiscordAccount', username: string, discriminator: string } }> | null, parentProjects?: Array<{ __typename?: 'ProjectAssociation', id: string, type: ProjectAssociationType, parent: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null, childProjects?: Array<{ __typename?: 'ProjectAssociation', id: string, type: ProjectAssociationType, child: { __typename?: 'Project', id: string, name: string, technologies?: Array<{ __typename?: 'ProjectTechnology', technology: { __typename?: 'Technology', id: string, name: string, colour?: string | null } }> | null } }> | null, contributors?: Array<{ __typename?: 'ProjectContributor', id: string, role: ProjectContributorRole, user: { __typename?: 'User', username: string } }> | null, technologies?: Array<{ __typename?: 'ProjectTechnology', id: string, type: ProjectTechnologyType, technology: { __typename?: 'Technology', id: string, type: TechnologyType, name: string, colour?: string | null } }> | null } | null } | null> | null } };
 
 export type TechnologiesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type TechnologiesQuery = { __typename?: 'Query', technologies?: { __typename?: 'TechnologyConnection', edges?: Array<{ __typename?: 'TechnologyEdge', node?: { __typename?: 'Technology', id: string, name: string, colour?: string | null } | null } | null> | null } | null };
+export type TechnologiesQuery = { __typename?: 'Query', technologies: { __typename?: 'TechnologyConnection', edges?: Array<{ __typename?: 'TechnologyEdge', node?: { __typename?: 'Technology', id: string, name: string, colour?: string | null } | null } | null> | null } };
 
 export type LoginQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type LoginQuery = { __typename?: 'Query', developmentMode: boolean, availableAuthProviders?: Array<{ __typename?: 'AuthProvider', url: string, type: AuthProviderType } | null> | null, users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string } | null } | null> | null } | null };
+export type LoginQuery = { __typename?: 'Query', developmentMode: boolean, availableAuthProviders?: Array<{ __typename?: 'AuthProvider', url: string, type: AuthProviderType } | null> | null, users: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string } | null } | null> | null } };
 
 export type AssumableUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type AssumableUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string } | null } | null> | null } | null };
+export type AssumableUsersQuery = { __typename?: 'Query', users: { __typename?: 'UserConnection', edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string } | null } | null> | null } };
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, username: string, avatarUrl?: string | null } | null };
+export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, username: string, avatarURL?: string | null } | null };
 
 
 export const CreateDiscordAccountDocument = `
@@ -2191,7 +2390,7 @@ useCreateProjectMutation.getKey = () => ['CreateProject'];
 
 useCreateProjectMutation.fetcher = (dataSource: { endpoint: string, fetchParams?: RequestInit }, variables: CreateProjectMutationVariables) => fetcher<CreateProjectMutation, CreateProjectMutationVariables>(dataSource.endpoint, dataSource.fetchParams || {}, CreateProjectDocument, variables);
 export const CreateProjectTechnologyDocument = `
-    mutation CreateProjectTechnology($type: ProjectTechnologyAssociationType!, $technology: Int!, $project: Int!) {
+    mutation CreateProjectTechnology($type: ProjectTechnologyType!, $technology: Int!, $project: Int!) {
   createProjectTechnology(
     input: {type: $type, technology: $technology, project: $project}
   ) {
@@ -2250,7 +2449,7 @@ export const CreateUserDocument = `
   createUser(input: {username: $username, avatarUrl: $avatarUrl}) {
     id
     username
-    avatarUrl
+    avatarURL
   }
 }
     `;
@@ -2474,7 +2673,7 @@ export const HomepageDocument = `
       node {
         id
         username
-        avatarUrl
+        avatarURL
       }
     }
   }
@@ -2521,7 +2720,7 @@ export const UsersDocument = `
       node {
         id
         username
-        avatarUrl
+        avatarURL
       }
     }
   }
@@ -2552,7 +2751,7 @@ export const UsersByUsernameDocument = `
       node {
         id
         username
-        avatarUrl
+        avatarURL
         githubAccounts {
           id
           username
@@ -2868,7 +3067,7 @@ export const CurrentUserDocument = `
   currentUser {
     id
     username
-    avatarUrl
+    avatarURL
   }
 }
     `;

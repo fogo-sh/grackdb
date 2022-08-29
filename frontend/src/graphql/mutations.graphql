@@ -47,7 +47,7 @@ mutation CreateProject(
 }
 
 mutation CreateProjectTechnology(
-  $type: ProjectTechnologyAssociationType!
+  $type: ProjectTechnologyType!
   $technology: Int!
   $project: Int!
 ) {
@@ -83,7 +83,7 @@ mutation CreateUser($username: String!, $avatarUrl: String) {
   createUser(input: { username: $username, avatarUrl: $avatarUrl }) {
     id
     username
-    avatarUrl
+    avatarURL
   }
 }
 

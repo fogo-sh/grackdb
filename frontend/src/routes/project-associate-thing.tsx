@@ -12,7 +12,7 @@ import { z } from "zod";
 import { SelectInput } from "~/components/Form";
 import { Modal } from "~/components/Modal";
 import {
-  ProjectTechnologyAssociationType,
+  ProjectTechnologyType,
   useCreateProjectTechnologyMutation,
   useTechnologiesQuery,
 } from "~/generated/graphql";
@@ -44,7 +44,7 @@ export const loader: LoaderFunction = async () => {
 };
 
 const CreateProjectTechnologySchema = z.object({
-  type: z.nativeEnum(ProjectTechnologyAssociationType),
+  type: z.nativeEnum(ProjectTechnologyType),
   technology: z.number(),
   project: z.number(),
 });
@@ -77,7 +77,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 const associationTypeOptions = Object.entries(
-  ProjectTechnologyAssociationType
+  ProjectTechnologyType
 ).map(([k, v]) => ({ id: v, value: k }));
 
 function AssociateTechnology() {

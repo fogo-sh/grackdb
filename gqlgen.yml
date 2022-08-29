@@ -1,0 +1,27 @@
+schema:
+  - ./graphql/ent.graphql
+  - ./graphql/grackdb.graphql
+
+
+resolver:
+  layout: follow-schema
+  dir: ./graphql/
+
+exec:
+  filename: graphql/generated.go
+  package: graphql
+
+autobind:
+  - github.com/fogo-sh/grackdb/ent
+
+model:
+  filename: graphql/models_gen.go
+  package: graphql
+
+models:
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.IntID
+  Node:
+   model:
+     - github.com/fogo-sh/grackdb/ent.Noder

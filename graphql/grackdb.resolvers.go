@@ -14,6 +14,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+// CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
 	return ent.FromContext(ctx).User.
 		Create().
@@ -21,6 +22,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input ent.CreateUserI
 		Save(ctx)
 }
 
+// UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, id int, input ent.UpdateUserInput) (*ent.User, error) {
 	return ent.FromContext(ctx).User.
 		UpdateOneID(id).
@@ -28,6 +30,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id int, input ent.Upd
 		Save(ctx)
 }
 
+// DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, id int) (*ent.User, error) {
 	user, err := ent.FromContext(ctx).User.Get(ctx, id)
 	if err != nil {
@@ -38,6 +41,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id int) (*ent.User, e
 		Exec(ctx)
 }
 
+// CreateDiscordAccount is the resolver for the createDiscordAccount field.
 func (r *mutationResolver) CreateDiscordAccount(ctx context.Context, input ent.CreateDiscordAccountInput) (*ent.DiscordAccount, error) {
 	return ent.FromContext(ctx).DiscordAccount.
 		Create().
@@ -45,6 +49,7 @@ func (r *mutationResolver) CreateDiscordAccount(ctx context.Context, input ent.C
 		Save(ctx)
 }
 
+// UpdateDiscordAccount is the resolver for the updateDiscordAccount field.
 func (r *mutationResolver) UpdateDiscordAccount(ctx context.Context, id int, input ent.UpdateDiscordAccountInput) (*ent.DiscordAccount, error) {
 	return ent.FromContext(ctx).DiscordAccount.
 		UpdateOneID(id).
@@ -52,6 +57,7 @@ func (r *mutationResolver) UpdateDiscordAccount(ctx context.Context, id int, inp
 		Save(ctx)
 }
 
+// DeleteDiscordAccount is the resolver for the deleteDiscordAccount field.
 func (r *mutationResolver) DeleteDiscordAccount(ctx context.Context, id int) (*ent.DiscordAccount, error) {
 	discordAccount, err := ent.FromContext(ctx).DiscordAccount.Get(ctx, id)
 	if err != nil {
@@ -62,6 +68,7 @@ func (r *mutationResolver) DeleteDiscordAccount(ctx context.Context, id int) (*e
 		Exec(ctx)
 }
 
+// CreateDiscordBot is the resolver for the createDiscordBot field.
 func (r *mutationResolver) CreateDiscordBot(ctx context.Context, input ent.CreateDiscordBotInput) (*ent.DiscordBot, error) {
 	return ent.FromContext(ctx).DiscordBot.
 		Create().
@@ -69,6 +76,7 @@ func (r *mutationResolver) CreateDiscordBot(ctx context.Context, input ent.Creat
 		Save(ctx)
 }
 
+// UpdateDiscordBot is the resolver for the updateDiscordBot field.
 func (r *mutationResolver) UpdateDiscordBot(ctx context.Context, id int, input ent.UpdateDiscordBotInput) (*ent.DiscordBot, error) {
 	return ent.FromContext(ctx).DiscordBot.
 		UpdateOneID(id).
@@ -76,6 +84,7 @@ func (r *mutationResolver) UpdateDiscordBot(ctx context.Context, id int, input e
 		Save(ctx)
 }
 
+// DeleteDiscordBot is the resolver for the deleteDiscordBot field.
 func (r *mutationResolver) DeleteDiscordBot(ctx context.Context, id int) (*ent.DiscordBot, error) {
 	discordBot, err := ent.FromContext(ctx).DiscordBot.Get(ctx, id)
 	if err != nil {
@@ -86,6 +95,7 @@ func (r *mutationResolver) DeleteDiscordBot(ctx context.Context, id int) (*ent.D
 		Exec(ctx)
 }
 
+// CreateGithubAccount is the resolver for the createGithubAccount field.
 func (r *mutationResolver) CreateGithubAccount(ctx context.Context, input ent.CreateGithubAccountInput) (*ent.GithubAccount, error) {
 	return ent.FromContext(ctx).GithubAccount.
 		Create().
@@ -93,6 +103,7 @@ func (r *mutationResolver) CreateGithubAccount(ctx context.Context, input ent.Cr
 		Save(ctx)
 }
 
+// UpdateGithubAccount is the resolver for the updateGithubAccount field.
 func (r *mutationResolver) UpdateGithubAccount(ctx context.Context, id int, input ent.UpdateGithubAccountInput) (*ent.GithubAccount, error) {
 	return ent.FromContext(ctx).GithubAccount.
 		UpdateOneID(id).
@@ -100,6 +111,7 @@ func (r *mutationResolver) UpdateGithubAccount(ctx context.Context, id int, inpu
 		Save(ctx)
 }
 
+// DeleteGithubAccount is the resolver for the deleteGithubAccount field.
 func (r *mutationResolver) DeleteGithubAccount(ctx context.Context, id int) (*ent.GithubAccount, error) {
 	githubAccount, err := ent.FromContext(ctx).GithubAccount.Get(ctx, id)
 	if err != nil {
@@ -110,6 +122,7 @@ func (r *mutationResolver) DeleteGithubAccount(ctx context.Context, id int) (*en
 		Exec(ctx)
 }
 
+// CreateGithubOrganization is the resolver for the createGithubOrganization field.
 func (r *mutationResolver) CreateGithubOrganization(ctx context.Context, input ent.CreateGithubOrganizationInput) (*ent.GithubOrganization, error) {
 	return ent.FromContext(ctx).GithubOrganization.
 		Create().
@@ -117,6 +130,7 @@ func (r *mutationResolver) CreateGithubOrganization(ctx context.Context, input e
 		Save(ctx)
 }
 
+// UpdateGithubOrganization is the resolver for the updateGithubOrganization field.
 func (r *mutationResolver) UpdateGithubOrganization(ctx context.Context, id int, input ent.UpdateGithubOrganizationInput) (*ent.GithubOrganization, error) {
 	return ent.FromContext(ctx).GithubOrganization.
 		UpdateOneID(id).
@@ -124,6 +138,7 @@ func (r *mutationResolver) UpdateGithubOrganization(ctx context.Context, id int,
 		Save(ctx)
 }
 
+// DeleteGithubOrganization is the resolver for the deleteGithubOrganization field.
 func (r *mutationResolver) DeleteGithubOrganization(ctx context.Context, id int) (*ent.GithubOrganization, error) {
 	githubOrganization, err := ent.FromContext(ctx).GithubOrganization.Get(ctx, id)
 	if err != nil {
@@ -134,6 +149,7 @@ func (r *mutationResolver) DeleteGithubOrganization(ctx context.Context, id int)
 		Exec(ctx)
 }
 
+// CreateGithubOrganizationMember is the resolver for the createGithubOrganizationMember field.
 func (r *mutationResolver) CreateGithubOrganizationMember(ctx context.Context, input ent.CreateGithubOrganizationMemberInput) (*ent.GithubOrganizationMember, error) {
 	return ent.FromContext(ctx).GithubOrganizationMember.
 		Create().
@@ -141,6 +157,7 @@ func (r *mutationResolver) CreateGithubOrganizationMember(ctx context.Context, i
 		Save(ctx)
 }
 
+// UpdateGithubOrganizationMember is the resolver for the updateGithubOrganizationMember field.
 func (r *mutationResolver) UpdateGithubOrganizationMember(ctx context.Context, id int, input ent.UpdateGithubOrganizationMemberInput) (*ent.GithubOrganizationMember, error) {
 	return ent.FromContext(ctx).GithubOrganizationMember.
 		UpdateOneID(id).
@@ -148,6 +165,7 @@ func (r *mutationResolver) UpdateGithubOrganizationMember(ctx context.Context, i
 		Save(ctx)
 }
 
+// DeleteGithubOrganizationMember is the resolver for the deleteGithubOrganizationMember field.
 func (r *mutationResolver) DeleteGithubOrganizationMember(ctx context.Context, id int) (*ent.GithubOrganizationMember, error) {
 	githubOrganizationMember, err := ent.FromContext(ctx).GithubOrganizationMember.Get(ctx, id)
 	if err != nil {
@@ -158,6 +176,7 @@ func (r *mutationResolver) DeleteGithubOrganizationMember(ctx context.Context, i
 		Exec(ctx)
 }
 
+// CreateProject is the resolver for the createProject field.
 func (r *mutationResolver) CreateProject(ctx context.Context, input ent.CreateProjectInput) (*ent.Project, error) {
 	return ent.FromContext(ctx).Project.
 		Create().
@@ -165,6 +184,7 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input ent.CreatePr
 		Save(ctx)
 }
 
+// UpdateProject is the resolver for the updateProject field.
 func (r *mutationResolver) UpdateProject(ctx context.Context, id int, input ent.UpdateProjectInput) (*ent.Project, error) {
 	return ent.FromContext(ctx).Project.
 		UpdateOneID(id).
@@ -172,6 +192,7 @@ func (r *mutationResolver) UpdateProject(ctx context.Context, id int, input ent.
 		Save(ctx)
 }
 
+// DeleteProject is the resolver for the deleteProject field.
 func (r *mutationResolver) DeleteProject(ctx context.Context, id int) (*ent.Project, error) {
 	project, err := ent.FromContext(ctx).Project.Get(ctx, id)
 	if err != nil {
@@ -182,6 +203,7 @@ func (r *mutationResolver) DeleteProject(ctx context.Context, id int) (*ent.Proj
 		Exec(ctx)
 }
 
+// CreateProjectContributor is the resolver for the createProjectContributor field.
 func (r *mutationResolver) CreateProjectContributor(ctx context.Context, input ent.CreateProjectContributorInput) (*ent.ProjectContributor, error) {
 	return ent.FromContext(ctx).ProjectContributor.
 		Create().
@@ -189,6 +211,7 @@ func (r *mutationResolver) CreateProjectContributor(ctx context.Context, input e
 		Save(ctx)
 }
 
+// UpdateProjectContributor is the resolver for the updateProjectContributor field.
 func (r *mutationResolver) UpdateProjectContributor(ctx context.Context, id int, input ent.UpdateProjectContributorInput) (*ent.ProjectContributor, error) {
 	return ent.FromContext(ctx).ProjectContributor.
 		UpdateOneID(id).
@@ -196,6 +219,7 @@ func (r *mutationResolver) UpdateProjectContributor(ctx context.Context, id int,
 		Save(ctx)
 }
 
+// DeleteProjectContributor is the resolver for the deleteProjectContributor field.
 func (r *mutationResolver) DeleteProjectContributor(ctx context.Context, id int) (*ent.ProjectContributor, error) {
 	projectContributor, err := ent.FromContext(ctx).ProjectContributor.Get(ctx, id)
 	if err != nil {
@@ -206,6 +230,7 @@ func (r *mutationResolver) DeleteProjectContributor(ctx context.Context, id int)
 		Exec(ctx)
 }
 
+// CreateProjectAssociation is the resolver for the createProjectAssociation field.
 func (r *mutationResolver) CreateProjectAssociation(ctx context.Context, input ent.CreateProjectAssociationInput) (*ent.ProjectAssociation, error) {
 	return ent.FromContext(ctx).ProjectAssociation.
 		Create().
@@ -213,6 +238,7 @@ func (r *mutationResolver) CreateProjectAssociation(ctx context.Context, input e
 		Save(ctx)
 }
 
+// UpdateProjectAssociation is the resolver for the updateProjectAssociation field.
 func (r *mutationResolver) UpdateProjectAssociation(ctx context.Context, id int, input ent.UpdateProjectAssociationInput) (*ent.ProjectAssociation, error) {
 	return ent.FromContext(ctx).ProjectAssociation.
 		UpdateOneID(id).
@@ -220,6 +246,7 @@ func (r *mutationResolver) UpdateProjectAssociation(ctx context.Context, id int,
 		Save(ctx)
 }
 
+// DeleteProjectAssociation is the resolver for the deleteProjectAssociation field.
 func (r *mutationResolver) DeleteProjectAssociation(ctx context.Context, id int) (*ent.ProjectAssociation, error) {
 	projectAssociation, err := ent.FromContext(ctx).ProjectAssociation.Get(ctx, id)
 	if err != nil {
@@ -230,6 +257,7 @@ func (r *mutationResolver) DeleteProjectAssociation(ctx context.Context, id int)
 		Exec(ctx)
 }
 
+// CreateRepository is the resolver for the createRepository field.
 func (r *mutationResolver) CreateRepository(ctx context.Context, input ent.CreateRepositoryInput) (*ent.Repository, error) {
 	return ent.FromContext(ctx).Repository.
 		Create().
@@ -237,6 +265,7 @@ func (r *mutationResolver) CreateRepository(ctx context.Context, input ent.Creat
 		Save(ctx)
 }
 
+// UpdateRepository is the resolver for the updateRepository field.
 func (r *mutationResolver) UpdateRepository(ctx context.Context, id int, input ent.UpdateRepositoryInput) (*ent.Repository, error) {
 	return ent.FromContext(ctx).Repository.
 		UpdateOneID(id).
@@ -244,6 +273,7 @@ func (r *mutationResolver) UpdateRepository(ctx context.Context, id int, input e
 		Save(ctx)
 }
 
+// DeleteRepository is the resolver for the deleteRepository field.
 func (r *mutationResolver) DeleteRepository(ctx context.Context, id int) (*ent.Repository, error) {
 	repository, err := ent.FromContext(ctx).Repository.Get(ctx, id)
 	if err != nil {
@@ -254,6 +284,7 @@ func (r *mutationResolver) DeleteRepository(ctx context.Context, id int) (*ent.R
 		Exec(ctx)
 }
 
+// CreateSite is the resolver for the createSite field.
 func (r *mutationResolver) CreateSite(ctx context.Context, input ent.CreateSiteInput) (*ent.Site, error) {
 	return ent.FromContext(ctx).Site.
 		Create().
@@ -261,6 +292,7 @@ func (r *mutationResolver) CreateSite(ctx context.Context, input ent.CreateSiteI
 		Save(ctx)
 }
 
+// UpdateSite is the resolver for the updateSite field.
 func (r *mutationResolver) UpdateSite(ctx context.Context, id int, input ent.UpdateSiteInput) (*ent.Site, error) {
 	return ent.FromContext(ctx).Site.
 		UpdateOneID(id).
@@ -268,6 +300,7 @@ func (r *mutationResolver) UpdateSite(ctx context.Context, id int, input ent.Upd
 		Save(ctx)
 }
 
+// DeleteSite is the resolver for the deleteSite field.
 func (r *mutationResolver) DeleteSite(ctx context.Context, id int) (*ent.Site, error) {
 	site, err := ent.FromContext(ctx).Site.Get(ctx, id)
 	if err != nil {
@@ -278,6 +311,7 @@ func (r *mutationResolver) DeleteSite(ctx context.Context, id int) (*ent.Site, e
 		Exec(ctx)
 }
 
+// CreateTechnology is the resolver for the createTechnology field.
 func (r *mutationResolver) CreateTechnology(ctx context.Context, input ent.CreateTechnologyInput) (*ent.Technology, error) {
 	return ent.FromContext(ctx).Technology.
 		Create().
@@ -285,6 +319,7 @@ func (r *mutationResolver) CreateTechnology(ctx context.Context, input ent.Creat
 		Save(ctx)
 }
 
+// UpdateTechnology is the resolver for the updateTechnology field.
 func (r *mutationResolver) UpdateTechnology(ctx context.Context, id int, input ent.UpdateTechnologyInput) (*ent.Technology, error) {
 	return ent.FromContext(ctx).Technology.
 		UpdateOneID(id).
@@ -292,6 +327,7 @@ func (r *mutationResolver) UpdateTechnology(ctx context.Context, id int, input e
 		Save(ctx)
 }
 
+// DeleteTechnology is the resolver for the deleteTechnology field.
 func (r *mutationResolver) DeleteTechnology(ctx context.Context, id int) (*ent.Technology, error) {
 	technology, err := ent.FromContext(ctx).Technology.Get(ctx, id)
 	if err != nil {
@@ -302,6 +338,7 @@ func (r *mutationResolver) DeleteTechnology(ctx context.Context, id int) (*ent.T
 		Exec(ctx)
 }
 
+// CreateTechnologyAssociation is the resolver for the createTechnologyAssociation field.
 func (r *mutationResolver) CreateTechnologyAssociation(ctx context.Context, input ent.CreateTechnologyAssociationInput) (*ent.TechnologyAssociation, error) {
 	return ent.FromContext(ctx).TechnologyAssociation.
 		Create().
@@ -309,6 +346,7 @@ func (r *mutationResolver) CreateTechnologyAssociation(ctx context.Context, inpu
 		Save(ctx)
 }
 
+// UpdateTechnologyAssociation is the resolver for the updateTechnologyAssociation field.
 func (r *mutationResolver) UpdateTechnologyAssociation(ctx context.Context, id int, input ent.UpdateTechnologyAssociationInput) (*ent.TechnologyAssociation, error) {
 	return ent.FromContext(ctx).TechnologyAssociation.
 		UpdateOneID(id).
@@ -316,6 +354,7 @@ func (r *mutationResolver) UpdateTechnologyAssociation(ctx context.Context, id i
 		Save(ctx)
 }
 
+// DeleteTechnologyAssociation is the resolver for the deleteTechnologyAssociation field.
 func (r *mutationResolver) DeleteTechnologyAssociation(ctx context.Context, id int) (*ent.TechnologyAssociation, error) {
 	technologyAssociation, err := ent.FromContext(ctx).TechnologyAssociation.Get(ctx, id)
 	if err != nil {
@@ -326,6 +365,7 @@ func (r *mutationResolver) DeleteTechnologyAssociation(ctx context.Context, id i
 		Exec(ctx)
 }
 
+// CreateProjectTechnology is the resolver for the createProjectTechnology field.
 func (r *mutationResolver) CreateProjectTechnology(ctx context.Context, input ent.CreateProjectTechnologyInput) (*ent.ProjectTechnology, error) {
 	return ent.FromContext(ctx).ProjectTechnology.
 		Create().
@@ -333,6 +373,7 @@ func (r *mutationResolver) CreateProjectTechnology(ctx context.Context, input en
 		Save(ctx)
 }
 
+// UpdateProjectTechnology is the resolver for the updateProjectTechnology field.
 func (r *mutationResolver) UpdateProjectTechnology(ctx context.Context, id int, input ent.UpdateProjectTechnologyInput) (*ent.ProjectTechnology, error) {
 	return ent.FromContext(ctx).ProjectTechnology.
 		UpdateOneID(id).
@@ -340,6 +381,7 @@ func (r *mutationResolver) UpdateProjectTechnology(ctx context.Context, id int, 
 		Save(ctx)
 }
 
+// DeleteProjectTechnology is the resolver for the deleteProjectTechnology field.
 func (r *mutationResolver) DeleteProjectTechnology(ctx context.Context, id int) (*ent.ProjectTechnology, error) {
 	projectTechnology, err := ent.FromContext(ctx).ProjectTechnology.Get(ctx, id)
 	if err != nil {
@@ -350,6 +392,7 @@ func (r *mutationResolver) DeleteProjectTechnology(ctx context.Context, id int) 
 		Exec(ctx)
 }
 
+// CreateRepositoryTechnology is the resolver for the createRepositoryTechnology field.
 func (r *mutationResolver) CreateRepositoryTechnology(ctx context.Context, input ent.CreateRepositoryTechnologyInput) (*ent.RepositoryTechnology, error) {
 	return ent.FromContext(ctx).RepositoryTechnology.
 		Create().
@@ -357,6 +400,7 @@ func (r *mutationResolver) CreateRepositoryTechnology(ctx context.Context, input
 		Save(ctx)
 }
 
+// UpdateRepositoryTechnology is the resolver for the updateRepositoryTechnology field.
 func (r *mutationResolver) UpdateRepositoryTechnology(ctx context.Context, id int, input ent.UpdateRepositoryTechnologyInput) (*ent.RepositoryTechnology, error) {
 	return ent.FromContext(ctx).RepositoryTechnology.
 		UpdateOneID(id).
@@ -364,6 +408,7 @@ func (r *mutationResolver) UpdateRepositoryTechnology(ctx context.Context, id in
 		Save(ctx)
 }
 
+// DeleteRepositoryTechnology is the resolver for the deleteRepositoryTechnology field.
 func (r *mutationResolver) DeleteRepositoryTechnology(ctx context.Context, id int) (*ent.RepositoryTechnology, error) {
 	repositoryTechnology, err := ent.FromContext(ctx).RepositoryTechnology.Get(ctx, id)
 	if err != nil {
@@ -374,6 +419,7 @@ func (r *mutationResolver) DeleteRepositoryTechnology(ctx context.Context, id in
 		Exec(ctx)
 }
 
+// AssumeDevelopmentUser is the resolver for the assumeDevelopmentUser field.
 func (r *mutationResolver) AssumeDevelopmentUser(ctx context.Context, id int) (*ent.User, error) {
 	if !grackdb.AppConfig.DevelopmentMode {
 		return nil, errors.New("assumeDevelopmentUser is only available in development mode")
@@ -408,125 +454,7 @@ func (r *mutationResolver) AssumeDevelopmentUser(ctx context.Context, id int) (*
 	return user, nil
 }
 
-func (r *queryResolver) Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error) {
-	return r.client.User.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithUserOrder(orderBy),
-			ent.WithUserFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) DiscordAccounts(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.DiscordAccountOrder, where *ent.DiscordAccountWhereInput) (*ent.DiscordAccountConnection, error) {
-	return r.client.DiscordAccount.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithDiscordAccountOrder(orderBy),
-			ent.WithDiscordAccountFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) DiscordBots(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.DiscordBotWhereInput) (*ent.DiscordBotConnection, error) {
-	return r.client.DiscordBot.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithDiscordBotFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) GithubAccounts(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubAccountOrder, where *ent.GithubAccountWhereInput) (*ent.GithubAccountConnection, error) {
-	return r.client.GithubAccount.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithGithubAccountOrder(orderBy),
-			ent.WithGithubAccountFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) GithubOrganizationMembers(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationMemberOrder, where *ent.GithubOrganizationMemberWhereInput) (*ent.GithubOrganizationMemberConnection, error) {
-	return r.client.GithubOrganizationMember.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithGithubOrganizationMemberOrder(orderBy),
-			ent.WithGithubOrganizationMemberFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) GithubOrganizations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.GithubOrganizationOrder, where *ent.GithubOrganizationWhereInput) (*ent.GithubOrganizationConnection, error) {
-	return r.client.GithubOrganization.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithGithubOrganizationOrder(orderBy),
-			ent.WithGithubOrganizationFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) Projects(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectOrder, where *ent.ProjectWhereInput) (*ent.ProjectConnection, error) {
-	return r.client.Project.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithProjectOrder(orderBy),
-			ent.WithProjectFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) ProjectContributors(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectContributorOrder, where *ent.ProjectContributorWhereInput) (*ent.ProjectContributorConnection, error) {
-	return r.client.ProjectContributor.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithProjectContributorOrder(orderBy),
-			ent.WithProjectContributorFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) ProjectAssociations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectAssociationOrder, where *ent.ProjectAssociationWhereInput) (*ent.ProjectAssociationConnection, error) {
-	return r.client.ProjectAssociation.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithProjectAssociationOrder(orderBy),
-			ent.WithProjectAssociationFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) Repositories(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryOrder, where *ent.RepositoryWhereInput) (*ent.RepositoryConnection, error) {
-	return r.client.Repository.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithRepositoryOrder(orderBy),
-			ent.WithRepositoryFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) Sites(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.SiteOrder, where *ent.SiteWhereInput) (*ent.SiteConnection, error) {
-	return r.client.Site.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithSiteOrder(orderBy),
-			ent.WithSiteFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) Technologies(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.TechnologyOrder, where *ent.TechnologyWhereInput) (*ent.TechnologyConnection, error) {
-	return r.client.Technology.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithTechnologyOrder(orderBy),
-			ent.WithTechnologyFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) TechnologyAssociations(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.TechnologyAssociationOrder, where *ent.TechnologyAssociationWhereInput) (*ent.TechnologyAssociationConnection, error) {
-	return r.client.TechnologyAssociation.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithTechnologyAssociationOrder(orderBy),
-			ent.WithTechnologyAssociationFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) ProjectTechnologies(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.ProjectTechnologyOrder, where *ent.ProjectTechnologyWhereInput) (*ent.ProjectTechnologyConnection, error) {
-	return r.client.ProjectTechnology.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithProjectTechnologyOrder(orderBy),
-			ent.WithProjectTechnologyFilter(where.Filter),
-		)
-}
-
-func (r *queryResolver) RepositoryTechnologies(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, orderBy *ent.RepositoryTechnologyOrder, where *ent.RepositoryTechnologyWhereInput) (*ent.RepositoryTechnologyConnection, error) {
-	return r.client.RepositoryTechnology.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithRepositoryTechnologyOrder(orderBy),
-			ent.WithRepositoryTechnologyFilter(where.Filter),
-		)
-}
-
+// AvailableAuthProviders is the resolver for the availableAuthProviders field.
 func (r *queryResolver) AvailableAuthProviders(ctx context.Context) ([]*AuthProvider, error) {
 	availableAuthProviders := []*AuthProvider{}
 
@@ -547,6 +475,7 @@ func (r *queryResolver) AvailableAuthProviders(ctx context.Context) ([]*AuthProv
 	return availableAuthProviders, nil
 }
 
+// CurrentUser is the resolver for the currentUser field.
 func (r *queryResolver) CurrentUser(ctx context.Context) (*ent.User, error) {
 	ginCtx, err := grackdb.GinContextFromContext(ctx)
 	if err != nil {
@@ -555,6 +484,7 @@ func (r *queryResolver) CurrentUser(ctx context.Context) (*ent.User, error) {
 	return ginCtx.Value("user").(*ent.User), nil
 }
 
+// DevelopmentMode is the resolver for the developmentMode field.
 func (r *queryResolver) DevelopmentMode(ctx context.Context) (bool, error) {
 	return grackdb.AppConfig.DevelopmentMode, nil
 }
@@ -562,8 +492,4 @@ func (r *queryResolver) DevelopmentMode(ctx context.Context) (bool, error) {
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
-
 type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }

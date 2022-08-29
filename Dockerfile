@@ -4,7 +4,7 @@ WORKDIR /app
 COPY ./frontend .
 RUN npm install && npm run build
 
-FROM golang:1.16-bullseye AS go-builder
+FROM golang:1.18-bullseye AS go-builder
 
 WORKDIR /build
 COPY --from=frontend-builder /app/dist ./frontend/dist

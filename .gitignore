@@ -22,3 +22,5 @@ grack.db
 !.env.dist
 
 er.html
+
+.idea/

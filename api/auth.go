@@ -6,14 +6,15 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/fogo-sh/grackdb"
-	"github.com/fogo-sh/grackdb/ent"
-	"github.com/fogo-sh/grackdb/ent/discordaccount"
-	"github.com/fogo-sh/grackdb/ent/githubaccount"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/go-github/v37/github"
 	"golang.org/x/oauth2"
+
+	"github.com/fogo-sh/grackdb"
+	"github.com/fogo-sh/grackdb/ent"
+	"github.com/fogo-sh/grackdb/ent/discordaccount"
+	"github.com/fogo-sh/grackdb/ent/githubaccount"
 )
 
 var discordOauthConfig *oauth2.Config
@@ -152,7 +153,7 @@ func handleDiscordCallback(c *gin.Context) {
 		return
 	}
 
-	discordClient, err := discordgo.New()
+	discordClient, err := discordgo.New(fmt.Sprintf("Bearer %s", token.AccessToken))
 	if err != nil {
 		fmt.Printf("error creating discord client: %s\n", err)
 		c.JSON(
@@ -161,8 +162,6 @@ func handleDiscordCallback(c *gin.Context) {
 		)
 		return
 	}
-
-	discordClient.Client = discordOauthConfig.Client(c, token)
 
 	discordUser, err := discordClient.User("@me")
 	if err != nil {
