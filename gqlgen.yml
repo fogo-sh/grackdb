@@ -25,24 +25,3 @@ models:
   Node:
    model:
      - github.com/fogo-sh/grackdb/ent.Noder
-#  GithubOrganizationMemberRole:
-#    model:
-#      - github.com/fogo-sh/grackdb/ent/githuborganizationmember.Role
-#  ProjectContributorRole:
-#    model:
-#      - github.com/fogo-sh/grackdb/ent/projectcontributor.Role
-#  ProjectAssociationType:
-#    model:
-#      - github.com/fogo-sh/grackdb/ent/projectassociation.Type
-#  TechnologyAssociationType:
-#    model:
-#      - github.com/fogo-sh/grackdb/ent/technologyassociation.Type
-#  ProjectTechnologyAssociationType:
-#    model:
-#      - github.com/fogo-sh/grackdb/ent/projecttechnology.Type
-#  RepositoryTechnologyAssociationType:
-#    model:
-#      - github.com/fogo-sh/grackdb/ent/repositorytechnology.Type
-#  TechnologyType:
-#    model:
-#      - github.com/fogo-sh/grackdb/ent/technology.Type
