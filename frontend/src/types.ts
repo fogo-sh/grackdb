@@ -116,7 +116,7 @@ export type ProjectContribution = z.infer<typeof ProjectContributionSchema>;
 export const UserSchema = z.object({
   id: z.string().optional(),
   username: z.string(),
-  avatarUrl: z.string().nullish(),
+  avatarURL: z.string().nullish(),
   githubAccounts: z.array(GithubAccountSchema).optional(),
   discordAccounts: z.array(DiscordAccountSchema).optional(),
   projectContributions: z.array(ProjectContributionSchema).optional(),

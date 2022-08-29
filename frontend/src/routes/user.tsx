@@ -44,10 +44,10 @@ export function UserPage() {
 
   return (
     <>
-      {user.avatarUrl !== null && (
+      {user.avatarURL !== null && (
         <img
           className="w-[10rem] h-[10rem] mx-auto border border-1 mt-5"
-          src={user.avatarUrl}
+          src={user.avatarURL}
           alt={user.username}
         />
       )}
